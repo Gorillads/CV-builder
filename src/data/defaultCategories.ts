@@ -260,5 +260,12 @@ export function createDefaultState(): AppState {
       mail: "",
       location: { da: "", en: "" },
     },
+    design: {
+      font: "industry",
+      scheme: "staal",
+      headSize: "standard",
+      struct: "single",
+      headKind: "left",
+    },
   };
 }

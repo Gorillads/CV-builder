@@ -3,19 +3,23 @@ import { useStore } from "./state/store";
 import { t } from "./i18n";
 import { ContentTab } from "./components/ContentTab";
 import { TailorTab } from "./components/TailorTab";
+import { DesignTab } from "./components/DesignTab";
 import { CvPreview } from "./components/CvPreview";
 import { ImportExportBar } from "./components/ImportExportBar";
+import { useGoogleFont } from "./hooks/useGoogleFont";
 import "./App.css";
 
-type Tab = "content" | "tailor";
+type Tab = "content" | "tailor" | "design";
 
 function App() {
   const lang = useStore((s) => s.lang);
   const setLang = useStore((s) => s.setLang);
   const header = useStore((s) => s.header);
   const setHeaderField = useStore((s) => s.setHeaderField);
+  const font = useStore((s) => s.design.font);
   const [tab, setTab] = useState<Tab>("content");
   const T = t(lang);
+  useGoogleFont(font);
 
   return (
     <div className="app">
@@ -64,9 +68,14 @@ function App() {
             <button type="button" className={tab === "tailor" ? "active" : ""} onClick={() => setTab("tailor")}>
               {T.tabTailor}
             </button>
+            <button type="button" className={tab === "design" ? "active" : ""} onClick={() => setTab("design")}>
+              {T.tabDesign}
+            </button>
           </div>
 
-          {tab === "content" ? <ContentTab lang={lang} /> : <TailorTab lang={lang} />}
+          {tab === "content" && <ContentTab lang={lang} />}
+          {tab === "tailor" && <TailorTab lang={lang} />}
+          {tab === "design" && <DesignTab lang={lang} />}
         </div>
 
         <div className="preview-panel">
