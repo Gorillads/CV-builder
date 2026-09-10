@@ -1,0 +1,396 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.app-header h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.app-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lang-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.lang-toggle button,
+.tabs button {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.lang-toggle button.active,
+.tabs button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.import-export-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+.editor-panel {
+  flex: 1 1 480px;
+  min-width: 340px;
+  max-width: 640px;
+}
+
+.preview-panel {
+  flex: 1 1 600px;
+  position: sticky;
+  top: 16px;
+}
+
+.header-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tabs {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  width: fit-content;
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+textarea.field {
+  resize: vertical;
+}
+
+.btn {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.link-btn {
+  border: none;
+  background: none;
+  color: var(--accent-soft);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+  text-align: left;
+}
+
+.link-btn.danger {
+  color: var(--danger);
+}
+
+.icon-btn {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-soft);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.category-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-title {
+  font-weight: 600;
+  flex: 1;
+}
+
+.badge {
+  font-size: 11px;
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+
+.item-card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg);
+}
+
+.item-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.item-card-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 6px;
+}
+
+.in-cv {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.activities {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activities-label {
+  font-size: 11px;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.new-category-form {
+  display: flex;
+  gap: 8px;
+}
+
+.tailor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tailor-field label {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.tailor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tailor-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: var(--panel);
+}
+
+.tailor-row .in-cv {
+  flex: 1;
+}
+
+.placement-select {
+  width: auto;
+}
+
+.cv-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cv-page {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  max-width: 720px;
+}
+
+.cv-header h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+
+.cv-applied-title {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.cv-contact {
+  margin: 0 0 20px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.cv-section {
+  margin-bottom: 20px;
+}
+
+.cv-section h3 {
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.cv-blurb {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.cv-entry {
+  margin-bottom: 10px;
+}
+
+.cv-entry-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.cv-entry-meta {
+  color: var(--text-soft);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.cv-entry-desc {
+  margin: 2px 0;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.cv-entry-acts {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.cv-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cv-tag {
+  border: 1px solid var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+}
+
+.cv-appendix h2 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+@media (max-width: 900px) {
+  .app-body {
+    flex-direction: column;
+  }
+  .editor-panel,
+  .preview-panel {
+    max-width: 100%;
+    width: 100%;
+  }
+  .preview-panel {
+    position: static;
+  }
+}
