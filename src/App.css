@@ -282,6 +282,82 @@ textarea.field {
   width: auto;
 }
 
+.design-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.design-group-label {
+  font-size: 12px;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.design-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.design-card {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.design-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+.design-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch.active {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--panel);
+}
+
+.design-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pill {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-soft);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pill.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
 .cv-preview {
   display: flex;
   flex-direction: column;
@@ -289,76 +365,154 @@ textarea.field {
 }
 
 .cv-page {
-  background: var(--panel);
+  background: #fff;
+  color: #24282e;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 32px;
-  max-width: 720px;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(20, 24, 31, 0.12);
+  padding: 40px 44px;
+  max-width: 740px;
+  font-family: var(--cv-body), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* ---- Header alignment variants ------------------------------------- */
+
+.cv-header {
+  margin-bottom: 24px;
 }
 
 .cv-header h1 {
   margin: 0 0 4px;
-  font-size: 24px;
+  font-family: var(--cv-head), system-ui, sans-serif;
+  font-size: var(--cv-name-size);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
 }
 
 .cv-applied-title {
-  margin: 0 0 4px;
-  color: var(--accent);
+  margin: 0 0 6px;
+  color: var(--cv-accent);
   font-weight: 600;
+  font-size: 14px;
 }
 
 .cv-contact {
-  margin: 0 0 20px;
-  color: var(--text-soft);
-  font-size: 13px;
+  margin: 0;
+  color: #5c6672;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
 }
 
+.cv-header.head-left {
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--cv-line);
+}
+
+.cv-header.head-center {
+  text-align: center;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--cv-line);
+}
+
+.cv-header.head-inline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cv-line);
+}
+
+.cv-header.head-inline h1 {
+  margin: 0;
+}
+
+.cv-header.head-inline .cv-applied-title,
+.cv-header.head-inline .cv-contact {
+  margin: 0;
+}
+
+/* ---- Sections & entries --------------------------------------------- */
+
 .cv-section {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+  break-inside: avoid;
 }
 
 .cv-section h3 {
-  border-bottom: 2px solid var(--accent);
-  padding-bottom: 4px;
-  margin-bottom: 8px;
-  color: var(--accent);
+  border-bottom: 1.5px solid var(--cv-accent);
+  padding-bottom: 3px;
+  margin: 0 0 8px;
+  color: var(--cv-accent);
   text-transform: uppercase;
-  font-size: 14px;
-  letter-spacing: 0.04em;
+  font-family: var(--cv-head), system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
 .cv-blurb {
-  color: var(--text-soft);
-  font-size: 13px;
+  color: #5c6672;
+  font-size: 12.5px;
+  margin: 0 0 8px;
 }
 
 .cv-entry {
-  margin-bottom: 10px;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 9px;
+}
+
+.cv-entry-meta-col {
+  display: none;
+  flex: 0 0 72px;
+  color: var(--cv-accent-soft);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+}
+
+.cv-entry-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .cv-entry-head {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 12px;
-  font-size: 14px;
+}
+
+.cv-entry-head strong {
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .cv-entry-meta {
-  color: var(--text-soft);
-  font-size: 12px;
+  color: var(--cv-accent-soft);
+  font-size: 11.5px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .cv-entry-desc {
   margin: 2px 0;
-  font-size: 13px;
-  color: var(--text-soft);
+  font-size: 12.5px;
+  color: #5c6672;
 }
 
 .cv-entry-acts {
-  margin: 4px 0 0;
-  padding-left: 18px;
-  font-size: 13px;
+  margin: 3px 0 0;
+  padding-left: 16px;
+  font-size: 12.5px;
+}
+
+.cv-entry-acts li {
+  margin-bottom: 1px;
 }
 
 .cv-tags {
@@ -368,17 +522,79 @@ textarea.field {
 }
 
 .cv-tag {
-  border: 1px solid var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  color: var(--accent);
+  border: 1px solid var(--cv-chip-border);
+  background: var(--cv-chip-bg);
+  color: var(--cv-chip-fg);
   border-radius: 999px;
   padding: 2px 10px;
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .cv-appendix h2 {
-  margin-top: 0;
-  font-size: 16px;
+  margin: 0 0 18px;
+  font-family: var(--cv-head), system-ui, sans-serif;
+  color: var(--cv-accent-soft);
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+/* ---- Layout structures ------------------------------------------------
+   single/compact: one flowing column (compact just tightens spacing/type).
+   two: sections flow into two balanced columns.
+   sidebar: handled in JSX (aside + main), styled here as a grid.
+   list: each section gets a left accent rail, like a marked list.
+   rows: the year moves into its own fixed-width column per entry. */
+
+.struct-two .cv-flow {
+  columns: 2;
+  column-gap: 32px;
+}
+
+.struct-compact {
+  font-size: 12px;
+}
+
+.struct-compact .cv-section {
+  margin-bottom: 12px;
+}
+
+.struct-compact .cv-entry {
+  margin-bottom: 5px;
+}
+
+.struct-compact .cv-entry-acts,
+.struct-compact .cv-entry-desc {
+  font-size: 11.5px;
+}
+
+.cv-grid-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0 28px;
+  align-items: start;
+}
+
+.cv-aside {
+  border-left: 1px solid var(--cv-line);
+  padding-left: 20px;
+}
+
+.struct-list .cv-section {
+  border-left: 2.5px solid var(--cv-accent);
+  padding-left: 12px;
+}
+
+.struct-list .cv-section h3 {
+  border-bottom: none;
+}
+
+.struct-rows .cv-entry-meta-col {
+  display: block;
+}
+
+.struct-rows .cv-entry-head .cv-entry-meta {
+  display: none;
 }
 
 @media (max-width: 900px) {

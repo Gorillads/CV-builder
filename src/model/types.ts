@@ -82,4 +82,13 @@ export interface AppState {
     mail: string;
     location: ByLang<string>;
   };
+
+  /** Design tokens for the CV sheet itself — ids into src/data/designTokens. */
+  design: {
+    font: string;
+    scheme: string;
+    headSize: string;
+    struct: string;
+    headKind: string;
+  };
 }

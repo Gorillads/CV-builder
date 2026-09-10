@@ -35,10 +35,27 @@ hidden and restorable, custom ones deleted). A confirmation dialog shows
 the row/section counts before committing. See `src/csv/` for the ported
 logic.
 
-## Current state
+## Design tokens
 
-This first pass focused on getting the data model and CSV round-trip
-solid, with a functional (not yet visually polished) editor UI:
+A Design tab lets you pick the CV sheet's typography and layout,
+independent of content — the same set the prototype offered:
+
+- **Font pairings** (6): Industry (Barlow Condensed/Barlow), Technical (IBM
+  Plex Sans), Aptos, Roboto, Lato, Public Sans — loaded from Google Fonts
+  (Aptos falls back to Source Sans 3, since it's a Microsoft-only face)
+- **Accent color schemes** (5): Steel, Graphite, Marine, Copper, Forest
+- **Header size** (3): small/standard/large
+- **Layout structure** (6): single column, two columns, sidebar (core
+  competencies/languages/courses/certifications/interests move to a side
+  rail), marked list (accent rail per section), rows (year in its own
+  column), compact (tighter spacing)
+- **Header alignment** (3): left, centered, low inline line
+
+See `src/data/designTokens.ts` for the token values and
+`src/components/CvPreview.tsx` / the `.cv-*` rules in `src/App.css` for
+how they're applied.
+
+## Current state
 
 - ✅ Category + library item data model, Zustand store, localStorage
   persistence
@@ -48,9 +65,12 @@ solid, with a functional (not yet visually polished) editor UI:
   hide/delete, add category
 - ✅ Tailor-to-the-job tab: category on/off, reorder, CV vs. appendix
   placement, applied title + ATS keywords
-- ✅ Plain live CV preview
-- ⬜ Visual design fidelity (fonts, accent color schemes, layout variants,
-  pagination/fit) from the prototype — not yet ported
+- ✅ CV preview styled as an actual sheet, with the design token system
+  above
+- ⬜ Automatic pagination/overflow ("does this fit on one page") — the
+  prototype measured this live in the browser; not yet ported
+- ⬜ Per-category display variants (standard/two-col/row/line cycling per
+  section, independent of the page-level structure) — not yet ported
 
 To bring in real content from the original prototype, open
 `design_handoff_cv_csv_editor/CV Skabelon.dc.html` in a browser, use its

@@ -48,6 +48,8 @@ export interface Store extends AppState {
   setHeaderField(field: "name" | "phone" | "mail", value: string): void;
   setHeaderLocation(lang: Lang, value: string): void;
 
+  setDesign(field: "font" | "scheme" | "headSize" | "struct" | "headKind", value: string): void;
+
   parseImport(text: string): ImportParseResult;
   commitImport(plan: Parameters<typeof applyImportPlan>[1]): void;
   exportCsvText(): string;
@@ -286,6 +288,8 @@ export const useStore = create<Store>()(
       setHeaderField: (field, value) => set((s) => ({ header: { ...s.header, [field]: value } })),
       setHeaderLocation: (lang, value) =>
         set((s) => ({ header: { ...s.header, location: { ...s.header.location, [lang]: value } } })),
+
+      setDesign: (field, value) => set((s) => ({ design: { ...s.design, [field]: value } })),
 
       parseImport: (text) => parseImportPlan(text, new Set(Object.keys(get().categories))),
       commitImport: (plan) => set((s) => applyImportPlan(s, plan)),
