@@ -54,6 +54,8 @@ export const UI = {
     moveUp: "Flyt op",
     moveDown: "Flyt ned",
     custom: "Brugerdefineret",
+    print: "Udskriv / Gem som PDF",
+    pageOverflow: (px: number) => `Indholdet er ~${px}px for højt til én side — flyt en sektion til bilaget, eller vælg "Kompakt" under Design.`,
   },
   en: {
     appName: "CV Builder",
@@ -108,6 +110,8 @@ export const UI = {
     moveUp: "Move up",
     moveDown: "Move down",
     custom: "Custom",
+    print: "Print / Save as PDF",
+    pageOverflow: (px: number) => `Content is ~${px}px too tall for one page — move a section to the appendix, or pick "Compact" under Design.`,
   },
 } satisfies Record<Lang, Record<string, unknown>>;
 

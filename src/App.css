@@ -75,6 +75,12 @@
   top: 16px;
 }
 
+.preview-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
 .header-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -362,8 +368,14 @@ textarea.field {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
+/* A4 at 96dpi (210mm × 297mm) — the page is a fixed size so the on-screen
+   preview matches what actually prints, and so overflow past the bottom
+   edge (see usePageOverflow) is meaningful rather than the box just
+   growing to fit whatever content exists. */
 .cv-page {
   background: #fff;
   color: #24282e;
@@ -371,10 +383,32 @@ textarea.field {
   border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(20, 24, 31, 0.12);
   padding: 40px 44px;
-  max-width: 740px;
+  width: 794px;
+  height: 1123px;
+  flex: none;
+  overflow: visible;
+  position: relative;
   font-family: var(--cv-body), system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.cv-page--overflow {
+  border-bottom: 2px dashed #c23b3b;
+}
+
+.page-overflow-warning {
+  width: 794px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fdeeee;
+  color: #8a2a2a;
+  border: 1px solid #e6b8b8;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  margin-top: -8px;
 }
 
 /* ---- Header alignment variants ------------------------------------- */
@@ -608,5 +642,63 @@ textarea.field {
   }
   .preview-panel {
     position: static;
+  }
+}
+
+/* ---- Print / Save as PDF -------------------------------------------
+   Only #cv-print-area survives; each .cv-page becomes exactly one sheet
+   (size set via @page) with no screen-only chrome (shadow, warning
+   banner, horizontal scroll wrapper). */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #cv-print-area,
+  #cv-print-area * {
+    visibility: visible;
+  }
+
+  #cv-print-area {
+    /* fixed (not absolute) so this pins to the actual page regardless of
+       any positioned ancestor (.preview-panel is position: sticky, which
+       would otherwise become the containing block). */
+    position: fixed;
+    inset: 0;
+    display: block;
+    overflow: visible;
+    gap: 0;
+  }
+
+  .cv-page {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    width: 210mm;
+    height: 297mm;
+    page-break-after: always;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cv-page--overflow {
+    border-bottom: none;
+  }
+
+  .page-overflow-warning {
+    display: none;
+  }
+
+  .cv-section {
+    break-inside: avoid;
+  }
+
+  .cv-entry {
+    break-inside: avoid;
   }
 }

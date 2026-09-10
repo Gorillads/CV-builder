@@ -55,6 +55,20 @@ See `src/data/designTokens.ts` for the token values and
 `src/components/CvPreview.tsx` / the `.cv-*` rules in `src/App.css` for
 how they're applied.
 
+## Print / PDF export
+
+The "Print / Save as PDF" button opens the browser's print dialog. The CV
+sheet is a fixed A4 box (`#cv-print-area`, see the `@media print` rules in
+`src/App.css`) so what you see in the preview is what prints — one
+`.cv-page` per sheet, editor chrome hidden, colors preserved.
+
+Because the on-screen preview is that same fixed-size A4 box, it can tell
+you when your content doesn't fit: `src/hooks/usePageOverflow.ts` measures
+each page's content against the box and, if it overflows, draws a dashed
+line at the actual page edge (so nothing is silently clipped) plus a
+banner suggesting you move a section to the appendix or switch to the
+"Compact" structure.
+
 ## Current state
 
 - ✅ Category + library item data model, Zustand store, localStorage
@@ -67,10 +81,13 @@ how they're applied.
   placement, applied title + ATS keywords
 - ✅ CV preview styled as an actual sheet, with the design token system
   above
-- ⬜ Automatic pagination/overflow ("does this fit on one page") — the
-  prototype measured this live in the browser; not yet ported
+- ✅ Print/PDF export with a real print stylesheet, and overflow
+  awareness (warns when content exceeds one page instead of clipping)
 - ⬜ Per-category display variants (standard/two-col/row/line cycling per
   section, independent of the page-level structure) — not yet ported
+- ⬜ Multi-page appendix (content that overflows the appendix page doesn't
+  yet flow onto a second appendix sheet the way the prototype's algorithmic
+  chunking did — it just warns)
 
 To bring in real content from the original prototype, open
 `design_handoff_cv_csv_editor/CV Skabelon.dc.html` in a browser, use its

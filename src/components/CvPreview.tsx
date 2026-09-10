@@ -1,9 +1,10 @@
 import { useStore } from "../state/store";
 import { useShallow } from "zustand/react/shallow";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
 import { FONTS, SCHEMES, HEAD_SIZES, SIDE_DEFAULT, byId } from "../data/designTokens";
+import { usePageOverflow } from "../hooks/usePageOverflow";
 
 function selectedActivityTexts(
   selectedActivities: Record<string, number[]>,
@@ -74,6 +75,23 @@ function SectionFlow({ ids, categories, lang }: { ids: string[]; categories: Rec
   );
 }
 
+/** One printed sheet: measures its own content against the fixed A4 box
+ *  (see usePageOverflow) and surfaces a warning below it when the CV
+ *  won't actually fit on one page. */
+function Page({ className, children, lang }: { className: string; children: ReactNode; lang: Lang }) {
+  const T = t(lang);
+  const [ref, overflow] = usePageOverflow<HTMLDivElement>();
+
+  return (
+    <>
+      <div ref={ref} className={className + (overflow.overflowing ? " cv-page--overflow" : "")}>
+        {children}
+      </div>
+      {overflow.overflowing && <div className="page-overflow-warning">⚠ {T.pageOverflow(overflow.overflowPx)}</div>}
+    </>
+  );
+}
+
 export function CvPreview({ lang }: { lang: Lang }) {
   const T = t(lang);
   const order = useStore((s) => s.order);
@@ -108,8 +126,8 @@ export function CvPreview({ lang }: { lang: Lang }) {
   const mainIds = design.struct === "sidebar" ? cvIds.filter((id) => !SIDE_DEFAULT.has(id)) : cvIds;
 
   return (
-    <div className="cv-preview" style={themeStyle}>
-      <div className={`cv-page struct-${design.struct}`}>
+    <div className="cv-preview" style={themeStyle} id="cv-print-area">
+      <Page className={`cv-page struct-${design.struct}`} lang={lang}>
         <header className={`cv-header head-${design.headKind}`}>
           <h1>{header.name || "—"}</h1>
           {appliedTitle[lang] && <p className="cv-applied-title">{appliedTitle[lang]}</p>}
@@ -131,14 +149,14 @@ export function CvPreview({ lang }: { lang: Lang }) {
             <SectionFlow ids={mainIds} categories={categories} lang={lang} />
           </div>
         )}
-      </div>
+      </Page>
       {apxIds.length > 0 && (
-        <div className={`cv-page cv-appendix struct-${design.struct}`}>
+        <Page className={`cv-page cv-appendix struct-${design.struct}`} lang={lang}>
           <h2>{T.appendix}</h2>
           <div className="cv-flow">
             <SectionFlow ids={apxIds} categories={categories} lang={lang} />
           </div>
-        </div>
+        </Page>
       )}
     </div>
   );
