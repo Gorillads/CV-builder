@@ -79,6 +79,11 @@ function App() {
         </div>
 
         <div className="preview-panel">
+          <div className="preview-toolbar">
+            <button type="button" className="btn" onClick={() => window.print()}>
+              {T.print}
+            </button>
+          </div>
           <CvPreview lang={lang} />
         </div>
       </div>
