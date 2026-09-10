@@ -252,6 +252,7 @@ export function createDefaultState(): AppState {
     selectedItems,
     selectedActivities: {},
     place,
+    variant: {},
     appliedTitle: { da: "", en: "" },
     keywords: { da: "", en: "" },
     header: {
@@ -266,6 +267,8 @@ export function createDefaultState(): AppState {
       headSize: "standard",
       struct: "single",
       headKind: "left",
+      density: "standard",
+      footer: { enabled: false, revision: "" },
     },
   };
 }

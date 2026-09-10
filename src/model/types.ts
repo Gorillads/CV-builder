@@ -74,6 +74,11 @@ export interface AppState {
    *  Absent means "all activities selected" (the default). */
   selectedActivities: Record<string, number[]>;
   place: Record<string, Placement>;
+  /** Per category: how its elements are displayed — an id into
+   *  ENTRY_VARIANTS (kind "entry") or TAG_VARIANTS (kind "tags"), chosen
+   *  independently of the page-level structure. Absent means the kind's
+   *  own standard (simplest) variant. */
+  variant: Record<string, string>;
   appliedTitle: ByLang<string>;
   keywords: ByLang<string>;
   header: {
@@ -88,7 +93,13 @@ export interface AppState {
     font: string;
     scheme: string;
     headSize: string;
+    /** Macro page layout — single/two/sidebar/marked. */
     struct: string;
     headKind: string;
+    density: string;
+    footer: {
+      enabled: boolean;
+      revision: string;
+    };
   };
 }

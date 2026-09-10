@@ -1,4 +1,4 @@
-import type { ByLang } from "../model/types";
+import type { ByLang, CategoryKind } from "../model/types";
 
 export interface FontPairing {
   id: string;
@@ -93,13 +93,14 @@ export interface LayoutStructure {
   name: ByLang<string>;
 }
 
+/** Macro page layout only — which columns exist and where. How each
+ *  section's own content is laid out is a separate, per-category choice
+ *  (see ENTRY_VARIANTS / TAG_VARIANTS below). */
 export const STRUCTS: LayoutStructure[] = [
   { id: "single", name: { da: "Én spalte (standard)", en: "Single column (default)" } },
-  { id: "two", name: { da: "To spalter", en: "Two columns" } },
   { id: "sidebar", name: { da: "Sidebar", en: "Sidebar" } },
-  { id: "list", name: { da: "Markeret liste", en: "Marked list" } },
-  { id: "rows", name: { da: "Rækker (titel + år)", en: "Rows (title + year)" } },
-  { id: "compact", name: { da: "Kompakt (mere på siden)", en: "Compact (more on the page)" } },
+  { id: "two", name: { da: "To spalter", en: "Two columns" } },
+  { id: "marked", name: { da: "Markeret (accentkant)", en: "Marked (accent rail)" } },
 ];
 
 export interface HeaderAlignment {
@@ -112,6 +113,48 @@ export const HEADS: HeaderAlignment[] = [
   { id: "center", name: { da: "Centreret", en: "Centred" } },
   { id: "inline", name: { da: "Lav linje", en: "Low line" } },
 ];
+
+export interface Density {
+  id: string;
+  name: ByLang<string>;
+}
+
+export const DENSITIES: Density[] = [
+  { id: "standard", name: { da: "Standard", en: "Standard" } },
+  { id: "compact", name: { da: "Kompakt (mere på siden)", en: "Compact (more on the page)" } },
+];
+
+export interface Variant {
+  id: string;
+  name: ByLang<string>;
+}
+
+/** Per-category display format for "entry" sections — independent of the
+ *  page-level structure. "standard" is always the simplest/default. */
+export const ENTRY_VARIANTS: Variant[] = [
+  { id: "standard", name: { da: "Standard", en: "Standard" } },
+  { id: "rows", name: { da: "Rækker (år i egen spalte)", en: "Rows (year in its own column)" } },
+  { id: "line", name: { da: "Linje (kun titel + år)", en: "Line (title + year only)" } },
+];
+
+/** Per-category display format for "tags" sections. "list" — a plain
+ *  bold list, one per line — is the standard/simplest; "chips" are the
+ *  rounded-pill alternative. */
+export const TAG_VARIANTS: Variant[] = [
+  { id: "list", name: { da: "Liste (standard)", en: "List (default)" } },
+  { id: "chips", name: { da: "Mærker", en: "Chips" } },
+];
+
+export function defaultVariant(kind: CategoryKind): string {
+  if (kind === "tags") return "list";
+  return "standard";
+}
+
+export function variantsFor(kind: CategoryKind): Variant[] {
+  if (kind === "tags") return TAG_VARIANTS;
+  if (kind === "entry") return ENTRY_VARIANTS;
+  return [];
+}
 
 /** Categories that default to the sidebar column when structure="sidebar". */
 export const SIDE_DEFAULT = new Set(["kompetencer", "sprog", "kurser", "certificeringer", "interesser"]);

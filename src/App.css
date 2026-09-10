@@ -377,7 +377,7 @@ textarea.field {
    edge (see usePageOverflow) is meaningful rather than the box just
    growing to fit whatever content exists. */
 .cv-page {
-  background: #fff;
+  background: #f3f2f0;
   color: #24282e;
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -388,9 +388,20 @@ textarea.field {
   flex: none;
   overflow: visible;
   position: relative;
+  display: flex;
+  flex-direction: column;
   font-family: var(--cv-body), system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.45;
+}
+
+/* Direct content block (.cv-flow or .cv-grid-sidebar) fills whatever
+   height the header leaves, so a tinted sidebar (see .cv-aside) reaches
+   all the way to the page's bottom edge instead of stopping at its own
+   shorter content. */
+.cv-page > .cv-flow,
+.cv-page > .cv-grid-sidebar {
+  flex: 1;
 }
 
 .cv-page--overflow {
@@ -440,15 +451,29 @@ textarea.field {
   font-variant-numeric: tabular-nums;
 }
 
-.cv-header.head-left {
-  padding-bottom: 14px;
-  border-bottom: 2px solid var(--cv-line);
+/* A double rule under the header — a thick accent bar plus a thin line a
+   few pixels below it — reads as a stronger graphic anchor than a single
+   line would. */
+.cv-header.head-left,
+.cv-header.head-center {
+  position: relative;
+  padding-bottom: 16px;
+  border-bottom: 3px solid var(--cv-accent);
+}
+
+.cv-header.head-left::after,
+.cv-header.head-center::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--cv-line);
 }
 
 .cv-header.head-center {
   text-align: center;
-  padding-bottom: 14px;
-  border-bottom: 2px solid var(--cv-line);
 }
 
 .cv-header.head-inline {
@@ -549,6 +574,8 @@ textarea.field {
   margin-bottom: 1px;
 }
 
+/* ---- Tags: "chips" variant (rounded pills) -------------------------- */
+
 .cv-tags {
   display: flex;
   flex-wrap: wrap;
@@ -564,6 +591,60 @@ textarea.field {
   font-size: 11.5px;
 }
 
+/* ---- Tags: "list" variant (standard — plain bold lines) ------------- */
+
+.cv-taglist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cv-taglist li {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ---- Entries: "line" variant (title + year, nothing else) ----------- */
+
+.cv-entry--line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.cv-entry-line-head {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.cv-entry-line-meta {
+  color: var(--cv-accent-soft);
+  font-size: 11.5px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Entries: "rows" variant (year in its own column) — and the same
+   small letter-spaced label treatment used by the footer. -------------- */
+
+.cv-entry--rows .cv-entry-meta-col {
+  display: block;
+}
+
+.cv-entry--rows .cv-entry-head .cv-entry-meta {
+  display: none;
+}
+
+.cv-entry-meta-col,
+.cv-footer {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .cv-appendix h2 {
   margin: 0 0 18px;
   font-family: var(--cv-head), system-ui, sans-serif;
@@ -573,62 +654,74 @@ textarea.field {
   letter-spacing: 0.08em;
 }
 
-/* ---- Layout structures ------------------------------------------------
-   single/compact: one flowing column (compact just tightens spacing/type).
+/* ---- Page footer (optional) ------------------------------------------ */
+
+.cv-footer {
+  position: absolute;
+  left: 44px;
+  right: 44px;
+  bottom: 26px;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--cv-line);
+  color: #7c8590;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Page structure (macro layout only) -------------------------------
+   single: one flowing column.
    two: sections flow into two balanced columns.
-   sidebar: handled in JSX (aside + main), styled here as a grid.
-   list: each section gets a left accent rail, like a marked list.
-   rows: the year moves into its own fixed-width column per entry. */
+   sidebar: handled in JSX (aside + main), styled here as a grid with a
+     tinted aside that bleeds to the page's own edges.
+   marked: each section gets a left accent rail instead of a rule. */
 
 .struct-two .cv-flow {
   columns: 2;
   column-gap: 32px;
 }
 
-.struct-compact {
-  font-size: 12px;
-}
-
-.struct-compact .cv-section {
-  margin-bottom: 12px;
-}
-
-.struct-compact .cv-entry {
-  margin-bottom: 5px;
-}
-
-.struct-compact .cv-entry-acts,
-.struct-compact .cv-entry-desc {
-  font-size: 11.5px;
-}
-
 .cv-grid-sidebar {
   display: grid;
   grid-template-columns: 1fr 200px;
-  gap: 0 28px;
-  align-items: start;
+  gap: 0;
 }
 
 .cv-aside {
-  border-left: 1px solid var(--cv-line);
-  padding-left: 20px;
+  background: var(--cv-chip-bg);
+  margin: -40px -44px -40px 0;
+  padding: 40px 44px 40px 20px;
+  border-radius: 0 2px 2px 0;
 }
 
-.struct-list .cv-section {
+.struct-marked .cv-section {
   border-left: 2.5px solid var(--cv-accent);
   padding-left: 12px;
 }
 
-.struct-list .cv-section h3 {
+.struct-marked .cv-section h3 {
   border-bottom: none;
 }
 
-.struct-rows .cv-entry-meta-col {
-  display: block;
+/* ---- Density (orthogonal to structure) -------------------------------- */
+
+.density-compact {
+  font-size: 12px;
 }
 
-.struct-rows .cv-entry-head .cv-entry-meta {
-  display: none;
+.density-compact .cv-section {
+  margin-bottom: 12px;
+}
+
+.density-compact .cv-entry,
+.density-compact .cv-entry--line {
+  margin-bottom: 5px;
+}
+
+.density-compact .cv-entry-acts,
+.density-compact .cv-entry-desc {
+  font-size: 11.5px;
 }
 
 @media (max-width: 900px) {
