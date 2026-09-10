@@ -3,7 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 import type { CSSProperties, ReactNode } from "react";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
-import { FONTS, SCHEMES, HEAD_SIZES, SIDE_DEFAULT, byId } from "../data/designTokens";
+import { FONTS, SCHEMES, HEAD_SIZES, SIDE_DEFAULT, byId, defaultVariant } from "../data/designTokens";
 import { usePageOverflow } from "../hooks/usePageOverflow";
 
 function selectedActivityTexts(
@@ -15,7 +15,73 @@ function selectedActivityTexts(
   return indices.map((i) => item.activities[i]).filter(Boolean).map((a) => a[lang] || a.da);
 }
 
-function SectionBlock({ category, lang }: { category: Category; lang: Lang }) {
+function TagsBlock({ items, lang, variant }: { items: LibraryItem[]; lang: Lang; variant: string }) {
+  if (variant === "list") {
+    return (
+      <ul className="cv-taglist">
+        {items.map((it) => (
+          <li key={it.id}>{it[lang].tagValue}</li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <div className="cv-tags">
+      {items.map((it) => (
+        <span className="cv-tag" key={it.id}>
+          {it[lang].tagValue}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function EntryBlock({
+  item,
+  lang,
+  variant,
+  selectedActivities,
+}: {
+  item: LibraryItem;
+  lang: Lang;
+  variant: string;
+  selectedActivities: Record<string, number[]>;
+}) {
+  const text = item[lang];
+
+  if (variant === "line") {
+    return (
+      <div className="cv-entry cv-entry--line">
+        <span className="cv-entry-line-head">{text.head}</span>
+        {text.meta && <span className="cv-entry-line-meta">{text.meta}</span>}
+      </div>
+    );
+  }
+
+  const acts = selectedActivityTexts(selectedActivities, item, lang);
+
+  return (
+    <div className={"cv-entry" + (variant === "rows" ? " cv-entry--rows" : "")}>
+      {variant === "rows" && <div className="cv-entry-meta-col">{text.meta}</div>}
+      <div className="cv-entry-body">
+        <div className="cv-entry-head">
+          <strong>{text.head}</strong>
+          {variant !== "rows" && text.meta && <span className="cv-entry-meta">{text.meta}</span>}
+        </div>
+        {text.desc && <p className="cv-entry-desc">{text.desc}</p>}
+        {acts.length > 0 && (
+          <ul className="cv-entry-acts">
+            {acts.map((a, i) => (
+              <li key={i}>{a}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SectionBlock({ category, lang, variant }: { category: Category; lang: Lang; variant: string }) {
   const items = useStore(
     useShallow((s) => {
       const ids = s.selectedItems[category.id] ?? [];
@@ -30,55 +96,58 @@ function SectionBlock({ category, lang }: { category: Category; lang: Lang }) {
       <h3>{category.title[lang]}</h3>
       {category.blurb[lang] && <p className="cv-blurb">{category.blurb[lang]}</p>}
       {category.kind === "tags" ? (
-        <div className="cv-tags">
-          {items.map((it) => (
-            <span className="cv-tag" key={it.id}>
-              {it[lang].tagValue}
-            </span>
-          ))}
-        </div>
+        <TagsBlock items={items} lang={lang} variant={variant} />
       ) : (
         items.map((it) => (
-          <div className="cv-entry" key={it.id}>
-            <div className="cv-entry-meta-col">{it[lang].meta}</div>
-            <div className="cv-entry-body">
-              <div className="cv-entry-head">
-                <strong>{it[lang].head}</strong>
-                <span className="cv-entry-meta">{it[lang].meta}</span>
-              </div>
-              {it[lang].desc && <p className="cv-entry-desc">{it[lang].desc}</p>}
-              {(() => {
-                const acts = selectedActivityTexts(selectedActivities, it, lang);
-                return acts.length ? (
-                  <ul className="cv-entry-acts">
-                    {acts.map((a, i) => (
-                      <li key={i}>{a}</li>
-                    ))}
-                  </ul>
-                ) : null;
-              })()}
-            </div>
-          </div>
+          <EntryBlock key={it.id} item={it} lang={lang} variant={variant} selectedActivities={selectedActivities} />
         ))
       )}
     </section>
   );
 }
 
-function SectionFlow({ ids, categories, lang }: { ids: string[]; categories: Record<string, Category>; lang: Lang }) {
+function SectionFlow({
+  ids,
+  categories,
+  variants,
+  lang,
+}: {
+  ids: string[];
+  categories: Record<string, Category>;
+  variants: Record<string, string>;
+  lang: Lang;
+}) {
   return (
     <>
-      {ids.map((id) => (
-        <SectionBlock key={id} category={categories[id]} lang={lang} />
-      ))}
+      {ids.map((id) => {
+        const cat = categories[id];
+        return <SectionBlock key={id} category={cat} lang={lang} variant={variants[id] ?? defaultVariant(cat.kind)} />;
+      })}
     </>
   );
+}
+
+interface FooterInfo {
+  enabled: boolean;
+  label: string;
+  pageNumberLabel: string;
+  revision: string;
 }
 
 /** One printed sheet: measures its own content against the fixed A4 box
  *  (see usePageOverflow) and surfaces a warning below it when the CV
  *  won't actually fit on one page. */
-function Page({ className, children, lang }: { className: string; children: ReactNode; lang: Lang }) {
+function Page({
+  className,
+  children,
+  lang,
+  footer,
+}: {
+  className: string;
+  children: ReactNode;
+  lang: Lang;
+  footer: FooterInfo;
+}) {
   const T = t(lang);
   const [ref, overflow] = usePageOverflow<HTMLDivElement>();
 
@@ -86,6 +155,14 @@ function Page({ className, children, lang }: { className: string; children: Reac
     <>
       <div ref={ref} className={className + (overflow.overflowing ? " cv-page--overflow" : "")}>
         {children}
+        {footer.enabled && (
+          <footer className="cv-footer">
+            <span>
+              {footer.label} · {footer.pageNumberLabel}
+            </span>
+            {footer.revision && <span>{footer.revision}</span>}
+          </footer>
+        )}
       </div>
       {overflow.overflowing && <div className="page-overflow-warning">⚠ {T.pageOverflow(overflow.overflowPx)}</div>}
     </>
@@ -98,6 +175,7 @@ export function CvPreview({ lang }: { lang: Lang }) {
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
   const place = useStore((s) => s.place);
+  const variant = useStore((s) => s.variant);
   const header = useStore((s) => s.header);
   const appliedTitle = useStore((s) => s.appliedTitle);
   const design = useStore((s) => s.design);
@@ -124,10 +202,20 @@ export function CvPreview({ lang }: { lang: Lang }) {
 
   const sidebarIds = design.struct === "sidebar" ? cvIds.filter((id) => SIDE_DEFAULT.has(id)) : [];
   const mainIds = design.struct === "sidebar" ? cvIds.filter((id) => !SIDE_DEFAULT.has(id)) : cvIds;
+  const pageClass = `cv-page struct-${design.struct} density-${design.density}`;
 
   return (
     <div className="cv-preview" style={themeStyle} id="cv-print-area">
-      <Page className={`cv-page struct-${design.struct}`} lang={lang}>
+      <Page
+        className={pageClass}
+        lang={lang}
+        footer={{
+          enabled: design.footer.enabled,
+          label: T.footerCvLabel,
+          pageNumberLabel: T.pageLabel(1),
+          revision: design.footer.revision,
+        }}
+      >
         <header className={`cv-header head-${design.headKind}`}>
           <h1>{header.name || "—"}</h1>
           {appliedTitle[lang] && <p className="cv-applied-title">{appliedTitle[lang]}</p>}
@@ -138,23 +226,32 @@ export function CvPreview({ lang }: { lang: Lang }) {
         {design.struct === "sidebar" ? (
           <div className="cv-grid-sidebar">
             <div className="cv-main">
-              <SectionFlow ids={mainIds} categories={categories} lang={lang} />
+              <SectionFlow ids={mainIds} categories={categories} variants={variant} lang={lang} />
             </div>
             <aside className="cv-aside">
-              <SectionFlow ids={sidebarIds} categories={categories} lang={lang} />
+              <SectionFlow ids={sidebarIds} categories={categories} variants={variant} lang={lang} />
             </aside>
           </div>
         ) : (
           <div className="cv-flow">
-            <SectionFlow ids={mainIds} categories={categories} lang={lang} />
+            <SectionFlow ids={mainIds} categories={categories} variants={variant} lang={lang} />
           </div>
         )}
       </Page>
       {apxIds.length > 0 && (
-        <Page className={`cv-page cv-appendix struct-${design.struct}`} lang={lang}>
+        <Page
+          className={`${pageClass} cv-appendix`}
+          lang={lang}
+          footer={{
+            enabled: design.footer.enabled,
+            label: T.footerAppendixLabel,
+            pageNumberLabel: T.pageLabel(2),
+            revision: design.footer.revision,
+          }}
+        >
           <h2>{T.appendix}</h2>
           <div className="cv-flow">
-            <SectionFlow ids={apxIds} categories={categories} lang={lang} />
+            <SectionFlow ids={apxIds} categories={categories} variants={variant} lang={lang} />
           </div>
         </Page>
       )}

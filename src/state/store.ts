@@ -26,6 +26,7 @@ export interface Store extends AppState {
   restoreHiddenCategories(): void;
   toggleCategoryOn(categoryId: string): void;
   setPlacement(categoryId: string, place: Placement): void;
+  setVariant(categoryId: string, variant: string): void;
   moveCategory(categoryId: string, direction: -1 | 1): void;
 
   addItem(categoryId: string): string;
@@ -48,7 +49,9 @@ export interface Store extends AppState {
   setHeaderField(field: "name" | "phone" | "mail", value: string): void;
   setHeaderLocation(lang: Lang, value: string): void;
 
-  setDesign(field: "font" | "scheme" | "headSize" | "struct" | "headKind", value: string): void;
+  setDesign(field: "font" | "scheme" | "headSize" | "struct" | "headKind" | "density", value: string): void;
+  setFooterEnabled(enabled: boolean): void;
+  setFooterRevision(revision: string): void;
 
   parseImport(text: string): ImportParseResult;
   commitImport(plan: Parameters<typeof applyImportPlan>[1]): void;
@@ -170,6 +173,9 @@ export const useStore = create<Store>()(
       setPlacement: (categoryId, place) =>
         set((s) => ({ place: { ...s.place, [categoryId]: place } })),
 
+      setVariant: (categoryId, variant) =>
+        set((s) => ({ variant: { ...s.variant, [categoryId]: variant } })),
+
       moveCategory: (categoryId, direction) =>
         set((s) => {
           const order = s.order.slice();
@@ -290,6 +296,10 @@ export const useStore = create<Store>()(
         set((s) => ({ header: { ...s.header, location: { ...s.header.location, [lang]: value } } })),
 
       setDesign: (field, value) => set((s) => ({ design: { ...s.design, [field]: value } })),
+      setFooterEnabled: (enabled) =>
+        set((s) => ({ design: { ...s.design, footer: { ...s.design.footer, enabled } } })),
+      setFooterRevision: (revision) =>
+        set((s) => ({ design: { ...s.design, footer: { ...s.design.footer, revision } } })),
 
       parseImport: (text) => parseImportPlan(text, new Set(Object.keys(get().categories))),
       commitImport: (plan) => set((s) => applyImportPlan(s, plan)),

@@ -37,23 +37,35 @@ logic.
 
 ## Design tokens
 
-A Design tab lets you pick the CV sheet's typography and layout,
-independent of content — the same set the prototype offered:
+Two independent layers of visual choice, both in the Design tab (page-level)
+and Tailor tab (per-category):
 
+- **Page structure** (4, Design tab): single column, sidebar (a subset of
+  categories move to a tinted side rail that bleeds to the page edges —
+  see `SIDE_DEFAULT` in `src/data/designTokens.ts`), two columns (flowing),
+  marked (an accent rail down the left of every section instead of a rule)
+- **Per-category format** (Tailor tab, next to each category's on/off
+  toggle): "entry" sections choose standard / rows (year in its own
+  column, small letter-spaced label style) / line (title + year only, no
+  description or bullets); "tags" sections choose list (plain bold
+  lines — the default, and the simplest) / chips (rounded pills). Each
+  category picks its own, independent of the page structure — e.g. a
+  sidebar layout with chips for competencies and a plain list for tools.
 - **Font pairings** (6): Industry (Barlow Condensed/Barlow), Technical (IBM
   Plex Sans), Aptos, Roboto, Lato, Public Sans — loaded from Google Fonts
   (Aptos falls back to Source Sans 3, since it's a Microsoft-only face)
 - **Accent color schemes** (5): Steel, Graphite, Marine, Copper, Forest
-- **Header size** (3): small/standard/large
-- **Layout structure** (6): single column, two columns, sidebar (core
-  competencies/languages/courses/certifications/interests move to a side
-  rail), marked list (accent rail per section), rows (year in its own
-  column), compact (tighter spacing)
-- **Header alignment** (3): left, centered, low inline line
+- **Header size** (3) and **header alignment** (3): left / centered / a
+  low inline line
+- **Density** (2): standard, or compact (tighter spacing/type)
+- **Footer** (optional, off by default): a page label + editable revision
+  stamp (e.g. "REV 2026-09") along the bottom of every page, styled like
+  a technical drawing's revision block
 
-See `src/data/designTokens.ts` for the token values and
+See `src/data/designTokens.ts` for the token values, `AppState.variant`
+(`src/model/types.ts`) for how the per-category format is stored, and
 `src/components/CvPreview.tsx` / the `.cv-*` rules in `src/App.css` for
-how they're applied.
+how it's all applied.
 
 ## Print / PDF export
 
@@ -83,8 +95,8 @@ banner suggesting you move a section to the appendix or switch to the
   above
 - ✅ Print/PDF export with a real print stylesheet, and overflow
   awareness (warns when content exceeds one page instead of clipping)
-- ⬜ Per-category display variants (standard/two-col/row/line cycling per
-  section, independent of the page-level structure) — not yet ported
+- ✅ Per-category display variants (entry: standard/rows/line; tags:
+  list/chips), independent of the page-level structure
 - ⬜ Multi-page appendix (content that overflows the appendix page doesn't
   yet flow onto a second appendix sheet the way the prototype's algorithmic
   chunking did — it just warns)

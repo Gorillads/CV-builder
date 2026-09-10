@@ -1,6 +1,7 @@
 import { useStore } from "../state/store";
 import type { Lang, Placement } from "../model/types";
 import { t } from "../i18n";
+import { defaultVariant, variantsFor } from "../data/designTokens";
 
 export function TailorTab({ lang }: { lang: Lang }) {
   const T = t(lang);
@@ -8,8 +9,10 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
   const place = useStore((s) => s.place);
+  const variant = useStore((s) => s.variant);
   const toggleCategoryOn = useStore((s) => s.toggleCategoryOn);
   const setPlacement = useStore((s) => s.setPlacement);
+  const setVariant = useStore((s) => s.setVariant);
   const moveCategory = useStore((s) => s.moveCategory);
   const appliedTitle = useStore((s) => s.appliedTitle);
   const keywords = useStore((s) => s.keywords);
@@ -41,12 +44,27 @@ export function TailorTab({ lang }: { lang: Lang }) {
       <div className="tailor-list">
         {visible.map((id, i) => {
           const cat = categories[id];
+          const options = variantsFor(cat.kind);
           return (
             <div className="tailor-row" key={id}>
               <label className="in-cv">
                 <input type="checkbox" checked={!!on[id]} onChange={() => toggleCategoryOn(id)} />
                 {cat.title[lang]}
               </label>
+              {options.length > 0 && (
+                <select
+                  className="field placement-select"
+                  value={variant[id] ?? defaultVariant(cat.kind)}
+                  onChange={(e) => setVariant(id, e.target.value)}
+                  title={T.format}
+                >
+                  {options.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name[lang]}
+                    </option>
+                  ))}
+                </select>
+              )}
               <select
                 className="field placement-select"
                 value={place[id] ?? "cv"}
