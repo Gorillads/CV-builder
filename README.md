@@ -28,12 +28,48 @@ its own README for the full functional spec this app implements).
 ## CSV round-trip
 
 Export produces one semicolon-delimited CSV, UTF-8 with a BOM (opens
-correctly in Excel with Danish/English text). **Import replaces the whole
-library**, not a merge: every category the file mentions is (re)created
-from the file; every category it doesn't mention is removed (built-ins
-hidden and restorable, custom ones deleted). A confirmation dialog shows
-the row/section counts before committing. See `src/csv/` for the ported
-logic.
+correctly in Excel with Danish/English text), structured as an **indented
+outline** rather than one row per element. Each row is a node in a
+hierarchy, named by its "Knude" (node) column and read by its Dansk/
+Engelsk/Årstal-kilde/Beskrivelse/"Med i CV" columns depending on its role:
+
+```
+Titel                courses
+-Tekst               These are the completed courses...
+-Kategori            Bachelor
+--Element            Project Management
+---Aktivitet         Stakeholder interviews
+-Kategori            Master
+--Element            LCA
+---Aktivitet         Carbon emission calculations
+---Aktivitet         Weighting and normalization of emissions
+```
+
+- **Titel** starts a new category. It's matched against existing
+  categories *by title text* (in either language) — re-exporting and
+  re-importing a category unchanged keeps its identity; changing its
+  title in the file creates a new category instead of renaming in place.
+- **Tekst**, directly under a Titel, is that category's intro blurb.
+- **Kategori** is an optional subgroup label (e.g. splitting a "Courses"
+  category into "Bachelor"/"Master") — every Element until the next
+  Kategori or Titel belongs to it. Most categories skip this level
+  entirely; Elements then sit directly under Titel.
+- **Element** is one library item — Dansk/Engelsk carry its heading (or
+  tag text, for `tags`-kind categories), with year/source and description
+  as their own columns; "Med i CV" marks it as selected for the current
+  CV.
+- **Aktivitet**, under an Element, is one candidate bullet; "Med i CV"
+  marks it as one of the picked bullets (absent activities default to
+  all picked, matching in-app behavior).
+
+Leading dashes are cosmetic (they just show nesting depth for readability
+in a spreadsheet) — the importer identifies a row by its Knude keyword
+and by what came before it, so an imperfectly indented hand-edit still
+parses correctly. **Import replaces the whole library**, not a merge:
+every category the file mentions is (re)created from the file; every
+category it doesn't mention is removed (built-ins hidden and restorable,
+custom ones deleted). A confirmation dialog shows the row/category counts
+before committing. See `src/csv/` for the implementation.
 
 ## Design tokens
 
@@ -85,8 +121,9 @@ banner suggesting you move a section to the appendix or switch to the
 
 - ✅ Category + library item data model, Zustand store, localStorage
   persistence
-- ✅ CSV export/import with full-rebuild semantics, category rename via
-  Section Name columns, dedup, new-category-from-unknown-Module-ID
+- ✅ CSV export/import with full-rebuild semantics, an indented outline
+  format with an optional subgroup level, dedup, new-category-from-
+  unrecognised-title
 - ✅ In-app editor (Indhold tab): category cards, element/activity editing,
   hide/delete, add category
 - ✅ Tailor-to-the-job tab: category on/off, reorder, CV vs. appendix
@@ -95,11 +132,12 @@ banner suggesting you move a section to the appendix or switch to the
   above
 - ✅ Print/PDF export with a real print stylesheet, and overflow
   awareness (warns when content exceeds one page instead of clipping)
-- ✅ Per-category display variants (entry: standard/rows/line; tags:
-  list/chips), independent of the page-level structure
-- ⬜ Multi-page appendix (content that overflows the appendix page doesn't
-  yet flow onto a second appendix sheet the way the prototype's algorithmic
-  chunking did — it just warns)
+- ✅ Per-category display variants (entry: standard/rows/line/two columns;
+  tags: list/chips/inline), independent of the page-level structure
+- ✅ Multi-page appendix: content that overflows one appendix page flows
+  onto as many further sheets as needed
+- ✅ Optional item subgroups ("Kategori" in the CSV) rendered as
+  subheadings within a category
 
 To bring in real content from the original prototype, open
 `design_handoff_cv_csv_editor/CV Skabelon.dc.html` in a browser, use its

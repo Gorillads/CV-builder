@@ -222,6 +222,11 @@ textarea.field {
   gap: 6px;
 }
 
+.item-group {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
 .in-cv {
   display: flex;
   align-items: center;
@@ -588,6 +593,21 @@ textarea.field {
   margin: 0 0 8px;
 }
 
+/* Subheading for an item's optional subgroup ("Kategori" in the CSV),
+ * e.g. splitting a "Courses" section into "Bachelor"/"Master". */
+.cv-subgroup {
+  margin: 10px 0 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cv-accent-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cv-subgroup:first-child {
+  margin-top: 0;
+}
+
 .cv-entry {
   display: flex;
   gap: 14px;
@@ -692,6 +712,10 @@ textarea.field {
 
 .cv-entries-grid .cv-entry {
   margin-bottom: 0;
+}
+
+.cv-entries-grid .cv-subgroup {
+  grid-column: 1 / -1;
 }
 
 /* ---- Entries: "line" variant (title + year, nothing else) ----------- */

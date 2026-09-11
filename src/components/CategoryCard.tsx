@@ -8,6 +8,7 @@ function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: 
   const isTag = useStore((s) => s.categories[categoryId]?.kind === "tags");
   const selected = useStore((s) => (s.selectedItems[categoryId] ?? []).includes(itemId));
   const setItemField = useStore((s) => s.setItemField);
+  const setItemGroup = useStore((s) => s.setItemGroup);
   const toggleItemInCv = useStore((s) => s.toggleItemInCv);
   const removeItemFromCv = useStore((s) => s.removeItemFromCv);
   const deleteItem = useStore((s) => s.deleteItem);
@@ -68,6 +69,13 @@ function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: 
               onChange={(e) => setItemField(itemId, lang, "meta", e.target.value)}
             />
           </div>
+          <input
+            className="field item-group"
+            placeholder={T.groupPlaceholder}
+            title={T.group}
+            value={item.group[lang]}
+            onChange={(e) => setItemGroup(itemId, lang, e.target.value)}
+          />
           <textarea
             className="field"
             placeholder={T.description}

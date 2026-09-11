@@ -40,6 +40,9 @@ export interface Store extends AppState {
   moveItem(categoryId: string, itemId: string, direction: -1 | 1): void;
   toggleItemInCv(categoryId: string, itemId: string): void;
   setItemField(itemId: string, lang: Lang, field: "head" | "meta" | "desc" | "tagValue", value: string): void;
+  /** Optional subgroup label ("Kategori" in the CSV) an item is clustered
+   *  under within its category; blank clears it back to ungrouped. */
+  setItemGroup(itemId: string, lang: Lang, value: string): void;
 
   addActivity(itemId: string, da: string, en: string): void;
   removeActivity(itemId: string, index: number): void;
@@ -213,6 +216,7 @@ export const useStore = create<Store>()(
           da: blankElementText(),
           en: blankElementText(),
           activities: [],
+          group: { da: "", en: "" },
         };
         set((s) => ({
           items: { ...s.items, [id]: item },
@@ -268,6 +272,13 @@ export const useStore = create<Store>()(
           return { items: { ...s.items, [itemId]: { ...item, [lang]: { ...item[lang], [field]: value } } } };
         }),
 
+      setItemGroup: (itemId, lang, value) =>
+        set((s) => {
+          const item = s.items[itemId];
+          if (!item) return s;
+          return { items: { ...s.items, [itemId]: { ...item, group: { ...item.group, [lang]: value } } } };
+        }),
+
       addActivity: (itemId, da, en) =>
         set((s) => {
           const item = s.items[itemId];
@@ -318,7 +329,7 @@ export const useStore = create<Store>()(
       setFooterRevision: (revision) =>
         set((s) => ({ design: { ...s.design, footer: { ...s.design.footer, revision } } })),
 
-      parseImport: (text) => parseImportPlan(text, new Set(Object.keys(get().categories))),
+      parseImport: (text) => parseImportPlan(text, get().categories),
       commitImport: (plan) => set((s) => applyImportPlan(s, plan)),
       exportCsvText: () => exportCsv(get()),
 

@@ -39,6 +39,11 @@ export interface LibraryItem {
   /** Pool of candidate bullets; which ones are picked for the current CV
    *  is tracked separately per item in AppState.selectedActivities. */
   activities: Activity[];
+  /** Optional subgroup label within the category (the CSV's "Kategori"
+   *  node, e.g. splitting a "Courses" category into "Bachelor"/"Master").
+   *  Items sharing the same label render clustered under one subheading;
+   *  absent/empty means the item isn't part of any subgroup. */
+  group: ByLang<string>;
 }
 
 export interface ElementText {
