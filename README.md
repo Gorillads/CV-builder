@@ -35,10 +35,53 @@ hidden and restorable, custom ones deleted). A confirmation dialog shows
 the row/section counts before committing. See `src/csv/` for the ported
 logic.
 
-## Current state
+## Design tokens
 
-This first pass focused on getting the data model and CSV round-trip
-solid, with a functional (not yet visually polished) editor UI:
+Two independent layers of visual choice, both in the Design tab (page-level)
+and Tailor tab (per-category):
+
+- **Page structure** (4, Design tab): single column, sidebar (a subset of
+  categories move to a tinted side rail that bleeds to the page edges —
+  see `SIDE_DEFAULT` in `src/data/designTokens.ts`), two columns (flowing),
+  marked (an accent rail down the left of every section instead of a rule)
+- **Per-category format** (Tailor tab, next to each category's on/off
+  toggle): "entry" sections choose standard / rows (year in its own
+  column, small letter-spaced label style) / line (title + year only, no
+  description or bullets); "tags" sections choose list (plain bold
+  lines — the default, and the simplest) / chips (rounded pills). Each
+  category picks its own, independent of the page structure — e.g. a
+  sidebar layout with chips for competencies and a plain list for tools.
+- **Font pairings** (6): Industry (Barlow Condensed/Barlow), Technical (IBM
+  Plex Sans), Aptos, Roboto, Lato, Public Sans — loaded from Google Fonts
+  (Aptos falls back to Source Sans 3, since it's a Microsoft-only face)
+- **Accent color schemes** (5): Steel, Graphite, Marine, Copper, Forest
+- **Header size** (3) and **header alignment** (3): left / centered / a
+  low inline line
+- **Density** (2): standard, or compact (tighter spacing/type)
+- **Footer** (optional, off by default): a page label + editable revision
+  stamp (e.g. "REV 2026-09") along the bottom of every page, styled like
+  a technical drawing's revision block
+
+See `src/data/designTokens.ts` for the token values, `AppState.variant`
+(`src/model/types.ts`) for how the per-category format is stored, and
+`src/components/CvPreview.tsx` / the `.cv-*` rules in `src/App.css` for
+how it's all applied.
+
+## Print / PDF export
+
+The "Print / Save as PDF" button opens the browser's print dialog. The CV
+sheet is a fixed A4 box (`#cv-print-area`, see the `@media print` rules in
+`src/App.css`) so what you see in the preview is what prints — one
+`.cv-page` per sheet, editor chrome hidden, colors preserved.
+
+Because the on-screen preview is that same fixed-size A4 box, it can tell
+you when your content doesn't fit: `src/hooks/usePageOverflow.ts` measures
+each page's content against the box and, if it overflows, draws a dashed
+line at the actual page edge (so nothing is silently clipped) plus a
+banner suggesting you move a section to the appendix or switch to the
+"Compact" structure.
+
+## Current state
 
 - ✅ Category + library item data model, Zustand store, localStorage
   persistence
@@ -48,9 +91,15 @@ solid, with a functional (not yet visually polished) editor UI:
   hide/delete, add category
 - ✅ Tailor-to-the-job tab: category on/off, reorder, CV vs. appendix
   placement, applied title + ATS keywords
-- ✅ Plain live CV preview
-- ⬜ Visual design fidelity (fonts, accent color schemes, layout variants,
-  pagination/fit) from the prototype — not yet ported
+- ✅ CV preview styled as an actual sheet, with the design token system
+  above
+- ✅ Print/PDF export with a real print stylesheet, and overflow
+  awareness (warns when content exceeds one page instead of clipping)
+- ✅ Per-category display variants (entry: standard/rows/line; tags:
+  list/chips), independent of the page-level structure
+- ⬜ Multi-page appendix (content that overflows the appendix page doesn't
+  yet flow onto a second appendix sheet the way the prototype's algorithmic
+  chunking did — it just warns)
 
 To bring in real content from the original prototype, open
 `design_handoff_cv_csv_editor/CV Skabelon.dc.html` in a browser, use its

@@ -26,7 +26,10 @@ export interface Store extends AppState {
   restoreHiddenCategories(): void;
   toggleCategoryOn(categoryId: string): void;
   setPlacement(categoryId: string, place: Placement): void;
+  setVariant(categoryId: string, variant: string): void;
   moveCategory(categoryId: string, direction: -1 | 1): void;
+  /** Drag-and-drop reorder: moves draggedId to sit just before targetId. */
+  reorderCategory(draggedId: string, targetId: string): void;
 
   addItem(categoryId: string): string;
   /** Takes the item out of this CV; it stays in the library. */
@@ -47,6 +50,13 @@ export interface Store extends AppState {
   setKeywords(lang: Lang, value: string): void;
   setHeaderField(field: "name" | "phone" | "mail", value: string): void;
   setHeaderLocation(lang: Lang, value: string): void;
+
+  setDesign(
+    field: "font" | "scheme" | "headSize" | "struct" | "headKind" | "density" | "sidebarSide" | "headingSize",
+    value: string,
+  ): void;
+  setFooterEnabled(enabled: boolean): void;
+  setFooterRevision(revision: string): void;
 
   parseImport(text: string): ImportParseResult;
   commitImport(plan: Parameters<typeof applyImportPlan>[1]): void;
@@ -168,6 +178,9 @@ export const useStore = create<Store>()(
       setPlacement: (categoryId, place) =>
         set((s) => ({ place: { ...s.place, [categoryId]: place } })),
 
+      setVariant: (categoryId, variant) =>
+        set((s) => ({ variant: { ...s.variant, [categoryId]: variant } })),
+
       moveCategory: (categoryId, direction) =>
         set((s) => {
           const order = s.order.slice();
@@ -175,6 +188,18 @@ export const useStore = create<Store>()(
           const j = i + direction;
           if (i < 0 || j < 0 || j >= order.length) return s;
           [order[i], order[j]] = [order[j], order[i]];
+          return { order };
+        }),
+
+      reorderCategory: (draggedId, targetId) =>
+        set((s) => {
+          if (draggedId === targetId) return s;
+          const order = s.order.slice();
+          const from = order.indexOf(draggedId);
+          if (from === -1 || order.indexOf(targetId) === -1) return s;
+          order.splice(from, 1);
+          const insertAt = order.indexOf(targetId);
+          order.splice(insertAt, 0, draggedId);
           return { order };
         }),
 
@@ -286,6 +311,12 @@ export const useStore = create<Store>()(
       setHeaderField: (field, value) => set((s) => ({ header: { ...s.header, [field]: value } })),
       setHeaderLocation: (lang, value) =>
         set((s) => ({ header: { ...s.header, location: { ...s.header.location, [lang]: value } } })),
+
+      setDesign: (field, value) => set((s) => ({ design: { ...s.design, [field]: value } })),
+      setFooterEnabled: (enabled) =>
+        set((s) => ({ design: { ...s.design, footer: { ...s.design.footer, enabled } } })),
+      setFooterRevision: (revision) =>
+        set((s) => ({ design: { ...s.design, footer: { ...s.design.footer, revision } } })),
 
       parseImport: (text) => parseImportPlan(text, new Set(Object.keys(get().categories))),
       commitImport: (plan) => set((s) => applyImportPlan(s, plan)),
