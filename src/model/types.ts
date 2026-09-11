@@ -93,10 +93,14 @@ export interface AppState {
     font: string;
     scheme: string;
     headSize: string;
-    /** Macro page layout — single/two/sidebar/marked. */
+    /** Macro page layout — single/two/sidebar/marked/banded. */
     struct: string;
     headKind: string;
     density: string;
+    /** Which side the sidebar sits on, when struct is "sidebar". */
+    sidebarSide: string;
+    /** Category/section heading (h3) size, independent of headSize. */
+    headingSize: string;
     footer: {
       enabled: boolean;
       revision: string;

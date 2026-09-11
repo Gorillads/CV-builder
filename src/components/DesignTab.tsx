@@ -1,7 +1,7 @@
 import { useStore } from "../state/store";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
-import { FONTS, SCHEMES, HEAD_SIZES, STRUCTS, HEADS, DENSITIES } from "../data/designTokens";
+import { FONTS, SCHEMES, HEAD_SIZES, STRUCTS, HEADS, DENSITIES, SIDEBAR_SIDES, HEADING_SIZES } from "../data/designTokens";
 
 export function DesignTab({ lang }: { lang: Lang }) {
   const T = t(lang);
@@ -86,6 +86,40 @@ export function DesignTab({ lang }: { lang: Lang }) {
               type="button"
               className={"pill" + (design.headKind === h.id ? " active" : "")}
               onClick={() => setDesign("headKind", h.id)}
+            >
+              {h.name[lang]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {design.struct === "sidebar" && (
+        <div className="design-group">
+          <div className="design-group-label">{T.sidebarSide}</div>
+          <div className="design-pills">
+            {SIDEBAR_SIDES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={"pill" + (design.sidebarSide === s.id ? " active" : "")}
+                onClick={() => setDesign("sidebarSide", s.id)}
+              >
+                {s.name[lang]}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="design-group">
+        <div className="design-group-label">{T.headingSize}</div>
+        <div className="design-pills">
+          {HEADING_SIZES.map((h) => (
+            <button
+              key={h.id}
+              type="button"
+              className={"pill" + (design.headingSize === h.id ? " active" : "")}
+              onClick={() => setDesign("headingSize", h.id)}
             >
               {h.name[lang]}
             </button>

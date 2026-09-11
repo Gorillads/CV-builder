@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useStore } from "../state/store";
 import type { Lang, Placement } from "../model/types";
 import { t } from "../i18n";
@@ -14,10 +15,13 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const setPlacement = useStore((s) => s.setPlacement);
   const setVariant = useStore((s) => s.setVariant);
   const moveCategory = useStore((s) => s.moveCategory);
+  const reorderCategory = useStore((s) => s.reorderCategory);
   const appliedTitle = useStore((s) => s.appliedTitle);
   const keywords = useStore((s) => s.keywords);
   const setAppliedTitle = useStore((s) => s.setAppliedTitle);
   const setKeywords = useStore((s) => s.setKeywords);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   const visible = order.filter((id) => categories[id] && !categories[id].isHidden);
 
@@ -46,7 +50,37 @@ export function TailorTab({ lang }: { lang: Lang }) {
           const cat = categories[id];
           const options = variantsFor(cat.kind);
           return (
-            <div className="tailor-row" key={id}>
+            <div
+              className={
+                "tailor-row" +
+                (draggedId === id ? " dragging" : "") +
+                (dragOverId === id && draggedId !== id ? " drag-over" : "")
+              }
+              key={id}
+              draggable
+              onDragStart={(e) => {
+                setDraggedId(id);
+                e.dataTransfer.effectAllowed = "move";
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (dragOverId !== id) setDragOverId(id);
+              }}
+              onDragLeave={() => setDragOverId((cur) => (cur === id ? null : cur))}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (draggedId && draggedId !== id) reorderCategory(draggedId, id);
+                setDraggedId(null);
+                setDragOverId(null);
+              }}
+              onDragEnd={() => {
+                setDraggedId(null);
+                setDragOverId(null);
+              }}
+            >
+              <span className="drag-handle" aria-hidden="true" title={T.dragToReorder}>
+                ⠿
+              </span>
               <label className="in-cv">
                 <input type="checkbox" checked={!!on[id]} onChange={() => toggleCategoryOn(id)} />
                 {cat.title[lang]}

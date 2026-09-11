@@ -28,6 +28,8 @@ export interface Store extends AppState {
   setPlacement(categoryId: string, place: Placement): void;
   setVariant(categoryId: string, variant: string): void;
   moveCategory(categoryId: string, direction: -1 | 1): void;
+  /** Drag-and-drop reorder: moves draggedId to sit just before targetId. */
+  reorderCategory(draggedId: string, targetId: string): void;
 
   addItem(categoryId: string): string;
   /** Takes the item out of this CV; it stays in the library. */
@@ -49,7 +51,10 @@ export interface Store extends AppState {
   setHeaderField(field: "name" | "phone" | "mail", value: string): void;
   setHeaderLocation(lang: Lang, value: string): void;
 
-  setDesign(field: "font" | "scheme" | "headSize" | "struct" | "headKind" | "density", value: string): void;
+  setDesign(
+    field: "font" | "scheme" | "headSize" | "struct" | "headKind" | "density" | "sidebarSide" | "headingSize",
+    value: string,
+  ): void;
   setFooterEnabled(enabled: boolean): void;
   setFooterRevision(revision: string): void;
 
@@ -183,6 +188,18 @@ export const useStore = create<Store>()(
           const j = i + direction;
           if (i < 0 || j < 0 || j >= order.length) return s;
           [order[i], order[j]] = [order[j], order[i]];
+          return { order };
+        }),
+
+      reorderCategory: (draggedId, targetId) =>
+        set((s) => {
+          if (draggedId === targetId) return s;
+          const order = s.order.slice();
+          const from = order.indexOf(draggedId);
+          if (from === -1 || order.indexOf(targetId) === -1) return s;
+          order.splice(from, 1);
+          const insertAt = order.indexOf(targetId);
+          order.splice(insertAt, 0, draggedId);
           return { order };
         }),
 

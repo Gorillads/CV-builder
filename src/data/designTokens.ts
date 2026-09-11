@@ -101,6 +101,7 @@ export const STRUCTS: LayoutStructure[] = [
   { id: "sidebar", name: { da: "Sidebar", en: "Sidebar" } },
   { id: "two", name: { da: "To spalter", en: "Two columns" } },
   { id: "marked", name: { da: "Markeret (accentkant)", en: "Marked (accent rail)" } },
+  { id: "banded", name: { da: "Bånd (farvet headerfelt)", en: "Banded (colored header field)" } },
 ];
 
 export interface HeaderAlignment {
@@ -124,6 +125,30 @@ export const DENSITIES: Density[] = [
   { id: "compact", name: { da: "Kompakt (mere på siden)", en: "Compact (more on the page)" } },
 ];
 
+export interface SidebarSide {
+  id: string;
+  name: ByLang<string>;
+}
+
+export const SIDEBAR_SIDES: SidebarSide[] = [
+  { id: "right", name: { da: "Højre (standard)", en: "Right (default)" } },
+  { id: "left", name: { da: "Venstre", en: "Left" } },
+];
+
+export interface HeadingSize {
+  id: string;
+  name: ByLang<string>;
+  px: number;
+}
+
+/** Font size of a category/section heading (h3) — independent of the
+ *  overall header/name size control. */
+export const HEADING_SIZES: HeadingSize[] = [
+  { id: "small", name: { da: "Lille", en: "Small" }, px: 11 },
+  { id: "standard", name: { da: "Standard", en: "Standard" }, px: 12.5 },
+  { id: "large", name: { da: "Stor", en: "Large" }, px: 14.5 },
+];
+
 export interface Variant {
   id: string;
   name: ByLang<string>;
@@ -135,6 +160,7 @@ export const ENTRY_VARIANTS: Variant[] = [
   { id: "standard", name: { da: "Standard", en: "Standard" } },
   { id: "rows", name: { da: "Rækker (år i egen spalte)", en: "Rows (year in its own column)" } },
   { id: "line", name: { da: "Linje (kun titel + år)", en: "Line (title + year only)" } },
+  { id: "two-col", name: { da: "To spalter (i sektionen)", en: "Two columns (within the section)" } },
 ];
 
 /** Per-category display format for "tags" sections. "list" — a plain
@@ -143,6 +169,7 @@ export const ENTRY_VARIANTS: Variant[] = [
 export const TAG_VARIANTS: Variant[] = [
   { id: "list", name: { da: "Liste (standard)", en: "List (default)" } },
   { id: "chips", name: { da: "Mærker", en: "Chips" } },
+  { id: "inline", name: { da: "Én linje", en: "Inline" } },
 ];
 
 export function defaultVariant(kind: CategoryKind): string {
