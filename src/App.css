@@ -75,6 +75,12 @@
   top: 16px;
 }
 
+.preview-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
 .header-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -274,6 +280,27 @@ textarea.field {
   background: var(--panel);
 }
 
+.tailor-row.dragging {
+  opacity: 0.4;
+}
+
+.tailor-row.drag-over {
+  border-color: var(--accent);
+  box-shadow: 0 -2px 0 0 var(--accent);
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-soft);
+  line-height: 1;
+  font-size: 15px;
+  user-select: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
 .tailor-row .in-cv {
   flex: 1;
 }
@@ -282,84 +309,341 @@ textarea.field {
   width: auto;
 }
 
+.design-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.design-group-label {
+  font-size: 12px;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.design-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.design-card {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.design-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+.design-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch.active {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--panel);
+}
+
+.design-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pill {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-soft);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pill.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
 .cv-preview {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
+/* A4 at 96dpi (210mm × 297mm) — the page is a fixed size so the on-screen
+   preview matches what actually prints, and so overflow past the bottom
+   edge (see usePageOverflow) is meaningful rather than the box just
+   growing to fit whatever content exists. */
 .cv-page {
-  background: var(--panel);
+  background: #f3f2f0;
+  color: #24282e;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 32px;
-  max-width: 720px;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(20, 24, 31, 0.12);
+  padding: 40px 44px;
+  width: 794px;
+  height: 1123px;
+  flex: none;
+  overflow: visible;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--cv-body), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* Direct content block (.cv-flow or .cv-grid-sidebar) fills whatever
+   height the header leaves, so a tinted sidebar (see .cv-aside) reaches
+   all the way to the page's bottom edge instead of stopping at its own
+   shorter content. */
+.cv-page > .cv-flow,
+.cv-page > .cv-grid-sidebar {
+  flex: 1;
+}
+
+.cv-page--overflow {
+  border-bottom: 2px dashed #c23b3b;
+}
+
+/* Off-screen twin of a .cv-page used only to measure section heights for
+   appendix pagination — shares .cv-page's width/padding/typography so the
+   measurement matches the real render, but never paints or affects
+   layout, and grows to fit all sections regardless of the fixed height
+   .cv-page normally uses. */
+.cv-measure-hidden {
+  position: fixed;
+  top: 0;
+  left: -99999px;
+  height: auto;
+  visibility: hidden;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.page-overflow-warning {
+  width: 794px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fdeeee;
+  color: #8a2a2a;
+  border: 1px solid #e6b8b8;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  margin-top: -8px;
+}
+
+.page-space-remaining {
+  width: 794px;
+  color: var(--text-soft);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  padding: 0 4px;
+  margin-top: -8px;
+}
+
+/* ---- Header alignment variants ------------------------------------- */
+
+.cv-header {
+  margin-bottom: 24px;
 }
 
 .cv-header h1 {
   margin: 0 0 4px;
-  font-size: 24px;
+  font-family: var(--cv-head), system-ui, sans-serif;
+  font-size: var(--cv-name-size);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
 }
 
 .cv-applied-title {
-  margin: 0 0 4px;
-  color: var(--accent);
+  margin: 0 0 6px;
+  color: var(--cv-accent);
   font-weight: 600;
+  font-size: 14px;
 }
 
 .cv-contact {
-  margin: 0 0 20px;
-  color: var(--text-soft);
-  font-size: 13px;
+  margin: 0;
+  color: #5c6672;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
 }
 
+/* A double rule under the header — a thick accent bar plus a thin line a
+   few pixels below it — reads as a stronger graphic anchor than a single
+   line would. */
+.cv-header.head-left,
+.cv-header.head-center {
+  position: relative;
+  padding-bottom: 16px;
+  border-bottom: 3px solid var(--cv-accent);
+}
+
+.cv-header.head-left::after,
+.cv-header.head-center::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--cv-line);
+}
+
+.cv-header.head-center {
+  text-align: center;
+}
+
+.cv-header.head-inline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cv-line);
+}
+
+.cv-header.head-inline h1 {
+  margin: 0;
+}
+
+.cv-header.head-inline .cv-applied-title,
+.cv-header.head-inline .cv-contact {
+  margin: 0;
+}
+
+/* ---- Struct "banded": a full-bleed accent-colored field behind the
+   header, replacing the rule-based anchor with a solid block of color.
+   Works with any header alignment (left/center/inline). ---------------- */
+
+.struct-banded .cv-header {
+  background: var(--cv-accent);
+  color: #fff;
+  margin: -40px -44px 24px;
+  padding: 36px 44px 28px;
+  border-bottom: none;
+}
+
+.struct-banded .cv-header::after {
+  display: none;
+}
+
+.struct-banded .cv-header .cv-applied-title {
+  color: #fff;
+}
+
+.struct-banded .cv-header .cv-contact {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* ---- Sections & entries --------------------------------------------- */
+
 .cv-section {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+  break-inside: avoid;
 }
 
 .cv-section h3 {
-  border-bottom: 2px solid var(--accent);
-  padding-bottom: 4px;
-  margin-bottom: 8px;
-  color: var(--accent);
+  border-bottom: 1.5px solid var(--cv-accent);
+  padding-bottom: 3px;
+  margin: 0 0 8px;
+  color: var(--cv-accent);
   text-transform: uppercase;
-  font-size: 14px;
-  letter-spacing: 0.04em;
+  font-family: var(--cv-head), system-ui, sans-serif;
+  font-size: var(--cv-heading-size, 12.5px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
 .cv-blurb {
-  color: var(--text-soft);
-  font-size: 13px;
+  color: #5c6672;
+  font-size: 12.5px;
+  margin: 0 0 8px;
 }
 
 .cv-entry {
-  margin-bottom: 10px;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 9px;
+}
+
+.cv-entry-meta-col {
+  display: none;
+  flex: 0 0 72px;
+  color: var(--cv-accent-soft);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+}
+
+.cv-entry-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .cv-entry-head {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 12px;
-  font-size: 14px;
+}
+
+.cv-entry-head strong {
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .cv-entry-meta {
-  color: var(--text-soft);
-  font-size: 12px;
+  color: var(--cv-accent-soft);
+  font-size: 11.5px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .cv-entry-desc {
   margin: 2px 0;
-  font-size: 13px;
-  color: var(--text-soft);
+  font-size: 12.5px;
+  color: #5c6672;
 }
 
 .cv-entry-acts {
-  margin: 4px 0 0;
-  padding-left: 18px;
-  font-size: 13px;
+  margin: 3px 0 0;
+  padding-left: 16px;
+  font-size: 12.5px;
 }
+
+.cv-entry-acts li {
+  margin-bottom: 1px;
+}
+
+/* ---- Tags: "chips" variant (rounded pills) -------------------------- */
 
 .cv-tags {
   display: flex;
@@ -368,17 +652,174 @@ textarea.field {
 }
 
 .cv-tag {
-  border: 1px solid var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  color: var(--accent);
+  border: 1px solid var(--cv-chip-border);
+  background: var(--cv-chip-bg);
+  color: var(--cv-chip-fg);
   border-radius: 999px;
   padding: 2px 10px;
-  font-size: 12px;
+  font-size: 11.5px;
+}
+
+/* ---- Tags: "list" variant (standard — plain bold lines) ------------- */
+
+.cv-taglist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cv-taglist li {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.cv-tags-inline {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* ---- Entries: "two-col" variant (a 2-column grid within the section,
+   for many short items like courses or certifications) ---------------- */
+
+.cv-entries-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 20px;
+}
+
+.cv-entries-grid .cv-entry {
+  margin-bottom: 0;
+}
+
+/* ---- Entries: "line" variant (title + year, nothing else) ----------- */
+
+.cv-entry--line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.cv-entry-line-head {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.cv-entry-line-meta {
+  color: var(--cv-accent-soft);
+  font-size: 11.5px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Entries: "rows" variant (year in its own column) — and the same
+   small letter-spaced label treatment used by the footer. -------------- */
+
+.cv-entry--rows .cv-entry-meta-col {
+  display: block;
+}
+
+.cv-entry--rows .cv-entry-head .cv-entry-meta {
+  display: none;
+}
+
+.cv-entry-meta-col,
+.cv-footer {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .cv-appendix h2 {
-  margin-top: 0;
-  font-size: 16px;
+  margin: 0 0 18px;
+  font-family: var(--cv-head), system-ui, sans-serif;
+  color: var(--cv-accent-soft);
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+/* ---- Page footer (optional) ------------------------------------------ */
+
+.cv-footer {
+  position: absolute;
+  left: 44px;
+  right: 44px;
+  bottom: 26px;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--cv-line);
+  color: #7c8590;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Page structure (macro layout only) -------------------------------
+   single: one flowing column.
+   two: sections flow into two balanced columns.
+   sidebar: handled in JSX (aside + main), styled here as a grid with a
+     tinted aside that bleeds to the page's own edges.
+   marked: each section gets a left accent rail instead of a rule. */
+
+.struct-two .cv-flow {
+  columns: 2;
+  column-gap: 32px;
+}
+
+.cv-grid-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0;
+}
+
+.cv-aside {
+  background: var(--cv-chip-bg);
+  margin: -40px -44px -40px 0;
+  padding: 40px 44px 40px 20px;
+  border-radius: 0 2px 2px 0;
+}
+
+.cv-grid-sidebar.side-left {
+  grid-template-columns: 200px 1fr;
+}
+
+.cv-grid-sidebar.side-left .cv-aside {
+  order: -1;
+  margin: -40px 0 -40px -44px;
+  padding: 40px 20px 40px 44px;
+  border-radius: 2px 0 0 2px;
+}
+
+.struct-marked .cv-section {
+  border-left: 2.5px solid var(--cv-accent);
+  padding-left: 12px;
+}
+
+.struct-marked .cv-section h3 {
+  border-bottom: none;
+}
+
+/* ---- Density (orthogonal to structure) -------------------------------- */
+
+.density-compact {
+  font-size: 12px;
+}
+
+.density-compact .cv-section {
+  margin-bottom: 12px;
+}
+
+.density-compact .cv-entry,
+.density-compact .cv-entry--line {
+  margin-bottom: 5px;
+}
+
+.density-compact .cv-entry-acts,
+.density-compact .cv-entry-desc {
+  font-size: 11.5px;
 }
 
 @media (max-width: 900px) {
@@ -392,5 +833,69 @@ textarea.field {
   }
   .preview-panel {
     position: static;
+  }
+}
+
+/* ---- Print / Save as PDF -------------------------------------------
+   Only #cv-print-area survives; each .cv-page becomes exactly one sheet
+   (size set via @page) with no screen-only chrome (shadow, warning
+   banner, horizontal scroll wrapper). */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #cv-print-area,
+  #cv-print-area * {
+    visibility: visible;
+  }
+
+  #cv-print-area {
+    /* fixed (not absolute) so this pins to the actual page regardless of
+       any positioned ancestor (.preview-panel is position: sticky, which
+       would otherwise become the containing block). */
+    position: fixed;
+    inset: 0;
+    display: block;
+    overflow: visible;
+    gap: 0;
+  }
+
+  .cv-page {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    width: 210mm;
+    height: 297mm;
+    page-break-after: always;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cv-page--overflow {
+    border-bottom: none;
+  }
+
+  .page-overflow-warning,
+  .page-space-remaining {
+    display: none;
+  }
+
+  #cv-print-area .cv-measure-hidden,
+  #cv-print-area .cv-measure-hidden * {
+    visibility: hidden;
+  }
+
+  .cv-section {
+    break-inside: avoid;
+  }
+
+  .cv-entry {
+    break-inside: avoid;
   }
 }

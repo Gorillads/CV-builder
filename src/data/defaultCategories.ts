@@ -252,6 +252,7 @@ export function createDefaultState(): AppState {
     selectedItems,
     selectedActivities: {},
     place,
+    variant: {},
     appliedTitle: { da: "", en: "" },
     keywords: { da: "", en: "" },
     header: {
@@ -259,6 +260,17 @@ export function createDefaultState(): AppState {
       phone: "",
       mail: "",
       location: { da: "", en: "" },
+    },
+    design: {
+      font: "industry",
+      scheme: "staal",
+      headSize: "standard",
+      struct: "single",
+      headKind: "left",
+      density: "standard",
+      sidebarSide: "right",
+      headingSize: "standard",
+      footer: { enabled: false, revision: "" },
     },
   };
 }
