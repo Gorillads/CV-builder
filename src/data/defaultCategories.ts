@@ -268,6 +268,8 @@ export function createDefaultState(): AppState {
       struct: "single",
       headKind: "left",
       density: "standard",
+      sidebarSide: "right",
+      headingSize: "standard",
       footer: { enabled: false, revision: "" },
     },
   };

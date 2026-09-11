@@ -1,10 +1,19 @@
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { useStore } from "../state/store";
 import { useShallow } from "zustand/react/shallow";
 import type { CSSProperties, ReactNode } from "react";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
-import { FONTS, SCHEMES, HEAD_SIZES, SIDE_DEFAULT, byId, defaultVariant } from "../data/designTokens";
-import { usePageOverflow } from "../hooks/usePageOverflow";
+import { FONTS, SCHEMES, HEAD_SIZES, HEADING_SIZES, SIDE_DEFAULT, byId, defaultVariant } from "../data/designTokens";
+import { usePageOverflow, pxToMm } from "../hooks/usePageOverflow";
+
+/** A4 content box (1123px tall, 40px vertical padding) minus the "Bilag"
+ *  title's own height — the budget available for an appendix page's
+ *  sections. Kept in one place since both the pagination hook and the
+ *  overflow-detecting Page component need the same fixed geometry. */
+const APPENDIX_TITLE_HEIGHT = 46;
+const PAGE_VERTICAL_PADDING = 80;
+const FOOTER_HEIGHT = 46;
 
 function selectedActivityTexts(
   selectedActivities: Record<string, number[]>,
@@ -24,6 +33,9 @@ function TagsBlock({ items, lang, variant }: { items: LibraryItem[]; lang: Lang;
         ))}
       </ul>
     );
+  }
+  if (variant === "inline") {
+    return <p className="cv-tags-inline">{items.map((it) => it[lang].tagValue).filter(Boolean).join(" · ")}</p>;
   }
   return (
     <div className="cv-tags">
@@ -97,6 +109,12 @@ function SectionBlock({ category, lang, variant }: { category: Category; lang: L
       {category.blurb[lang] && <p className="cv-blurb">{category.blurb[lang]}</p>}
       {category.kind === "tags" ? (
         <TagsBlock items={items} lang={lang} variant={variant} />
+      ) : variant === "two-col" ? (
+        <div className="cv-entries-grid">
+          {items.map((it) => (
+            <EntryBlock key={it.id} item={it} lang={lang} variant="standard" selectedActivities={selectedActivities} />
+          ))}
+        </div>
       ) : (
         items.map((it) => (
           <EntryBlock key={it.id} item={it} lang={lang} variant={variant} selectedActivities={selectedActivities} />
@@ -123,6 +141,140 @@ function SectionFlow({
         const cat = categories[id];
         return <SectionBlock key={id} category={cat} lang={lang} variant={variants[id] ?? defaultVariant(cat.kind)} />;
       })}
+    </>
+  );
+}
+
+/** Packs appendix sections into page-sized chunks by actually measuring
+ *  each section's rendered height (in a hidden, full-width copy) and
+ *  greedily filling pages in order — the same section never reorders,
+ *  it just starts a new page when it wouldn't fit. Measured at a fixed
+ *  single-column width regardless of the chosen page structure, so a
+ *  two-column struct's CSS columns only make an already-safe page more
+ *  compact, never overflow it. */
+function sameChunks(a: string[][], b: string[][]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((chunk, i) => chunk.length === b[i].length && chunk.every((id, j) => id === b[i][j]));
+}
+
+function useAppendixChunks(
+  ids: string[],
+  variants: Record<string, string>,
+  lang: Lang,
+  budgetPx: number,
+): { chunks: string[][]; measureRef: RefObject<HTMLDivElement | null> } {
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [chunks, setChunks] = useState<string[][]>(() => (ids.length ? [ids] : []));
+
+  useEffect(() => {
+    const container = measureRef.current;
+    if (!container || ids.length === 0) {
+      setChunks(ids.length ? [ids] : []);
+      return;
+    }
+    const GAP = 18; // approximates .cv-section's own margin-bottom
+
+    const measure = () => {
+      const heights = new Map<string, number>();
+      ids.forEach((id) => {
+        const el = container.querySelector<HTMLElement>(`[data-measure-id="${CSS.escape(id)}"]`);
+        if (el) heights.set(id, el.offsetHeight);
+      });
+      const result: string[][] = [];
+      let current: string[] = [];
+      let used = 0;
+      ids.forEach((id) => {
+        const h = (heights.get(id) ?? 0) + GAP;
+        if (current.length && used + h > budgetPx) {
+          result.push(current);
+          current = [];
+          used = 0;
+        }
+        current.push(id);
+        used += h;
+      });
+      if (current.length) result.push(current);
+      const next = result.length ? result : [ids];
+      setChunks((prev) => (sameChunks(prev, next) ? prev : next));
+    };
+
+    // Content edits (new/removed items, longer text) resize the measured
+    // section elements without changing `ids` itself, so re-chunking has
+    // to react to the actual DOM rather than a React dependency array.
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(container);
+    Array.from(container.children).forEach((child) => ro.observe(child));
+    const mo = new MutationObserver(measure);
+    mo.observe(container, { childList: true, subtree: true, characterData: true });
+
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+    };
+    // Re-attach observers whenever the visible set, its formats, language,
+    // or the page budget (density/footer) changes; the observers alone
+    // handle content edits within an already-observed category.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ids.join("|"), JSON.stringify(variants), lang, budgetPx]);
+
+  return { chunks: chunks.length ? chunks : [[]], measureRef };
+}
+
+function AppendixPages({
+  ids,
+  categories,
+  variants,
+  lang,
+  pageClass,
+  footerEnabled,
+  footerRevision,
+}: {
+  ids: string[];
+  categories: Record<string, Category>;
+  variants: Record<string, string>;
+  lang: Lang;
+  pageClass: string;
+  footerEnabled: boolean;
+  footerRevision: string;
+}) {
+  const T = t(lang);
+  const budget = 1123 - PAGE_VERTICAL_PADDING - APPENDIX_TITLE_HEIGHT - (footerEnabled ? FOOTER_HEIGHT : 0);
+  const { chunks, measureRef } = useAppendixChunks(ids, variants, lang, budget);
+
+  return (
+    <>
+      <div ref={measureRef} className={`${pageClass} cv-measure-hidden`} aria-hidden="true">
+        {ids.map((id) => {
+          const cat = categories[id];
+          return (
+            <div key={id} data-measure-id={id}>
+              <SectionBlock category={cat} lang={lang} variant={variants[id] ?? defaultVariant(cat.kind)} />
+            </div>
+          );
+        })}
+      </div>
+      {chunks.map((chunkIds, i) => (
+        <Page
+          key={i}
+          className={`${pageClass} cv-appendix`}
+          lang={lang}
+          footer={{
+            enabled: footerEnabled,
+            label: T.footerAppendixLabel,
+            pageNumberLabel: T.pageLabel(2 + i),
+            revision: footerRevision,
+          }}
+        >
+          <h2>
+            {T.appendix}
+            {i > 0 ? ` (${i + 1})` : ""}
+          </h2>
+          <div className="cv-flow">
+            <SectionFlow ids={chunkIds} categories={categories} variants={variants} lang={lang} />
+          </div>
+        </Page>
+      ))}
     </>
   );
 }
@@ -164,7 +316,11 @@ function Page({
           </footer>
         )}
       </div>
-      {overflow.overflowing && <div className="page-overflow-warning">⚠ {T.pageOverflow(overflow.overflowPx)}</div>}
+      {overflow.overflowing ? (
+        <div className="page-overflow-warning">⚠ {T.pageOverflow(overflow.overflowPx)}</div>
+      ) : (
+        <div className="page-space-remaining">{T.spaceRemaining(pxToMm(overflow.remainingPx))}</div>
+      )}
     </>
   );
 }
@@ -187,11 +343,13 @@ export function CvPreview({ lang }: { lang: Lang }) {
   const font = byId(FONTS, design.font);
   const scheme = byId(SCHEMES, design.scheme);
   const headSize = byId(HEAD_SIZES, design.headSize);
+  const headingSize = byId(HEADING_SIZES, design.headingSize);
 
   const themeStyle = {
     "--cv-head": font.head,
     "--cv-body": font.body,
     "--cv-name-size": `${headSize.namePx}px`,
+    "--cv-heading-size": `${headingSize.px}px`,
     "--cv-accent": scheme.accent,
     "--cv-accent-soft": scheme.soft,
     "--cv-line": scheme.line,
@@ -203,6 +361,7 @@ export function CvPreview({ lang }: { lang: Lang }) {
   const sidebarIds = design.struct === "sidebar" ? cvIds.filter((id) => SIDE_DEFAULT.has(id)) : [];
   const mainIds = design.struct === "sidebar" ? cvIds.filter((id) => !SIDE_DEFAULT.has(id)) : cvIds;
   const pageClass = `cv-page struct-${design.struct} density-${design.density}`;
+  const sidebarClass = `cv-grid-sidebar side-${design.sidebarSide}`;
 
   return (
     <div className="cv-preview" style={themeStyle} id="cv-print-area">
@@ -224,7 +383,7 @@ export function CvPreview({ lang }: { lang: Lang }) {
           </p>
         </header>
         {design.struct === "sidebar" ? (
-          <div className="cv-grid-sidebar">
+          <div className={sidebarClass}>
             <div className="cv-main">
               <SectionFlow ids={mainIds} categories={categories} variants={variant} lang={lang} />
             </div>
@@ -239,21 +398,15 @@ export function CvPreview({ lang }: { lang: Lang }) {
         )}
       </Page>
       {apxIds.length > 0 && (
-        <Page
-          className={`${pageClass} cv-appendix`}
+        <AppendixPages
+          ids={apxIds}
+          categories={categories}
+          variants={variant}
           lang={lang}
-          footer={{
-            enabled: design.footer.enabled,
-            label: T.footerAppendixLabel,
-            pageNumberLabel: T.pageLabel(2),
-            revision: design.footer.revision,
-          }}
-        >
-          <h2>{T.appendix}</h2>
-          <div className="cv-flow">
-            <SectionFlow ids={apxIds} categories={categories} variants={variant} lang={lang} />
-          </div>
-        </Page>
+          pageClass={pageClass}
+          footerEnabled={design.footer.enabled}
+          footerRevision={design.footer.revision}
+        />
       )}
     </div>
   );

@@ -280,6 +280,27 @@ textarea.field {
   background: var(--panel);
 }
 
+.tailor-row.dragging {
+  opacity: 0.4;
+}
+
+.tailor-row.drag-over {
+  border-color: var(--accent);
+  box-shadow: 0 -2px 0 0 var(--accent);
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-soft);
+  line-height: 1;
+  font-size: 15px;
+  user-select: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
 .tailor-row .in-cv {
   flex: 1;
 }
@@ -408,6 +429,21 @@ textarea.field {
   border-bottom: 2px dashed #c23b3b;
 }
 
+/* Off-screen twin of a .cv-page used only to measure section heights for
+   appendix pagination — shares .cv-page's width/padding/typography so the
+   measurement matches the real render, but never paints or affects
+   layout, and grows to fit all sections regardless of the fixed height
+   .cv-page normally uses. */
+.cv-measure-hidden {
+  position: fixed;
+  top: 0;
+  left: -99999px;
+  height: auto;
+  visibility: hidden;
+  pointer-events: none;
+  box-shadow: none;
+}
+
 .page-overflow-warning {
   width: 794px;
   display: flex;
@@ -419,6 +455,15 @@ textarea.field {
   border-radius: 6px;
   padding: 8px 12px;
   font-size: 12.5px;
+  margin-top: -8px;
+}
+
+.page-space-remaining {
+  width: 794px;
+  color: var(--text-soft);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  padding: 0 4px;
   margin-top: -8px;
 }
 
@@ -494,6 +539,30 @@ textarea.field {
   margin: 0;
 }
 
+/* ---- Struct "banded": a full-bleed accent-colored field behind the
+   header, replacing the rule-based anchor with a solid block of color.
+   Works with any header alignment (left/center/inline). ---------------- */
+
+.struct-banded .cv-header {
+  background: var(--cv-accent);
+  color: #fff;
+  margin: -40px -44px 24px;
+  padding: 36px 44px 28px;
+  border-bottom: none;
+}
+
+.struct-banded .cv-header::after {
+  display: none;
+}
+
+.struct-banded .cv-header .cv-applied-title {
+  color: #fff;
+}
+
+.struct-banded .cv-header .cv-contact {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 /* ---- Sections & entries --------------------------------------------- */
 
 .cv-section {
@@ -508,7 +577,7 @@ textarea.field {
   color: var(--cv-accent);
   text-transform: uppercase;
   font-family: var(--cv-head), system-ui, sans-serif;
-  font-size: 12.5px;
+  font-size: var(--cv-heading-size, 12.5px);
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -607,6 +676,24 @@ textarea.field {
   font-size: 13px;
 }
 
+.cv-tags-inline {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* ---- Entries: "two-col" variant (a 2-column grid within the section,
+   for many short items like courses or certifications) ---------------- */
+
+.cv-entries-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 20px;
+}
+
+.cv-entries-grid .cv-entry {
+  margin-bottom: 0;
+}
+
 /* ---- Entries: "line" variant (title + year, nothing else) ----------- */
 
 .cv-entry--line {
@@ -693,6 +780,17 @@ textarea.field {
   margin: -40px -44px -40px 0;
   padding: 40px 44px 40px 20px;
   border-radius: 0 2px 2px 0;
+}
+
+.cv-grid-sidebar.side-left {
+  grid-template-columns: 200px 1fr;
+}
+
+.cv-grid-sidebar.side-left .cv-aside {
+  order: -1;
+  margin: -40px 0 -40px -44px;
+  padding: 40px 20px 40px 44px;
+  border-radius: 2px 0 0 2px;
 }
 
 .struct-marked .cv-section {
@@ -783,8 +881,14 @@ textarea.field {
     border-bottom: none;
   }
 
-  .page-overflow-warning {
+  .page-overflow-warning,
+  .page-space-remaining {
     display: none;
+  }
+
+  #cv-print-area .cv-measure-hidden,
+  #cv-print-area .cv-measure-hidden * {
+    visibility: hidden;
   }
 
   .cv-section {
