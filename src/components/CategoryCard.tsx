@@ -32,86 +32,58 @@ function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: 
         </button>
       </div>
 
-      {isTag ? (
-        <>
-          <div className="item-card-grid">
+      <div className="item-card-grid">
+        <input
+          className="field"
+          placeholder={isTag ? T.tagValue : T.heading}
+          value={isTag ? text.tagValue : text.head}
+          onChange={(e) => setItemField(itemId, lang, isTag ? "tagValue" : "head", e.target.value)}
+        />
+        <input
+          className="field"
+          placeholder={T.yearSource}
+          value={text.meta}
+          onChange={(e) => setItemField(itemId, lang, "meta", e.target.value)}
+        />
+      </div>
+      <input
+        className="field item-group"
+        placeholder={T.groupPlaceholder}
+        title={T.group}
+        value={item.group[lang]}
+        onChange={(e) => setItemGroup(itemId, lang, e.target.value)}
+      />
+      <textarea
+        className="field"
+        placeholder={T.description}
+        rows={2}
+        value={text.desc}
+        onChange={(e) => setItemField(itemId, lang, "desc", e.target.value)}
+      />
+      <div className="activities">
+        <div className="activities-label">{T.activities}</div>
+        {item.activities.map((a, i) => (
+          <div className="activity-row" key={i}>
             <input
-              className="field"
-              placeholder={T.tagValue}
-              value={text.tagValue}
-              onChange={(e) => setItemField(itemId, lang, "tagValue", e.target.value)}
+              type="checkbox"
+              checked={selectedActivityIds ? selectedActivityIds.includes(i) : true}
+              onChange={() => toggleActivitySelected(itemId, i)}
+              title={T.inCv}
             />
             <input
               className="field"
-              placeholder={T.yearSource}
-              value={text.meta}
-              onChange={(e) => setItemField(itemId, lang, "meta", e.target.value)}
+              value={a[lang]}
+              onChange={(e) => setActivity(itemId, i, lang, e.target.value)}
             />
-          </div>
-          <textarea
-            className="field"
-            placeholder={T.description}
-            rows={2}
-            value={text.desc}
-            onChange={(e) => setItemField(itemId, lang, "desc", e.target.value)}
-          />
-        </>
-      ) : (
-        <>
-          <div className="item-card-grid">
-            <input
-              className="field"
-              placeholder={T.heading}
-              value={text.head}
-              onChange={(e) => setItemField(itemId, lang, "head", e.target.value)}
-            />
-            <input
-              className="field"
-              placeholder={T.yearSource}
-              value={text.meta}
-              onChange={(e) => setItemField(itemId, lang, "meta", e.target.value)}
-            />
-          </div>
-          <input
-            className="field item-group"
-            placeholder={T.groupPlaceholder}
-            title={T.group}
-            value={item.group[lang]}
-            onChange={(e) => setItemGroup(itemId, lang, e.target.value)}
-          />
-          <textarea
-            className="field"
-            placeholder={T.description}
-            rows={2}
-            value={text.desc}
-            onChange={(e) => setItemField(itemId, lang, "desc", e.target.value)}
-          />
-          <div className="activities">
-            <div className="activities-label">{T.activities}</div>
-            {item.activities.map((a, i) => (
-              <div className="activity-row" key={i}>
-                <input
-                  type="checkbox"
-                  checked={selectedActivityIds ? selectedActivityIds.includes(i) : true}
-                  onChange={() => toggleActivitySelected(itemId, i)}
-                  title={T.inCv}
-                />
-                <input
-                  className="field"
-                  value={a[lang]}
-                  onChange={(e) => setActivity(itemId, i, lang, e.target.value)}
-                />
-                <button type="button" className="icon-btn" onClick={() => removeActivity(itemId, i)}>
-                  ×
-                </button>
-              </div>
-            ))}
-            <button type="button" className="link-btn" onClick={() => addActivity(itemId, "", "")}>
-              + {T.addActivity}
+            <button type="button" className="icon-btn" onClick={() => removeActivity(itemId, i)}>
+              ×
             </button>
           </div>
-        </>
-      )}
+        ))}
+        <button type="button" className="link-btn" onClick={() => addActivity(itemId, "", "")}>
+          + {T.addActivity}
+        </button>
+      </div>
     </div>
   );
 }
