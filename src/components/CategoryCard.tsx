@@ -33,12 +33,29 @@ function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: 
       </div>
 
       {isTag ? (
-        <input
-          className="field"
-          placeholder={T.tagValue}
-          value={text.tagValue}
-          onChange={(e) => setItemField(itemId, lang, "tagValue", e.target.value)}
-        />
+        <>
+          <div className="item-card-grid">
+            <input
+              className="field"
+              placeholder={T.tagValue}
+              value={text.tagValue}
+              onChange={(e) => setItemField(itemId, lang, "tagValue", e.target.value)}
+            />
+            <input
+              className="field"
+              placeholder={T.yearSource}
+              value={text.meta}
+              onChange={(e) => setItemField(itemId, lang, "meta", e.target.value)}
+            />
+          </div>
+          <textarea
+            className="field"
+            placeholder={T.description}
+            rows={2}
+            value={text.desc}
+            onChange={(e) => setItemField(itemId, lang, "desc", e.target.value)}
+          />
+        </>
       ) : (
         <>
           <div className="item-card-grid">

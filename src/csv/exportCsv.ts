@@ -66,9 +66,9 @@ export function exportCsv(state: AppState): string {
         node(NODE_ROLE.element, depth),
         isTag ? item.da.tagValue : item.da.head,
         isTag ? item.en.tagValue : item.en.head,
-        isTag ? "" : item.da.meta,
-        isTag ? "" : item.da.desc,
-        isTag ? "" : item.en.desc,
+        item.da.meta,
+        item.da.desc,
+        item.en.desc,
         inUse.has(item.id) ? "ja" : "",
       ]);
 
