@@ -13,10 +13,13 @@ its own README for the full functional spec this app implements).
 
 ## The core model
 
-- **Categories** ("modules") — Profil, Erfaring, Kompetencer, etc. Each has
-  a stable id, a title and blurb per language, and a `kind`: `entry` (dated
-  items with a description and a pool of bullet activities), `tags` (a
-  flat pill list), or `null` (pure prose — just a title + blurb).
+- **Categories** ("modules") — Profil, Erfaring, Kompetencer, etc. Every
+  category has the same shape: a stable id, a title and blurb per
+  language, and zero or more elements. There's no separate "kind" —
+  a category meant to read as a compact pill list (e.g. Kompetencer)
+  isn't structurally different, it just picks a compact display variant
+  (see Design tokens below) on the same element structure everything
+  else uses.
 - **Library items** — the content within a category. Whether an item is
   *in the library* (exists) and whether it's *selected for the current CV*
   are independent, so you can keep a large pool of bullets and pick a
@@ -54,10 +57,9 @@ Titel                courses
   category into "Bachelor"/"Master") — every Element until the next
   Kategori or Titel belongs to it. Most categories skip this level
   entirely; Elements then sit directly under Titel.
-- **Element** is one library item — Dansk/Engelsk carry its heading (or
-  tag text, for `tags`-kind categories), with year/source and description
-  as their own columns; "Med i CV" marks it as selected for the current
-  CV.
+- **Element** is one library item — Dansk/Engelsk carry its heading, with
+  year/source and description as their own columns; "Med i CV" marks it
+  as selected for the current CV.
 - **Aktivitet**, under an Element, is one candidate bullet; "Med i CV"
   marks it as one of the picked bullets (absent activities default to
   all picked, matching in-app behavior).
@@ -81,12 +83,14 @@ and Tailor tab (per-category):
   see `SIDE_DEFAULT` in `src/data/designTokens.ts`), two columns (flowing),
   marked (an accent rail down the left of every section instead of a rule)
 - **Per-category format** (Tailor tab, next to each category's on/off
-  toggle): "entry" sections choose standard / rows (year in its own
-  column, small letter-spaced label style) / line (title + year only, no
-  description or bullets); "tags" sections choose list (plain bold
-  lines — the default, and the simplest) / chips (rounded pills). Each
-  category picks its own, independent of the page structure — e.g. a
-  sidebar layout with chips for competencies and a plain list for tools.
+  toggle): every category picks from the same six variants, independent
+  of the page structure — standard (full name/year/description/bullets —
+  the default), rows (year in its own column), line (title + year only,
+  no description or bullets), two columns (within the section), chips
+  (rounded pills, name only), or inline (one comma-separated line, name
+  only). A category doesn't need to be pill-shaped to use chips, or vice
+  versa — e.g. a sidebar layout with chips for competencies and the full
+  standard format for tools.
 - **Font pairings** (6): Industry (Barlow Condensed/Barlow), Technical (IBM
   Plex Sans), Aptos, Roboto, Lato, Public Sans — loaded from Google Fonts
   (Aptos falls back to Source Sans 3, since it's a Microsoft-only face)
@@ -126,16 +130,17 @@ banner suggesting you move a section to the appendix or switch to the
   unrecognised-title
 - ✅ In-app editor (Indhold tab): category cards, element/activity editing,
   hide/delete, add category
-- ✅ Tailor-to-the-job tab: category on/off, reorder, CV vs. appendix
-  placement, applied title + ATS keywords
+- ✅ Tailor-to-the-job tab: category on/off, reorder, per-item CV
+  checklist, applied title + ATS keywords
 - ✅ CV preview styled as an actual sheet, with the design token system
   above
 - ✅ Print/PDF export with a real print stylesheet, and overflow
   awareness (warns when content exceeds one page instead of clipping)
-- ✅ Per-category display variants (entry: standard/rows/line/two columns;
-  tags: list/chips/inline), independent of the page-level structure
-- ✅ Multi-page appendix: content that overflows one appendix page flows
-  onto as many further sheets as needed
+- ✅ Per-category display variants (standard/rows/line/two columns/chips/
+  inline), independent of the page-level structure and available to
+  every category alike
+- ✅ Automatic pagination: whatever doesn't fit on the first page flows
+  onto as many further "Bilag" pages as needed — no manual placement
 - ✅ Optional item subgroups ("Kategori" in the CSV) rendered as
   subheadings within a category
 

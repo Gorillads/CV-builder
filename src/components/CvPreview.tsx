@@ -32,23 +32,14 @@ function selectedActivityTexts(
 }
 
 function TagsBlock({ items, lang, variant }: { items: LibraryItem[]; lang: Lang; variant: string }) {
-  if (variant === "list") {
-    return (
-      <ul className="cv-taglist">
-        {items.map((it) => (
-          <li key={it.id}>{it[lang].tagValue}</li>
-        ))}
-      </ul>
-    );
-  }
   if (variant === "inline") {
-    return <p className="cv-tags-inline">{items.map((it) => it[lang].tagValue).filter(Boolean).join(" · ")}</p>;
+    return <p className="cv-tags-inline">{items.map((it) => it[lang].head).filter(Boolean).join(" · ")}</p>;
   }
   return (
     <div className="cv-tags">
       {items.map((it) => (
         <span className="cv-tag" key={it.id}>
-          {it[lang].tagValue}
+          {it[lang].head}
         </span>
       ))}
     </div>
@@ -60,28 +51,25 @@ function EntryBlock({
   lang,
   variant,
   selectedActivities,
-  isTag = false,
 }: {
   item: LibraryItem;
   lang: Lang;
   variant: string;
   selectedActivities: Record<string, number[]>;
-  isTag?: boolean;
 }) {
   const text = item[lang];
-  const name = isTag ? text.tagValue : text.head;
 
   if (variant === "line") {
     return (
       <div className="cv-entry cv-entry--line">
-        <span className="cv-entry-line-head">{name}</span>
+        <span className="cv-entry-line-head">{text.head}</span>
         {text.meta && <span className="cv-entry-line-meta">{text.meta}</span>}
       </div>
     );
   }
 
   const acts = selectedActivityTexts(selectedActivities, item, lang);
-  const showHead = name || (variant !== "rows" && text.meta);
+  const showHead = text.head || (variant !== "rows" && text.meta);
 
   return (
     <div className={"cv-entry" + (variant === "rows" ? " cv-entry--rows" : "")}>
@@ -89,7 +77,7 @@ function EntryBlock({
       <div className="cv-entry-body">
         {showHead && (
           <div className="cv-entry-head">
-            <strong>{name}</strong>
+            <strong>{text.head}</strong>
             {variant !== "rows" && text.meta && <span className="cv-entry-meta">{text.meta}</span>}
           </div>
         )}
@@ -118,13 +106,11 @@ function EntryList({
   lang,
   variant,
   selectedActivities,
-  isTag = false,
 }: {
   items: LibraryItem[];
   lang: Lang;
   variant: string;
   selectedActivities: Record<string, number[]>;
-  isTag?: boolean;
 }) {
   return (
     <>
@@ -135,7 +121,7 @@ function EntryList({
         return (
           <Fragment key={it.id}>
             {showHeading && <h4 className="cv-subgroup">{group}</h4>}
-            <EntryBlock item={it} lang={lang} variant={variant} selectedActivities={selectedActivities} isTag={isTag} />
+            <EntryBlock item={it} lang={lang} variant={variant} selectedActivities={selectedActivities} />
           </Fragment>
         );
       })}
@@ -153,25 +139,23 @@ function SectionBlock({ category, lang, variant }: { category: Category; lang: L
   const selectedActivities = useStore((s) => s.selectedActivities);
   if (!items.length && !category.blurb[lang]) return null;
 
-  const isTag = category.kind === "tags";
-  // Tags' "list" (Standard) variant renders exactly like an entry — name,
-  // year/source, description and activities — so a competency looks the
-  // same as any other element unless the user deliberately picks a more
-  // compact tag-specific style ("chips"/"inline").
-  const useTagPillRendering = isTag && variant !== "list";
+  // "chips"/"inline" are compact, name-only display choices available to
+  // any category; every other variant renders the full entry shape (name,
+  // year/source, description, activities) — the same for every category.
+  const usePillRendering = variant === "chips" || variant === "inline";
 
   return (
     <section className="cv-section">
       <h3>{category.title[lang]}</h3>
       {category.blurb[lang] && <p className="cv-blurb">{category.blurb[lang]}</p>}
-      {useTagPillRendering ? (
+      {usePillRendering ? (
         <TagsBlock items={items} lang={lang} variant={variant} />
       ) : variant === "two-col" ? (
         <div className="cv-entries-grid">
-          <EntryList items={items} lang={lang} variant="standard" selectedActivities={selectedActivities} isTag={isTag} />
+          <EntryList items={items} lang={lang} variant="standard" selectedActivities={selectedActivities} />
         </div>
       ) : (
-        <EntryList items={items} lang={lang} variant={variant} selectedActivities={selectedActivities} isTag={isTag} />
+        <EntryList items={items} lang={lang} variant={variant} selectedActivities={selectedActivities} />
       )}
     </section>
   );
@@ -192,7 +176,7 @@ function SectionFlow({
     <>
       {ids.map((id) => {
         const cat = categories[id];
-        return <SectionBlock key={id} category={cat} lang={lang} variant={variants[id] ?? defaultVariant(cat.kind)} />;
+        return <SectionBlock key={id} category={cat} lang={lang} variant={variants[id] ?? defaultVariant()} />;
       })}
     </>
   );
@@ -527,7 +511,7 @@ export function CvPreview({ lang }: { lang: Lang }) {
         </div>
         {activeIds.map((id) => (
           <div key={id} data-measure-id={id}>
-            <SectionBlock category={categories[id]} lang={lang} variant={variant[id] ?? defaultVariant(categories[id].kind)} />
+            <SectionBlock category={categories[id]} lang={lang} variant={variant[id] ?? defaultVariant()} />
           </div>
         ))}
       </div>

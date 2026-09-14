@@ -34,13 +34,11 @@ export function exportCsv(state: AppState): string {
   state.order.forEach((key) => {
     const cat = state.categories[key];
     if (!cat || cat.isHidden) return;
-    const isTag = cat.kind === "tags";
 
     rows.push([node(NODE_ROLE.title, 0), cat.title.da, cat.title.en, "", "", "", ""]);
     if (cat.blurb.da || cat.blurb.en) {
       rows.push([node(NODE_ROLE.text, 1), cat.blurb.da, cat.blurb.en, "", "", "", ""]);
     }
-    if (cat.kind === null) return;
 
     const own = Object.values(state.items).filter((it) => it.categoryId === key);
     const selectionOrder = state.selectedItems[key] ?? [];
@@ -64,8 +62,8 @@ export function exportCsv(state: AppState): string {
 
       rows.push([
         node(NODE_ROLE.element, depth),
-        isTag ? item.da.tagValue : item.da.head,
-        isTag ? item.en.tagValue : item.en.head,
+        item.da.head,
+        item.en.head,
         item.da.meta,
         item.da.desc,
         item.en.desc,
