@@ -264,8 +264,6 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
           isReplacedByImport: true,
         };
 
-    const isTag = categories[key].kind === "tags";
-
     // Full rebuild for this category: drop everything it used to hold.
     Object.keys(items).forEach((id) => {
       if (items[id].categoryId === key) {
@@ -293,10 +291,10 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
           desc: parsedItem.desc.en || parsedItem.desc.da,
           tagValue: parsedItem.head.en,
         },
-        activities: isTag ? [] : parsedItem.activities,
+        activities: parsedItem.activities,
         group: parsedItem.group,
       };
-      if (!isTag && parsedItem.selectedActivityIndices != null) {
+      if (parsedItem.selectedActivityIndices != null) {
         selectedActivities[id] = parsedItem.selectedActivityIndices;
       }
       if (parsedItem.inCv) picked.push(id);

@@ -21,7 +21,10 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
   return (
     <div className="item-checklist">
       {own.map((item) => {
-        const label = (isTag ? item[lang].tagValue : item[lang].head) || T.custom;
+        const text = item[lang];
+        const name = isTag ? text.tagValue : text.head;
+        const desc = text.desc.trim();
+        const label = name || (desc.length > 40 ? `${desc.slice(0, 40)}…` : desc) || T.custom;
         return (
           <label className="item-checklist-row" key={item.id}>
             <input

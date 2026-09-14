@@ -72,12 +72,10 @@ export function exportCsv(state: AppState): string {
         inUse.has(item.id) ? "ja" : "",
       ]);
 
-      if (!isTag) {
-        const selected = new Set(selectedActivityIndices(state, item));
-        item.activities.forEach((a, i) => {
-          rows.push([node(NODE_ROLE.activity, depth + 1), a.da, a.en, "", "", "", selected.has(i) ? "ja" : ""]);
-        });
-      }
+      const selected = new Set(selectedActivityIndices(state, item));
+      item.activities.forEach((a, i) => {
+        rows.push([node(NODE_ROLE.activity, depth + 1), a.da, a.en, "", "", "", selected.has(i) ? "ja" : ""]);
+      });
     });
   });
 

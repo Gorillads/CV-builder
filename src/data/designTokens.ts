@@ -167,7 +167,7 @@ export const ENTRY_VARIANTS: Variant[] = [
  *  bold list, one per line — is the standard/simplest; "chips" are the
  *  rounded-pill alternative. */
 export const TAG_VARIANTS: Variant[] = [
-  { id: "list", name: { da: "Liste (standard)", en: "List (default)" } },
+  { id: "list", name: { da: "Standard", en: "Standard" } },
   { id: "chips", name: { da: "Mærker", en: "Chips" } },
   { id: "inline", name: { da: "Én linje", en: "Inline" } },
 ];
