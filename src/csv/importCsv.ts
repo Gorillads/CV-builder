@@ -1,6 +1,6 @@
 import type { Activity, AppState, ByLang, Category, LibraryItem, Placement } from "../model/types";
 import { parseCsv } from "./parseCsv";
-import { META_KEYWORDS_ROW_ID, META_TITLE_ROW_ID } from "./columns";
+import { META_KEYWORDS_ROW_ID, META_TITLE_ROW_ID, NODE_ROLE, parseNodeRole } from "./columns";
 
 function findColumn(head: string[], names: string[]): number {
   for (const n of names) {
@@ -10,20 +10,13 @@ function findColumn(head: string[], names: string[]): number {
   return -1;
 }
 
-function splitActivities(v: string): string[] {
-  return String(v || "")
-    .split("·")
-    .map((x) => x.trim())
-    .filter(Boolean);
-}
-
 function slugify(raw: string): string {
   const slug = String(raw || "")
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9æøå]+/g, "_")
     .replace(/^_+|_+$/g, "");
-  return slug || "mod_" + Date.now().toString(36);
+  return slug || "kat_" + Date.now().toString(36);
 }
 
 interface ParsedItem {
@@ -31,14 +24,14 @@ interface ParsedItem {
   head: ByLang<string>;
   meta: string;
   desc: ByLang<string>;
+  group: ByLang<string>;
   activities: Activity[];
   selectedActivityIndices: number[] | null;
   inCv: boolean;
 }
 
 interface ParsedCategory {
-  rawLabel: string;
-  sectionName: ByLang<string> | null;
+  title: ByLang<string>;
   blurb: ByLang<string> | null;
   items: ParsedItem[];
 }
@@ -54,132 +47,143 @@ export interface ImportPlan {
 
 export type ImportParseResult = { ok: true; plan: ImportPlan } | { ok: false; error: string };
 
-/** Ported from the prototype's `_importCsv` row-grouping pass. Building the
- *  plan is separated from applying it so the caller can show a confirmation
- *  (row count + section count) before committing the destructive rebuild. */
-export function parseImportPlan(text: string, existingCategoryIds: Set<string>): ImportParseResult {
+/** Finds the id of an existing category (built-in or custom, hidden or
+ *  not) whose title matches `raw` in either language, so re-importing a
+ *  category identifies it by what it's called rather than a hidden id —
+ *  the natural thing for a human-edited outline file. Falls back to a
+ *  freshly slugified id for a category the file introduces. */
+function resolveCategoryKey(raw: string, existing: Record<string, Category>): string {
+  const norm = raw.trim().toLowerCase();
+  const match = Object.values(existing).find(
+    (cat) => cat.title.da.trim().toLowerCase() === norm || cat.title.en.trim().toLowerCase() === norm,
+  );
+  return match ? match.id : slugify(raw);
+}
+
+/** Row-by-row outline parser: walks the Titel → Tekst / Kategori →
+ *  Element → Aktivitet hierarchy (see src/csv/columns.ts) top to bottom,
+ *  tracking which category/subgroup/item is currently "open" rather than
+ *  relying on the dash-count depth, so a hand-edited file with an
+ *  imperfect indent still parses correctly. */
+export function parseImportPlan(text: string, existingCategories: Record<string, Category>): ImportParseResult {
   const rows = parseCsv(text);
 
-  let cKey = -1,
-    cSecDa = -1,
-    cSecEn = -1,
-    cDa = -1,
-    cEn = -1,
-    cMeta = -1,
-    cDDa = -1,
-    cDEn = -1,
-    cADa = -1,
-    cAEn = -1,
-    cSel = -1,
-    cUse = -1;
+  let cNode = -1, cDa = -1, cEn = -1, cMeta = -1, cDDa = -1, cDEn = -1, cUse = -1;
 
   if (rows.length) {
     const head = rows[0].map((v) => String(v).trim().toLowerCase());
-    cKey = findColumn(head, ["module-id", "modul-id", "module id", "modul", "module"]);
-    cSecDa = findColumn(head, ["sektionsnavn (da)", "section name (da)"]);
-    cSecEn = findColumn(head, ["sektionsnavn (en)", "section name (en)"]);
-    cDa = findColumn(head, ["titel (da)", "title (da)"]);
-    cEn = findColumn(head, ["titel (en)", "title (en)"]);
+    cNode = findColumn(head, ["knude", "node"]);
+    cDa = findColumn(head, ["dansk", "danish"]);
+    cEn = findColumn(head, ["engelsk", "english"]);
     cMeta = findColumn(head, ["årstal/kilde", "year/source", "årstal", "meta"]);
     cDDa = findColumn(head, ["beskrivelse (da)", "description (da)"]);
     cDEn = findColumn(head, ["beskrivelse (en)", "description (en)"]);
-    cADa = findColumn(head, ["aktiviteter (da)", "activities (da)"]);
-    cAEn = findColumn(head, ["aktiviteter (en)", "activities (en)"]);
-    cSel = findColumn(head, ["valgte aktiviteter", "selected activities"]);
     cUse = findColumn(head, ["med i cv", "in cv"]);
-    if (cKey < 0 || cDa < 0) {
-      return { ok: false, error: "The CSV is missing a Module-ID or Title (DA) column." };
+    if (cNode < 0 || cDa < 0) {
+      return { ok: false, error: "The CSV is missing a Knude or Dansk column." };
     }
   }
 
   const order: string[] = [];
-  const rawLabel: Record<string, string> = {};
-  const secName: Record<string, ByLang<string>> = {};
-  const groups: Record<string, string[][]> = {};
-  const blurbs: Record<string, ByLang<string>> = {};
+  const categories: Record<string, ParsedCategory> = {};
   let metaTitle: ByLang<string> | null = null;
   let metaKeywords: ByLang<string> | null = null;
 
+  let currentKey: string | null = null;
+  let currentGroup: ByLang<string> | null = null;
+  let currentItem: ParsedItem | null = null;
+  let rowIndex = 0;
+
   rows.slice(1).forEach((r) => {
-    const raw = String(r[cKey] || "").trim();
-    if (!raw) return;
-    if (raw === META_TITLE_ROW_ID) {
+    const rawNode = String(r[cNode] || "").trim();
+    if (!rawNode) return;
+    if (rawNode === META_TITLE_ROW_ID) {
       metaTitle = { da: String(r[cDa] || ""), en: String(cEn >= 0 ? r[cEn] : "") };
       return;
     }
-    if (raw === META_KEYWORDS_ROW_ID) {
+    if (rawNode === META_KEYWORDS_ROW_ID) {
       metaKeywords = { da: String(r[cDa] || ""), en: String(cEn >= 0 ? r[cEn] : "") };
       return;
     }
-    const key = existingCategoryIds.has(raw) ? raw : slugify(raw);
-    if (!rawLabel[key]) rawLabel[key] = raw;
-    const sd = String(cSecDa >= 0 ? r[cSecDa] : "").trim();
-    const se = String(cSecEn >= 0 ? r[cSecEn] : "").trim();
-    if ((sd || se) && !secName[key]) secName[key] = { da: sd, en: se };
-    if (order.indexOf(key) === -1) order.push(key);
 
-    const titleDa = String(r[cDa] || "").trim();
-    const titleEn = String(cEn >= 0 ? r[cEn] : "").trim();
-    if (!titleDa && !titleEn) {
-      blurbs[key] = {
-        da: String(cDDa >= 0 ? r[cDDa] : "").trim(),
-        en: String(cDEn >= 0 ? r[cDEn] : "").trim(),
-      };
+    const role = parseNodeRole(rawNode);
+    if (!role) return;
+
+    const da = String(r[cDa] || "").trim();
+    const en = String(cEn >= 0 ? r[cEn] : "").trim() || da;
+
+    if (role === NODE_ROLE.title) {
+      if (!da && !en) return;
+      const key = resolveCategoryKey(da || en, existingCategories);
+      if (!categories[key]) {
+        categories[key] = { title: { da, en }, blurb: null, items: [] };
+        order.push(key);
+      }
+      currentKey = key;
+      currentGroup = null;
+      currentItem = null;
       return;
     }
-    (groups[key] = groups[key] || []).push(r);
-  });
 
-  const categories: Record<string, ParsedCategory> = {};
-  let rowCount = 0;
-  order.forEach((key) => {
-    const rowsForKey = groups[key] || [];
-    rowCount += rowsForKey.length;
-    const items: ParsedItem[] = [];
-    rowsForKey.forEach((r, i) => {
-      const da = String(r[cDa] || "").trim();
-      const en = String(cEn >= 0 ? r[cEn] : "").trim() || da;
-      if (!da && !en) return;
-      const meta = String(cMeta >= 0 ? r[cMeta] : "").trim();
-      const ad = splitActivities(cADa >= 0 ? r[cADa] : "");
-      const ae = splitActivities(cAEn >= 0 ? r[cAEn] : "");
-      let activities: Activity[] = ad.map((v, j) => ({ da: v, en: ae[j] != null ? ae[j] : v }));
-      if (!activities.length && ae.length) activities = ae.map((v) => ({ da: v, en: v }));
+    if (!currentKey) return; // stray row before any Titel — ignore
 
-      let selectedActivityIndices: number[] | null = null;
-      const selLine = String(cSel >= 0 ? r[cSel] : "").trim();
-      if (selLine) {
-        const want = splitActivities(selLine).map((x) => x.toLowerCase());
-        selectedActivityIndices = activities
-          .map((a, j) => (want.includes(a.da.toLowerCase()) || want.includes(a.en.toLowerCase()) ? j : -1))
-          .filter((j) => j >= 0);
+    if (role === NODE_ROLE.text) {
+      if (currentItem) {
+        currentItem.desc = { da, en };
+      } else {
+        categories[currentKey].blurb = { da, en };
       }
+      return;
+    }
 
-      const use = String(cUse >= 0 ? r[cUse] : "").trim().toLowerCase();
-      const inCv = cUse < 0 || ["ja", "yes", "x", "1", "true"].includes(use);
+    if (role === NODE_ROLE.category) {
+      currentGroup = da || en ? { da, en } : null;
+      currentItem = null;
+      return;
+    }
 
-      items.push({
-        rowIndex: i,
+    if (role === NODE_ROLE.element) {
+      if (!da && !en) return;
+      const item: ParsedItem = {
+        rowIndex: rowIndex++,
         head: { da, en },
-        meta,
+        meta: String(cMeta >= 0 ? r[cMeta] : "").trim(),
         desc: {
           da: String(cDDa >= 0 ? r[cDDa] : "").trim(),
-          en: String(cDEn >= 0 ? r[cDEn] : "").trim() || String(cDDa >= 0 ? r[cDDa] : "").trim(),
+          en: String(cDEn >= 0 ? r[cDEn] : "").trim(),
         },
-        activities,
-        selectedActivityIndices,
-        inCv,
-      });
-    });
-    categories[key] = {
-      rawLabel: rawLabel[key],
-      sectionName: secName[key] ?? null,
-      blurb: blurbs[key] ?? null,
-      items,
-    };
+        group: currentGroup ?? { da: "", en: "" },
+        activities: [],
+        selectedActivityIndices: null,
+        inCv: (() => {
+          const use = String(cUse >= 0 ? r[cUse] : "").trim().toLowerCase();
+          return cUse < 0 || ["ja", "yes", "x", "1", "true"].includes(use);
+        })(),
+      };
+      categories[currentKey].items.push(item);
+      currentItem = item;
+      return;
+    }
+
+    if (role === NODE_ROLE.activity) {
+      if (!currentItem) return;
+      if (!da && !en) return;
+      currentItem.activities.push({ da, en });
+      const use = String(cUse >= 0 ? r[cUse] : "").trim().toLowerCase();
+      const included = cUse < 0 || ["ja", "yes", "x", "1", "true"].includes(use);
+      if (included) {
+        currentItem.selectedActivityIndices ??= [];
+        currentItem.selectedActivityIndices.push(currentItem.activities.length - 1);
+      } else if (currentItem.selectedActivityIndices === null) {
+        currentItem.selectedActivityIndices = [];
+      }
+    }
   });
 
-  rowCount += Object.keys(blurbs).length;
+  const rowCount = Object.values(categories).reduce(
+    (sum, cat) => sum + cat.items.length + (cat.blurb ? 1 : 0),
+    0,
+  );
 
   return {
     ok: true,
@@ -243,26 +247,18 @@ export function applyImportPlan(state: AppState, plan: ImportPlan, defaultPlacem
   plan.order.forEach((key) => {
     const parsed = plan.categories[key];
     const existing = state.categories[key];
-    const label = parsed.sectionName?.da || parsed.rawLabel;
-    const labelEn = parsed.sectionName?.en || label;
 
     categories[key] = existing
       ? {
           ...existing,
           isHidden: false,
           isReplacedByImport: true,
-          title: {
-            da: parsed.sectionName?.da || existing.title.da,
-            en: parsed.sectionName?.en || existing.title.en,
-          },
-          blurb: {
-            da: parsed.blurb?.da ?? "",
-            en: parsed.blurb?.en ?? "",
-          },
+          title: { da: parsed.title.da || existing.title.da, en: parsed.title.en || existing.title.en },
+          blurb: { da: parsed.blurb?.da ?? "", en: parsed.blurb?.en ?? "" },
         }
       : {
           id: key,
-          title: { da: label, en: labelEn },
+          title: parsed.title,
           blurb: { da: parsed.blurb?.da ?? "", en: parsed.blurb?.en ?? "" },
           kind: "entry",
           isCustom: true,
@@ -271,6 +267,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan, defaultPlacem
         };
 
     if (!place[key]) place[key] = defaultPlacement;
+    const isTag = categories[key].kind === "tags";
 
     // Full rebuild for this category: drop everything it used to hold.
     Object.keys(items).forEach((id) => {
@@ -287,11 +284,24 @@ export function applyImportPlan(state: AppState, plan: ImportPlan, defaultPlacem
         id,
         categoryId: key,
         isUserCreated: true,
-        da: { head: parsedItem.head.da, meta: parsedItem.meta, desc: parsedItem.desc.da, tagValue: parsedItem.head.da },
-        en: { head: parsedItem.head.en, meta: parsedItem.meta, desc: parsedItem.desc.en, tagValue: parsedItem.head.en },
-        activities: parsedItem.activities,
+        da: {
+          head: parsedItem.head.da,
+          meta: parsedItem.meta,
+          desc: parsedItem.desc.da,
+          tagValue: parsedItem.head.da,
+        },
+        en: {
+          head: parsedItem.head.en,
+          meta: parsedItem.meta,
+          desc: parsedItem.desc.en || parsedItem.desc.da,
+          tagValue: parsedItem.head.en,
+        },
+        activities: isTag ? [] : parsedItem.activities,
+        group: parsedItem.group,
       };
-      if (parsedItem.selectedActivityIndices != null) selectedActivities[id] = parsedItem.selectedActivityIndices;
+      if (!isTag && parsedItem.selectedActivityIndices != null) {
+        selectedActivities[id] = parsedItem.selectedActivityIndices;
+      }
       if (parsedItem.inCv) picked.push(id);
     });
     selectedItems[key] = picked;

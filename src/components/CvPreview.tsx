@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { Fragment, useEffect, useRef, useState, type RefObject } from "react";
 import { useStore } from "../state/store";
 import { useShallow } from "zustand/react/shallow";
 import type { CSSProperties, ReactNode } from "react";
@@ -93,6 +93,41 @@ function EntryBlock({
   );
 }
 
+function groupLabelOf(item: LibraryItem, lang: Lang): string {
+  return (item.group[lang] || item.group.da || item.group.en || "").trim();
+}
+
+/** Renders entry items in order, inserting a subheading whenever the
+ *  item's group ("Kategori" in the CSV) differs from the previous one —
+ *  ungrouped items (the common case) get no heading at all. */
+function EntryList({
+  items,
+  lang,
+  variant,
+  selectedActivities,
+}: {
+  items: LibraryItem[];
+  lang: Lang;
+  variant: string;
+  selectedActivities: Record<string, number[]>;
+}) {
+  return (
+    <>
+      {items.map((it, i) => {
+        const group = groupLabelOf(it, lang);
+        const prevGroup = i > 0 ? groupLabelOf(items[i - 1], lang) : "";
+        const showHeading = group !== "" && group !== prevGroup;
+        return (
+          <Fragment key={it.id}>
+            {showHeading && <h4 className="cv-subgroup">{group}</h4>}
+            <EntryBlock item={it} lang={lang} variant={variant} selectedActivities={selectedActivities} />
+          </Fragment>
+        );
+      })}
+    </>
+  );
+}
+
 function SectionBlock({ category, lang, variant }: { category: Category; lang: Lang; variant: string }) {
   const items = useStore(
     useShallow((s) => {
@@ -111,14 +146,10 @@ function SectionBlock({ category, lang, variant }: { category: Category; lang: L
         <TagsBlock items={items} lang={lang} variant={variant} />
       ) : variant === "two-col" ? (
         <div className="cv-entries-grid">
-          {items.map((it) => (
-            <EntryBlock key={it.id} item={it} lang={lang} variant="standard" selectedActivities={selectedActivities} />
-          ))}
+          <EntryList items={items} lang={lang} variant="standard" selectedActivities={selectedActivities} />
         </div>
       ) : (
-        items.map((it) => (
-          <EntryBlock key={it.id} item={it} lang={lang} variant={variant} selectedActivities={selectedActivities} />
-        ))
+        <EntryList items={items} lang={lang} variant={variant} selectedActivities={selectedActivities} />
       )}
     </section>
   );

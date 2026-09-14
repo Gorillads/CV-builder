@@ -6,10 +6,8 @@ import { t } from "../i18n";
 function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: string; lang: Lang }) {
   const item = useStore((s) => s.items[itemId]);
   const isTag = useStore((s) => s.categories[categoryId]?.kind === "tags");
-  const selected = useStore((s) => (s.selectedItems[categoryId] ?? []).includes(itemId));
   const setItemField = useStore((s) => s.setItemField);
-  const toggleItemInCv = useStore((s) => s.toggleItemInCv);
-  const removeItemFromCv = useStore((s) => s.removeItemFromCv);
+  const setItemGroup = useStore((s) => s.setItemGroup);
   const deleteItem = useStore((s) => s.deleteItem);
   const addActivity = useStore((s) => s.addActivity);
   const removeActivity = useStore((s) => s.removeActivity);
@@ -28,21 +26,10 @@ function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: 
 
   return (
     <div className="item-card">
-      <div className="item-card-row">
-        <label className="in-cv">
-          <input type="checkbox" checked={selected} onChange={() => toggleItemInCv(categoryId, itemId)} />
-          {T.inCv}
-        </label>
-        <div className="item-card-actions">
-          {selected && (
-            <button type="button" className="link-btn" onClick={() => removeItemFromCv(categoryId, itemId)}>
-              {T.removeFromCv}
-            </button>
-          )}
-          <button type="button" className="link-btn danger" onClick={handleDelete}>
-            {T.deleteItem}
-          </button>
-        </div>
+      <div className="item-card-row item-card-row--end">
+        <button type="button" className="link-btn danger" onClick={handleDelete}>
+          {T.deleteItem}
+        </button>
       </div>
 
       {isTag ? (
@@ -68,6 +55,13 @@ function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: 
               onChange={(e) => setItemField(itemId, lang, "meta", e.target.value)}
             />
           </div>
+          <input
+            className="field item-group"
+            placeholder={T.groupPlaceholder}
+            title={T.group}
+            value={item.group[lang]}
+            onChange={(e) => setItemGroup(itemId, lang, e.target.value)}
+          />
           <textarea
             className="field"
             placeholder={T.description}

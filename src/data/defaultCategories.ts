@@ -237,6 +237,7 @@ export function createDefaultState(): AppState {
           tagValue: it.tagValue?.[1] ?? "",
         },
         activities: (it.activities ?? []).map(([da, en]) => ({ da, en })),
+        group: { da: "", en: "" },
       };
       ids.push(id);
     });

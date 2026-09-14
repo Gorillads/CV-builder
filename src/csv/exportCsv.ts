@@ -1,8 +1,12 @@
-import type { AppState, Lang, LibraryItem } from "../model/types";
-import { CSV_HEADER, META_KEYWORDS_ROW_ID, META_TITLE_ROW_ID } from "./columns";
+import type { AppState, LibraryItem } from "../model/types";
+import { CSV_HEADER, META_KEYWORDS_ROW_ID, META_TITLE_ROW_ID, NODE_ROLE } from "./columns";
 
 function esc(v: string | number | null | undefined): string {
   return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+}
+
+function node(role: string, depth: number): string {
+  return "-".repeat(depth) + role;
 }
 
 function selectedActivityIndices(state: AppState, item: LibraryItem): number[] {
@@ -11,59 +15,18 @@ function selectedActivityIndices(state: AppState, item: LibraryItem): number[] {
   return item.activities.map((_, i) => i);
 }
 
-function activitiesColumn(item: LibraryItem, lang: Lang): string {
-  return item.activities.map((a) => a[lang] || a.da).filter(Boolean).join(" · ");
-}
-
-/** The line as it reads on the CV sheet: only the picked activities, first
- *  one capitalised, the rest lower-case (a sentence fragment). */
-function selectedActivitiesLine(state: AppState, item: LibraryItem, lang: Lang): string {
-  const parts = selectedActivityIndices(state, item)
-    .map((i) => item.activities[i])
-    .filter(Boolean)
-    .map((a) => a[lang] || a.da)
-    .filter(Boolean);
-  if (parts.length) parts[0] = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-  return parts.join(" · ");
-}
-
-/** Ported from the prototype's `_exportCsv`: one semicolon-delimited CSV,
- *  UTF-8 with a BOM so it opens correctly in Excel. One row per element;
- *  a category with a blurb but no elements gets a single blurb-only row;
- *  an empty category with no blurb still gets one row so the CSV keeps
- *  a record of it existing. Two meta rows carry the applied job title and
- *  ATS keywords through the Title (DA)/(EN) columns. */
+/** Ported from the prototype's `_exportCsv`, restructured as an indented
+ *  outline: one semicolon-delimited CSV, UTF-8 with a BOM so it opens
+ *  correctly in Excel. Each row is a node in a
+ *  Titel → Tekst / Kategori → Element → Aktivitet hierarchy — see
+ *  src/csv/columns.ts. Two meta rows carry the applied job title and ATS
+ *  keywords ahead of the category tree. */
 export function exportCsv(state: AppState): string {
   const rows: string[][] = [[...CSV_HEADER]];
+  const blank = (knude: string, da: string, en: string) => rows.push([knude, da, en, "", "", "", ""]);
 
-  rows.push([
-    META_TITLE_ROW_ID,
-    "Ansøgt titel",
-    "Position applied for",
-    state.appliedTitle.da,
-    state.appliedTitle.en,
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
-  rows.push([
-    META_KEYWORDS_ROW_ID,
-    "Nøgleord",
-    "Keywords",
-    state.keywords.da,
-    state.keywords.en,
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
+  blank(META_TITLE_ROW_ID, state.appliedTitle.da, state.appliedTitle.en);
+  blank(META_KEYWORDS_ROW_ID, state.keywords.da, state.keywords.en);
 
   const inUse = new Set<string>();
   Object.values(state.selectedItems).forEach((ids) => ids.forEach((id) => inUse.add(id)));
@@ -71,45 +34,51 @@ export function exportCsv(state: AppState): string {
   state.order.forEach((key) => {
     const cat = state.categories[key];
     if (!cat || cat.isHidden) return;
+    const isTag = cat.kind === "tags";
 
-    const nd = cat.title.da;
-    const ne = cat.title.en;
-    const bd = cat.blurb.da;
-    const be = cat.blurb.en;
-
-    if (bd || be) rows.push([key, nd, ne, "", "", "", bd, be, "", "", "", ""]);
+    rows.push([node(NODE_ROLE.title, 0), cat.title.da, cat.title.en, "", "", "", ""]);
+    if (cat.blurb.da || cat.blurb.en) {
+      rows.push([node(NODE_ROLE.text, 1), cat.blurb.da, cat.blurb.en, "", "", "", ""]);
+    }
+    if (cat.kind === null) return;
 
     const own = Object.values(state.items).filter((it) => it.categoryId === key);
     const selectionOrder = state.selectedItems[key] ?? [];
+    const ordered = own.slice().sort((a, b) => {
+      const ra = selectionOrder.indexOf(a.id);
+      const rb = selectionOrder.indexOf(b.id);
+      return (ra === -1 ? 1e6 : ra) - (rb === -1 ? 1e6 : rb);
+    });
 
-    if (!own.length && !bd && !be) {
-      rows.push([key, nd, ne, "", "", "", "", "", "", "", "", ""]);
-    }
+    let openGroup: string | null = null;
+    ordered.forEach((item) => {
+      const groupDa = item.group.da.trim();
+      const groupKey = groupDa || item.group.en.trim();
+      if (groupKey && groupKey !== openGroup) {
+        rows.push([node(NODE_ROLE.category, 1), item.group.da, item.group.en, "", "", "", ""]);
+        openGroup = groupKey;
+      } else if (!groupKey) {
+        openGroup = null;
+      }
+      const depth = groupKey ? 2 : 1;
 
-    own
-      .slice()
-      .sort((a, b) => {
-        const ra = selectionOrder.indexOf(a.id);
-        const rb = selectionOrder.indexOf(b.id);
-        return (ra === -1 ? 1e6 : ra) - (rb === -1 ? 1e6 : rb);
-      })
-      .forEach((item) => {
-        const isTag = cat.kind === "tags";
-        rows.push([
-          key,
-          nd,
-          ne,
-          isTag ? item.da.tagValue : item.da.head,
-          isTag ? item.en.tagValue : item.en.head,
-          item.da.meta,
-          item.da.desc,
-          item.en.desc,
-          activitiesColumn(item, "da"),
-          activitiesColumn(item, "en"),
-          isTag ? "" : selectedActivitiesLine(state, item, state.lang),
-          inUse.has(item.id) ? "ja" : "",
-        ]);
-      });
+      rows.push([
+        node(NODE_ROLE.element, depth),
+        isTag ? item.da.tagValue : item.da.head,
+        isTag ? item.en.tagValue : item.en.head,
+        isTag ? "" : item.da.meta,
+        isTag ? "" : item.da.desc,
+        isTag ? "" : item.en.desc,
+        inUse.has(item.id) ? "ja" : "",
+      ]);
+
+      if (!isTag) {
+        const selected = new Set(selectedActivityIndices(state, item));
+        item.activities.forEach((a, i) => {
+          rows.push([node(NODE_ROLE.activity, depth + 1), a.da, a.en, "", "", "", selected.has(i) ? "ja" : ""]);
+        });
+      }
+    });
   });
 
   return "\uFEFF" + rows.map((r) => r.map(esc).join(";")).join("\r\n");

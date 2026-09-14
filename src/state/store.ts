@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
 import type { Activity, AppState, Category, Lang, LibraryItem, Placement } from "../model/types";
 import { blankElementText } from "../model/types";
@@ -12,6 +12,36 @@ function newId(prefix: string): string {
   idSeq += 1;
   return `${prefix}_${Date.now().toString(36)}_${idSeq}`;
 }
+
+/** Falls back to an in-memory map when localStorage isn't reachable (a
+ *  sandboxed iframe with storage access blocked can throw just reading
+ *  the `localStorage` property) — otherwise that throw happens during
+ *  the persist middleware's initial hydration, before React ever
+ *  renders, and the app shows a blank page with no visible error. */
+const memoryFallback = new Map<string, string>();
+const safeStorage: StateStorage = {
+  getItem: (name) => {
+    try {
+      return localStorage.getItem(name);
+    } catch {
+      return memoryFallback.get(name) ?? null;
+    }
+  },
+  setItem: (name, value) => {
+    try {
+      localStorage.setItem(name, value);
+    } catch {
+      memoryFallback.set(name, value);
+    }
+  },
+  removeItem: (name) => {
+    try {
+      localStorage.removeItem(name);
+    } catch {
+      memoryFallback.delete(name);
+    }
+  },
+};
 
 export interface Store extends AppState {
   setLang(lang: Lang): void;
@@ -32,14 +62,15 @@ export interface Store extends AppState {
   reorderCategory(draggedId: string, targetId: string): void;
 
   addItem(categoryId: string): string;
-  /** Takes the item out of this CV; it stays in the library. */
-  removeItemFromCv(categoryId: string, itemId: string): void;
   /** Deletes the item from the library outright (and drops it from every
    *  category's selection). */
   deleteItem(itemId: string): void;
   moveItem(categoryId: string, itemId: string, direction: -1 | 1): void;
   toggleItemInCv(categoryId: string, itemId: string): void;
   setItemField(itemId: string, lang: Lang, field: "head" | "meta" | "desc" | "tagValue", value: string): void;
+  /** Optional subgroup label ("Kategori" in the CSV) an item is clustered
+   *  under within its category; blank clears it back to ungrouped. */
+  setItemGroup(itemId: string, lang: Lang, value: string): void;
 
   addActivity(itemId: string, da: string, en: string): void;
   removeActivity(itemId: string, index: number): void;
@@ -213,6 +244,7 @@ export const useStore = create<Store>()(
           da: blankElementText(),
           en: blankElementText(),
           activities: [],
+          group: { da: "", en: "" },
         };
         set((s) => ({
           items: { ...s.items, [id]: item },
@@ -222,14 +254,6 @@ export const useStore = create<Store>()(
         void cat;
         return id;
       },
-
-      removeItemFromCv: (categoryId, itemId) =>
-        set((s) => ({
-          selectedItems: {
-            ...s.selectedItems,
-            [categoryId]: (s.selectedItems[categoryId] ?? []).filter((id) => id !== itemId),
-          },
-        })),
 
       deleteItem: (itemId) =>
         set((s) => {
@@ -266,6 +290,13 @@ export const useStore = create<Store>()(
           const item = s.items[itemId];
           if (!item) return s;
           return { items: { ...s.items, [itemId]: { ...item, [lang]: { ...item[lang], [field]: value } } } };
+        }),
+
+      setItemGroup: (itemId, lang, value) =>
+        set((s) => {
+          const item = s.items[itemId];
+          if (!item) return s;
+          return { items: { ...s.items, [itemId]: { ...item, group: { ...item.group, [lang]: value } } } };
         }),
 
       addActivity: (itemId, da, en) =>
@@ -318,7 +349,7 @@ export const useStore = create<Store>()(
       setFooterRevision: (revision) =>
         set((s) => ({ design: { ...s.design, footer: { ...s.design.footer, revision } } })),
 
-      parseImport: (text) => parseImportPlan(text, new Set(Object.keys(get().categories))),
+      parseImport: (text) => parseImportPlan(text, get().categories),
       commitImport: (plan) => set((s) => applyImportPlan(s, plan)),
       exportCsvText: () => exportCsv(get()),
 
@@ -326,6 +357,7 @@ export const useStore = create<Store>()(
     }),
     {
       name: "cv-builder-state-v1",
+      storage: createJSONStorage(() => safeStorage),
     },
   ),
 );
