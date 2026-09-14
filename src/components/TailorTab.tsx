@@ -8,7 +8,6 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
   const T = t(lang);
   const items = useStore((s) => s.items);
   const selectedIds = useStore((s) => s.selectedItems[categoryId] ?? []);
-  const isTag = useStore((s) => s.categories[categoryId]?.kind === "tags");
   const toggleItemInCv = useStore((s) => s.toggleItemInCv);
 
   // Stable insertion order — unlike the Content tab's list, this one is
@@ -22,9 +21,8 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
     <div className="item-checklist">
       {own.map((item) => {
         const text = item[lang];
-        const name = isTag ? text.tagValue : text.head;
         const desc = text.desc.trim();
-        const label = name || (desc.length > 40 ? `${desc.slice(0, 40)}…` : desc) || T.custom;
+        const label = text.head || (desc.length > 40 ? `${desc.slice(0, 40)}…` : desc) || T.custom;
         return (
           <label className="item-checklist-row" key={item.id}>
             <input
@@ -82,7 +80,7 @@ export function TailorTab({ lang }: { lang: Lang }) {
       <div className="tailor-list">
         {visible.map((id, i) => {
           const cat = categories[id];
-          const options = variantsFor(cat.kind);
+          const options = variantsFor();
           return (
             <div className="tailor-item" key={id}>
               <div
@@ -119,20 +117,18 @@ export function TailorTab({ lang }: { lang: Lang }) {
                   <input type="checkbox" checked={!!on[id]} onChange={() => toggleCategoryOn(id)} />
                   {cat.title[lang]}
                 </label>
-                {options.length > 0 && (
-                  <select
-                    className="field placement-select"
-                    value={variant[id] ?? defaultVariant(cat.kind)}
-                    onChange={(e) => setVariant(id, e.target.value)}
-                    title={T.format}
-                  >
-                    {options.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name[lang]}
-                      </option>
-                    ))}
-                  </select>
-                )}
+                <select
+                  className="field placement-select"
+                  value={variant[id] ?? defaultVariant()}
+                  onChange={(e) => setVariant(id, e.target.value)}
+                  title={T.format}
+                >
+                  {options.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name[lang]}
+                    </option>
+                  ))}
+                </select>
                 <button type="button" className="icon-btn" disabled={i === 0} onClick={() => moveCategory(id, -1)} title={T.moveUp}>
                   ↑
                 </button>
@@ -146,7 +142,7 @@ export function TailorTab({ lang }: { lang: Lang }) {
                   ↓
                 </button>
               </div>
-              {cat.kind !== null && <ItemChecklist categoryId={id} lang={lang} />}
+              <ItemChecklist categoryId={id} lang={lang} />
             </div>
           );
         })}

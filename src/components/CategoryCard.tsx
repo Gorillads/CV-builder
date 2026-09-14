@@ -3,9 +3,8 @@ import { useShallow } from "zustand/react/shallow";
 import type { Category, Lang } from "../model/types";
 import { t } from "../i18n";
 
-function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: string; lang: Lang }) {
+function ItemEditor({ itemId, lang }: { itemId: string; lang: Lang }) {
   const item = useStore((s) => s.items[itemId]);
-  const isTag = useStore((s) => s.categories[categoryId]?.kind === "tags");
   const setItemField = useStore((s) => s.setItemField);
   const setItemGroup = useStore((s) => s.setItemGroup);
   const deleteItem = useStore((s) => s.deleteItem);
@@ -20,8 +19,7 @@ function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: 
   const text = item[lang];
 
   const handleDelete = () => {
-    const name = isTag ? text.tagValue : text.head;
-    if (window.confirm(T.confirmDeleteItem(name || "?"))) deleteItem(itemId);
+    if (window.confirm(T.confirmDeleteItem(text.head || "?"))) deleteItem(itemId);
   };
 
   return (
@@ -35,9 +33,9 @@ function ItemEditor({ categoryId, itemId, lang }: { categoryId: string; itemId: 
       <div className="item-card-grid">
         <input
           className="field"
-          placeholder={isTag ? T.tagValue : T.heading}
-          value={isTag ? text.tagValue : text.head}
-          onChange={(e) => setItemField(itemId, lang, isTag ? "tagValue" : "head", e.target.value)}
+          placeholder={T.heading}
+          value={text.head}
+          onChange={(e) => setItemField(itemId, lang, "head", e.target.value)}
         />
         <input
           className="field"
@@ -126,16 +124,14 @@ export function CategoryCard({ category, lang }: { category: Category; lang: Lan
         value={category.blurb[lang]}
         onChange={(e) => setCategoryBlurb(category.id, lang, e.target.value)}
       />
-      {category.kind !== null && (
-        <div className="item-list">
-          {orderedIds.map((id) => (
-            <ItemEditor key={id} categoryId={category.id} itemId={id} lang={lang} />
-          ))}
-          <button type="button" className="link-btn" onClick={() => addItem(category.id)}>
-            + {T.addElement}
-          </button>
-        </div>
-      )}
+      <div className="item-list">
+        {orderedIds.map((id) => (
+          <ItemEditor key={id} itemId={id} lang={lang} />
+        ))}
+        <button type="button" className="link-btn" onClick={() => addItem(category.id)}>
+          + {T.addElement}
+        </button>
+      </div>
     </div>
   );
 }

@@ -2,19 +2,10 @@ export type Lang = "da" | "en";
 
 export type ByLang<T> = { da: T; en: T };
 
-/** "entry": dated/sourced items with a description and bullet activities.
- *  "tags": a flat pill list (e.g. Kompetencer).
- *  null: pure prose — just a title + blurb, no elements. No built-in
- *  category uses this anymore (every category now stores its content as
- *  elements, for a uniform CSV shape), but it's kept as a category shape
- *  the data model still supports. */
-export type CategoryKind = "entry" | "tags" | null;
-
 export interface Category {
   id: string;
   title: ByLang<string>;
   blurb: ByLang<string>;
-  kind: CategoryKind;
   isCustom: boolean;
   isHidden: boolean;
   /** Set the moment a CSV import touches this category, independent of
@@ -28,9 +19,12 @@ export interface Activity {
   en: string;
 }
 
-/** One element in a category's library: for "entry" categories this is a
- *  dated/sourced item with a description and a pool of bullet candidates;
- *  for "tags" categories only the `tagValue` fields are used. */
+/** One element in a category's library: a dated/sourced item with a
+ *  heading, description and a pool of bullet candidates. Every category
+ *  stores its content this same way, so a category meant for short pill-
+ *  style entries (e.g. Kompetencer) uses the same shape — it just picks a
+ *  compact display variant (see src/data/designTokens) rather than a
+ *  different element structure. */
 export interface LibraryItem {
   id: string;
   categoryId: string;
@@ -48,18 +42,16 @@ export interface LibraryItem {
 }
 
 export interface ElementText {
-  /** Heading text for an "entry" item. */
+  /** Heading/name text for the item. */
   head: string;
   /** Year/source line, language-neutral in practice but stored per language
    *  for parity with the CSV shape. */
   meta: string;
   desc: string;
-  /** Pill text for a "tags" item. */
-  tagValue: string;
 }
 
 export function blankElementText(): ElementText {
-  return { head: "", meta: "", desc: "", tagValue: "" };
+  return { head: "", meta: "", desc: "" };
 }
 
 export interface AppState {
@@ -79,10 +71,9 @@ export interface AppState {
   /** Per item: indices into its activities[] selected for the current CV.
    *  Absent means "all activities selected" (the default). */
   selectedActivities: Record<string, number[]>;
-  /** Per category: how its elements are displayed — an id into
-   *  ENTRY_VARIANTS (kind "entry") or TAG_VARIANTS (kind "tags"), chosen
-   *  independently of the page-level structure. Absent means the kind's
-   *  own standard (simplest) variant. */
+  /** Per category: how its elements are displayed — an id into VARIANTS
+   *  (see src/data/designTokens), chosen independently of the page-level
+   *  structure. Absent means the standard (simplest, full-detail) variant. */
   variant: Record<string, string>;
   appliedTitle: ByLang<string>;
   keywords: ByLang<string>;

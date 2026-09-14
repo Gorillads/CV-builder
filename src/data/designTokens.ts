@@ -1,4 +1,4 @@
-import type { ByLang, CategoryKind } from "../model/types";
+import type { ByLang } from "../model/types";
 
 export interface FontPairing {
   id: string;
@@ -95,7 +95,7 @@ export interface LayoutStructure {
 
 /** Macro page layout only — which columns exist and where. How each
  *  section's own content is laid out is a separate, per-category choice
- *  (see ENTRY_VARIANTS / TAG_VARIANTS below). */
+ *  (see VARIANTS below). */
 export const STRUCTS: LayoutStructure[] = [
   { id: "single", name: { da: "Én spalte (standard)", en: "Single column (default)" } },
   { id: "sidebar", name: { da: "Sidebar", en: "Sidebar" } },
@@ -154,33 +154,26 @@ export interface Variant {
   name: ByLang<string>;
 }
 
-/** Per-category display format for "entry" sections — independent of the
- *  page-level structure. "standard" is always the simplest/default. */
-export const ENTRY_VARIANTS: Variant[] = [
+/** Per-category display format — independent of the page-level structure
+ *  and available to every category alike. "standard" (full name, year/
+ *  source, description and activities) is always the default; "chips"
+ *  and "inline" are compact, name-only alternatives for a category a
+ *  user wants to show as a dense pill list (e.g. Kompetencer). */
+export const VARIANTS: Variant[] = [
   { id: "standard", name: { da: "Standard", en: "Standard" } },
   { id: "rows", name: { da: "Rækker (år i egen spalte)", en: "Rows (year in its own column)" } },
   { id: "line", name: { da: "Linje (kun titel + år)", en: "Line (title + year only)" } },
   { id: "two-col", name: { da: "To spalter (i sektionen)", en: "Two columns (within the section)" } },
-];
-
-/** Per-category display format for "tags" sections. "list" — a plain
- *  bold list, one per line — is the standard/simplest; "chips" are the
- *  rounded-pill alternative. */
-export const TAG_VARIANTS: Variant[] = [
-  { id: "list", name: { da: "Standard", en: "Standard" } },
   { id: "chips", name: { da: "Mærker", en: "Chips" } },
   { id: "inline", name: { da: "Én linje", en: "Inline" } },
 ];
 
-export function defaultVariant(kind: CategoryKind): string {
-  if (kind === "tags") return "list";
+export function defaultVariant(): string {
   return "standard";
 }
 
-export function variantsFor(kind: CategoryKind): Variant[] {
-  if (kind === "tags") return TAG_VARIANTS;
-  if (kind === "entry") return ENTRY_VARIANTS;
-  return [];
+export function variantsFor(): Variant[] {
+  return VARIANTS;
 }
 
 /** Categories that default to the sidebar column when structure="sidebar". */

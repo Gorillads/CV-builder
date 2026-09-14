@@ -13,38 +13,56 @@ function newId(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}_${idSeq}`;
 }
 
-/** Older saved data may still have a category with kind:null (the old
- *  "pure prose, no elements" shape Profil used to use) — converts it into
- *  a kind:"entry" category with its blurb text moved into a single item,
+/** Older saved data may still carry two now-removed concepts: a category
+ *  with kind:null (the old "pure prose, no elements" shape Profil used to
+ *  use) and a category kind:"tags" whose items kept their name in a
+ *  separate `tagValue` field instead of `head`. Every category is now the
+ *  same shape (no kind at all, name always in `head`), so this folds both
+ *  old shapes into the new one — moving a blank-kind category's blurb
+ *  text into a real item, and copying any item's `tagValue` into `head` —
  *  so an existing user's real typed content survives the format change
  *  instead of silently vanishing. */
-function migrateNullKindCategories(state: unknown): unknown {
+function migrateToUnifiedCategoryModel(state: unknown): unknown {
   if (!state || typeof state !== "object") return state;
   const s = state as Record<string, unknown>;
-  const categories = s.categories;
+  const categories = s.categories as Record<string, Record<string, unknown>> | undefined;
   if (!categories || typeof categories !== "object") return state;
 
-  const items = { ...((s.items as Record<string, LibraryItem>) ?? {}) };
+  const items = { ...((s.items as Record<string, Record<string, unknown>>) ?? {}) };
   const selectedItems = { ...((s.selectedItems as Record<string, string[]>) ?? {}) };
-  const nextCategories = { ...(categories as Record<string, Category>) };
+  const nextCategories: Record<string, Record<string, unknown>> = {};
 
-  Object.entries(nextCategories).forEach(([id, cat]) => {
-    if (!cat || (cat as Category).kind !== null) return;
-    const blurb = (cat as Category).blurb ?? { da: "", en: "" };
-    nextCategories[id] = { ...(cat as Category), kind: "entry", blurb: { da: "", en: "" } };
-    if (blurb.da || blurb.en) {
-      const itemId = newId(`migrated_${id}`);
-      items[itemId] = {
-        id: itemId,
-        categoryId: id,
-        isUserCreated: true,
-        da: { head: "", meta: "", desc: blurb.da, tagValue: "" },
-        en: { head: "", meta: "", desc: blurb.en || blurb.da, tagValue: "" },
-        activities: [],
-        group: { da: "", en: "" },
-      };
-      selectedItems[id] = [itemId, ...(selectedItems[id] ?? [])];
+  Object.entries(categories).forEach(([id, cat]) => {
+    if (!cat) return;
+    const { kind, blurb, ...rest } = cat;
+    nextCategories[id] = { ...rest, blurb: kind === null ? { da: "", en: "" } : (blurb ?? { da: "", en: "" }) };
+
+    if (kind === null) {
+      const oldBlurb = (blurb as { da?: string; en?: string } | undefined) ?? {};
+      if (oldBlurb.da || oldBlurb.en) {
+        const itemId = newId(`migrated_${id}`);
+        items[itemId] = {
+          id: itemId,
+          categoryId: id,
+          isUserCreated: true,
+          da: { head: "", meta: "", desc: oldBlurb.da ?? "" },
+          en: { head: "", meta: "", desc: oldBlurb.en || oldBlurb.da || "" },
+          activities: [],
+          group: { da: "", en: "" },
+        };
+        selectedItems[id] = [itemId, ...(selectedItems[id] ?? [])];
+      }
     }
+  });
+
+  Object.keys(items).forEach((id) => {
+    (["da", "en"] as const).forEach((lang) => {
+      const text = items[id][lang] as Record<string, unknown> | undefined;
+      if (!text || !("tagValue" in text)) return;
+      const { tagValue, ...rest } = text;
+      const head = rest.head || (tagValue as string) || "";
+      items[id] = { ...items[id], [lang]: { ...rest, head } };
+    });
   });
 
   return { ...s, categories: nextCategories, items, selectedItems };
@@ -103,7 +121,7 @@ export interface Store extends AppState {
   deleteItem(itemId: string): void;
   moveItem(categoryId: string, itemId: string, direction: -1 | 1): void;
   toggleItemInCv(categoryId: string, itemId: string): void;
-  setItemField(itemId: string, lang: Lang, field: "head" | "meta" | "desc" | "tagValue", value: string): void;
+  setItemField(itemId: string, lang: Lang, field: "head" | "meta" | "desc", value: string): void;
   /** Optional subgroup label ("Kategori" in the CSV) an item is clustered
    *  under within its category; blank clears it back to ungrouped. */
   setItemGroup(itemId: string, lang: Lang, value: string): void;
@@ -179,7 +197,6 @@ export const useStore = create<Store>()(
           id,
           title: { da: value, en: value },
           blurb: { da: "", en: "" },
-          kind: "entry",
           isCustom: true,
           isHidden: false,
           isReplacedByImport: false,
@@ -387,8 +404,8 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 1,
-      migrate: (persisted) => migrateNullKindCategories(persisted) as Store,
+      version: 2,
+      migrate: (persisted) => migrateToUnifiedCategoryModel(persisted) as Store,
     },
   ),
 );

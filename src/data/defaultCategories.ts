@@ -1,7 +1,6 @@
 import type {
   AppState,
   Category,
-  CategoryKind,
   LibraryItem,
 } from "../model/types";
 
@@ -9,30 +8,31 @@ interface CategorySeed {
   id: string;
   title: [string, string];
   blurb?: [string, string];
-  kind: CategoryKind;
   onByDefault: boolean;
   items?: Array<{
     head: [string, string];
     meta?: string;
     desc: [string, string];
     activities?: Array<[string, string]>;
-    tagValue?: [string, string];
   }>;
 }
 
-/* The 16 built-in categories, in their default display order. The "b_"
- * prefix is just a naming convention for lower-priority/detail categories
- * (full project list, all courses, tools, previous roles, publications,
- * references) — it isn't a different category kind. They sit later in
- * the default order, so they're typically the first content to overflow
- * onto automatic "Bilag" pages once the CV exceeds one page. Content here
- * is generic placeholder copy, not a real resume: bring your own content
- * in-app or via CSV import. */
+/* The 16 built-in categories, in their default display order, all sharing
+ * the exact same shape — a title plus zero or more elements (head/meta/
+ * desc/activities). A category like Nøglekompetencer that's meant to read
+ * as a compact pill list isn't a different kind of category; it just uses
+ * a compact display variant (see src/data/designTokens' VARIANTS) on the
+ * same element structure everything else uses. The "b_" prefix is just a
+ * naming convention for lower-priority/detail categories (full project
+ * list, all courses, tools, previous roles, publications, references) —
+ * they sit later in the default order, so they're typically the first
+ * content to overflow onto automatic "Bilag" pages once the CV exceeds one
+ * page. Content here is generic placeholder copy, not a real resume: bring
+ * your own content in-app or via CSV import. */
 const SEEDS: CategorySeed[] = [
   {
     id: "profil",
     title: ["Profil", "Profile"],
-    kind: "entry",
     onByDefault: true,
     items: [
       {
@@ -47,31 +47,27 @@ const SEEDS: CategorySeed[] = [
   {
     id: "kompetencer",
     title: ["Nøglekompetencer", "Core Competencies"],
-    kind: "tags",
     onByDefault: true,
     items: [
       {
-        head: ["Kompetence", "Competency"],
+        head: ["Projektledelse", "Project management"],
         desc: [
           "Kort forklaring af hvordan kompetencen er brugt i praksis.",
           "Short explanation of how the competency has been used in practice.",
         ],
-        tagValue: ["Projektledelse", "Project management"],
       },
       {
-        head: ["Kompetence", "Competency"],
+        head: ["Stakeholder management", "Stakeholder management"],
         desc: [
           "Kort forklaring af, hvornår og hvordan kompetencen er anvendt.",
           "Short explanation of when and how the competency has been applied.",
         ],
-        tagValue: ["Stakeholder management", "Stakeholder management"],
       },
     ],
   },
   {
     id: "erfaring",
     title: ["Erfaring", "Experience"],
-    kind: "entry",
     onByDefault: true,
     items: [
       {
@@ -91,7 +87,6 @@ const SEEDS: CategorySeed[] = [
   {
     id: "uddannelse",
     title: ["Uddannelse", "Education"],
-    kind: "entry",
     onByDefault: true,
     items: [
       {
@@ -107,7 +102,6 @@ const SEEDS: CategorySeed[] = [
   {
     id: "kurser",
     title: ["Udvalgte fag", "Selected Courses"],
-    kind: "entry",
     onByDefault: true,
     items: [
       {
@@ -123,7 +117,6 @@ const SEEDS: CategorySeed[] = [
   {
     id: "sprog",
     title: ["Sprog", "Languages"],
-    kind: "entry",
     onByDefault: true,
     items: [
       {
@@ -150,70 +143,60 @@ const SEEDS: CategorySeed[] = [
   {
     id: "certificeringer",
     title: ["Certificeringer", "Certifications"],
-    kind: "entry",
     onByDefault: false,
     items: [],
   },
   {
     id: "referencer",
     title: ["Referencer", "References"],
-    kind: "entry",
     onByDefault: false,
     items: [],
   },
   {
     id: "frivilligt",
     title: ["Frivilligt arbejde", "Volunteer Work"],
-    kind: "entry",
     onByDefault: false,
     items: [],
   },
   {
     id: "interesser",
     title: ["Interesser", "Interests"],
-    kind: "tags",
     onByDefault: false,
     items: [],
   },
   {
     id: "b_projektliste",
     title: ["Fuld projektliste", "Full Project List"],
-    kind: "entry",
     onByDefault: true,
     items: [],
   },
   {
     id: "b_kurser",
     title: ["Alle fag", "All Courses"],
-    kind: "entry",
     onByDefault: true,
     items: [],
   },
   {
     id: "b_vaerktoejer",
     title: ["Værktøjer og software", "Tools and Software"],
-    kind: "tags",
     onByDefault: true,
     items: [],
   },
   {
     id: "b_publikationer",
     title: ["Publikationer og oplæg", "Publications and Talks"],
-    kind: "entry",
     onByDefault: false,
     items: [],
   },
   {
     id: "b_tidligere",
     title: ["Tidligere ansættelser", "Previous Roles"],
-    kind: "entry",
     onByDefault: true,
     items: [],
   },
   {
     id: "b_referencer",
     title: ["Referencer", "References"],
-    kind: "entry",
     onByDefault: false,
     items: [],
   },
@@ -237,7 +220,6 @@ export function createDefaultState(): AppState {
       id: seed.id,
       title: { da: seed.title[0], en: seed.title[1] },
       blurb: { da: seed.blurb?.[0] ?? "", en: seed.blurb?.[1] ?? "" },
-      kind: seed.kind,
       isCustom: false,
       isHidden: false,
       isReplacedByImport: false,
@@ -256,13 +238,11 @@ export function createDefaultState(): AppState {
           head: it.head[0],
           meta: it.meta ?? "",
           desc: it.desc[0],
-          tagValue: it.tagValue?.[0] ?? "",
         },
         en: {
           head: it.head[1],
           meta: it.meta ?? "",
           desc: it.desc[1],
-          tagValue: it.tagValue?.[1] ?? "",
         },
         activities: (it.activities ?? []).map(([da, en]) => ({ da, en })),
         group: { da: "", en: "" },
