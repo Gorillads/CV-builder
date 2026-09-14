@@ -3,7 +3,6 @@ import type {
   Category,
   CategoryKind,
   LibraryItem,
-  Placement,
 } from "../model/types";
 
 interface CategorySeed {
@@ -11,7 +10,6 @@ interface CategorySeed {
   title: [string, string];
   blurb?: [string, string];
   kind: CategoryKind;
-  place: Placement;
   onByDefault: boolean;
   items?: Array<{
     head: [string, string];
@@ -22,17 +20,19 @@ interface CategorySeed {
   }>;
 }
 
-/* The 16 built-in categories, in their default display order. CV-page
- * categories keep their bare id; appendix-only ones are prefixed "b_" —
- * the prefix just marks "lives in the appendix", it isn't a different
- * category kind. Content here is generic placeholder copy, not a real
- * resume: bring your own content in-app or via CSV import. */
+/* The 16 built-in categories, in their default display order. The "b_"
+ * prefix is just a naming convention for lower-priority/detail categories
+ * (full project list, all courses, tools, previous roles, publications,
+ * references) — it isn't a different category kind. They sit later in
+ * the default order, so they're typically the first content to overflow
+ * onto automatic "Bilag" pages once the CV exceeds one page. Content here
+ * is generic placeholder copy, not a real resume: bring your own content
+ * in-app or via CSV import. */
 const SEEDS: CategorySeed[] = [
   {
     id: "profil",
     title: ["Profil", "Profile"],
     kind: null,
-    place: "cv",
     onByDefault: true,
     blurb: [
       "Kort profiltekst der opsummerer din baggrund og hvad du søger. Redigér denne tekst direkte.",
@@ -43,7 +43,6 @@ const SEEDS: CategorySeed[] = [
     id: "kompetencer",
     title: ["Nøglekompetencer", "Core Competencies"],
     kind: "tags",
-    place: "cv",
     onByDefault: true,
     items: [
       { head: ["Kompetence", "Competency"], desc: ["", ""], tagValue: ["Projektledelse", "Project management"] },
@@ -54,7 +53,6 @@ const SEEDS: CategorySeed[] = [
     id: "erfaring",
     title: ["Erfaring", "Experience"],
     kind: "entry",
-    place: "cv",
     onByDefault: true,
     items: [
       {
@@ -75,7 +73,6 @@ const SEEDS: CategorySeed[] = [
     id: "uddannelse",
     title: ["Uddannelse", "Education"],
     kind: "entry",
-    place: "cv",
     onByDefault: true,
     items: [
       {
@@ -90,7 +87,6 @@ const SEEDS: CategorySeed[] = [
     id: "kurser",
     title: ["Udvalgte fag", "Selected Courses"],
     kind: "entry",
-    place: "cv",
     onByDefault: true,
     items: [
       { head: ["Fagnavn", "Course Name"], meta: "2022", desc: ["", ""], activities: [] },
@@ -100,7 +96,6 @@ const SEEDS: CategorySeed[] = [
     id: "sprog",
     title: ["Sprog", "Languages"],
     kind: "entry",
-    place: "cv",
     onByDefault: true,
     items: [
       { head: ["Dansk", "Danish"], meta: "Modersmål / Native", desc: ["", ""], activities: [] },
@@ -111,7 +106,6 @@ const SEEDS: CategorySeed[] = [
     id: "certificeringer",
     title: ["Certificeringer", "Certifications"],
     kind: "entry",
-    place: "cv",
     onByDefault: false,
     items: [],
   },
@@ -119,7 +113,6 @@ const SEEDS: CategorySeed[] = [
     id: "referencer",
     title: ["Referencer", "References"],
     kind: "entry",
-    place: "cv",
     onByDefault: false,
     items: [],
   },
@@ -127,7 +120,6 @@ const SEEDS: CategorySeed[] = [
     id: "frivilligt",
     title: ["Frivilligt arbejde", "Volunteer Work"],
     kind: "entry",
-    place: "cv",
     onByDefault: false,
     items: [],
   },
@@ -135,7 +127,6 @@ const SEEDS: CategorySeed[] = [
     id: "interesser",
     title: ["Interesser", "Interests"],
     kind: "tags",
-    place: "cv",
     onByDefault: false,
     items: [],
   },
@@ -143,7 +134,6 @@ const SEEDS: CategorySeed[] = [
     id: "b_projektliste",
     title: ["Fuld projektliste", "Full Project List"],
     kind: "entry",
-    place: "apx",
     onByDefault: true,
     items: [],
   },
@@ -151,7 +141,6 @@ const SEEDS: CategorySeed[] = [
     id: "b_kurser",
     title: ["Alle fag", "All Courses"],
     kind: "entry",
-    place: "apx",
     onByDefault: true,
     items: [],
   },
@@ -159,7 +148,6 @@ const SEEDS: CategorySeed[] = [
     id: "b_vaerktoejer",
     title: ["Værktøjer og software", "Tools and Software"],
     kind: "tags",
-    place: "apx",
     onByDefault: true,
     items: [],
   },
@@ -167,7 +155,6 @@ const SEEDS: CategorySeed[] = [
     id: "b_publikationer",
     title: ["Publikationer og oplæg", "Publications and Talks"],
     kind: "entry",
-    place: "apx",
     onByDefault: false,
     items: [],
   },
@@ -175,7 +162,6 @@ const SEEDS: CategorySeed[] = [
     id: "b_tidligere",
     title: ["Tidligere ansættelser", "Previous Roles"],
     kind: "entry",
-    place: "apx",
     onByDefault: true,
     items: [],
   },
@@ -183,7 +169,6 @@ const SEEDS: CategorySeed[] = [
     id: "b_referencer",
     title: ["Referencer", "References"],
     kind: "entry",
-    place: "apx",
     onByDefault: false,
     items: [],
   },
@@ -200,7 +185,6 @@ export function createDefaultState(): AppState {
   const items: Record<string, LibraryItem> = {};
   const selectedItems: Record<string, string[]> = {};
   const on: Record<string, boolean> = {};
-  const place: Record<string, Placement> = {};
   const order: string[] = [];
 
   SEEDS.forEach((seed) => {
@@ -214,7 +198,6 @@ export function createDefaultState(): AppState {
       isReplacedByImport: false,
     };
     on[seed.id] = seed.onByDefault;
-    place[seed.id] = seed.place;
     order.push(seed.id);
 
     const ids: string[] = [];
@@ -252,7 +235,6 @@ export function createDefaultState(): AppState {
     on,
     selectedItems,
     selectedActivities: {},
-    place,
     variant: {},
     appliedTitle: { da: "", en: "" },
     keywords: { da: "", en: "" },

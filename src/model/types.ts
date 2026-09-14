@@ -7,8 +7,6 @@ export type ByLang<T> = { da: T; en: T };
  *  null: pure prose — just a title + blurb, no elements (e.g. Profil). */
 export type CategoryKind = "entry" | "tags" | null;
 
-export type Placement = "cv" | "apx";
-
 export interface Category {
   id: string;
   title: ByLang<string>;
@@ -78,7 +76,6 @@ export interface AppState {
   /** Per item: indices into its activities[] selected for the current CV.
    *  Absent means "all activities selected" (the default). */
   selectedActivities: Record<string, number[]>;
-  place: Record<string, Placement>;
   /** Per category: how its elements are displayed — an id into
    *  ENTRY_VARIANTS (kind "entry") or TAG_VARIANTS (kind "tags"), chosen
    *  independently of the page-level structure. Absent means the kind's
