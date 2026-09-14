@@ -50,8 +50,22 @@ const SEEDS: CategorySeed[] = [
     kind: "tags",
     onByDefault: true,
     items: [
-      { head: ["Kompetence", "Competency"], desc: ["", ""], tagValue: ["Projektledelse", "Project management"] },
-      { head: ["Kompetence", "Competency"], desc: ["", ""], tagValue: ["Stakeholder management", "Stakeholder management"] },
+      {
+        head: ["Kompetence", "Competency"],
+        desc: [
+          "Kort forklaring af hvordan kompetencen er brugt i praksis.",
+          "Short explanation of how the competency has been used in practice.",
+        ],
+        tagValue: ["Projektledelse", "Project management"],
+      },
+      {
+        head: ["Kompetence", "Competency"],
+        desc: [
+          "Kort forklaring af, hvornår og hvordan kompetencen er anvendt.",
+          "Short explanation of when and how the competency has been applied.",
+        ],
+        tagValue: ["Stakeholder management", "Stakeholder management"],
+      },
     ],
   },
   {
@@ -84,7 +98,9 @@ const SEEDS: CategorySeed[] = [
         head: ["Uddannelsestitel, Institution", "Degree Title, Institution"],
         meta: "2019–2023",
         desc: ["Kort beskrivelse af uddannelsen.", "Short description of the degree."],
-        activities: [],
+        activities: [
+          ["Relevant hovedfag eller speciale", "Relevant major or specialization"],
+        ],
       },
     ],
   },
@@ -94,7 +110,14 @@ const SEEDS: CategorySeed[] = [
     kind: "entry",
     onByDefault: true,
     items: [
-      { head: ["Fagnavn", "Course Name"], meta: "2022", desc: ["", ""], activities: [] },
+      {
+        head: ["Fagnavn", "Course Name"],
+        meta: "2022",
+        desc: ["Kort beskrivelse af faget og hvad du lærte.", "Short description of the course and what you learned."],
+        activities: [
+          ["Eksempel på en opgave eller et projekt fra faget", "Example of an assignment or project from the course"],
+        ],
+      },
     ],
   },
   {
@@ -103,8 +126,25 @@ const SEEDS: CategorySeed[] = [
     kind: "entry",
     onByDefault: true,
     items: [
-      { head: ["Dansk", "Danish"], meta: "Modersmål / Native", desc: ["", ""], activities: [] },
-      { head: ["Engelsk", "English"], meta: "Flydende / Fluent", desc: ["", ""], activities: [] },
+      {
+        head: ["Dansk", "Danish"],
+        meta: "Modersmål / Native",
+        desc: ["Kan bruges professionelt i skrift og tale.", "Can be used professionally in writing and speech."],
+        activities: [
+          ["Anvendes dagligt på arbejdspladsen", "Used daily in the workplace"],
+        ],
+      },
+      {
+        head: ["Engelsk", "English"],
+        meta: "Flydende / Fluent",
+        desc: [
+          "Flydende i tale og skrift, anvendt i internationalt samarbejde.",
+          "Fluent in speech and writing, used in international collaboration.",
+        ],
+        activities: [
+          ["Bruges til kommunikation med internationale kollegaer", "Used to communicate with international colleagues"],
+        ],
+      },
     ],
   },
   {
