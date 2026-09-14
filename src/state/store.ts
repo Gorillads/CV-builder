@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
-import type { Activity, AppState, Category, Lang, LibraryItem, Placement } from "../model/types";
+import type { Activity, AppState, Category, Lang, LibraryItem } from "../model/types";
 import { blankElementText } from "../model/types";
 import { createDefaultState } from "../data/defaultCategories";
 import { applyImportPlan, parseImportPlan, type ImportParseResult } from "../csv/importCsv";
@@ -55,7 +55,6 @@ export interface Store extends AppState {
   removeCategory(categoryId: string): void;
   restoreHiddenCategories(): void;
   toggleCategoryOn(categoryId: string): void;
-  setPlacement(categoryId: string, place: Placement): void;
   setVariant(categoryId: string, variant: string): void;
   moveCategory(categoryId: string, direction: -1 | 1): void;
   /** Drag-and-drop reorder: moves draggedId to sit just before targetId. */
@@ -152,7 +151,6 @@ export const useStore = create<Store>()(
           categories: { ...s.categories, [id]: category },
           order: [...s.order, id],
           on: { ...s.on, [id]: true },
-          place: { ...s.place, [id]: "cv" },
           selectedItems: { ...s.selectedItems, [id]: [] },
         }));
       },
@@ -170,15 +168,12 @@ export const useStore = create<Store>()(
             });
             const selectedItems = { ...s.selectedItems };
             delete selectedItems[categoryId];
-            const place = { ...s.place };
-            delete place[categoryId];
             const on = { ...s.on };
             delete on[categoryId];
             return {
               categories,
               items,
               selectedItems,
-              place,
               on,
               order: s.order.filter((id) => id !== categoryId),
             };
@@ -205,9 +200,6 @@ export const useStore = create<Store>()(
 
       toggleCategoryOn: (categoryId) =>
         set((s) => ({ on: { ...s.on, [categoryId]: !s.on[categoryId] } })),
-
-      setPlacement: (categoryId, place) =>
-        set((s) => ({ place: { ...s.place, [categoryId]: place } })),
 
       setVariant: (categoryId, variant) =>
         set((s) => ({ variant: { ...s.variant, [categoryId]: variant } })),

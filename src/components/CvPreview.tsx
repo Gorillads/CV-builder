@@ -7,13 +7,20 @@ import { t } from "../i18n";
 import { FONTS, SCHEMES, HEAD_SIZES, HEADING_SIZES, SIDE_DEFAULT, byId, defaultVariant } from "../data/designTokens";
 import { usePageOverflow, pxToMm } from "../hooks/usePageOverflow";
 
-/** A4 content box (1123px tall, 40px vertical padding) minus the "Bilag"
- *  title's own height — the budget available for an appendix page's
- *  sections. Kept in one place since both the pagination hook and the
- *  overflow-detecting Page component need the same fixed geometry. */
-const APPENDIX_TITLE_HEIGHT = 46;
+/** A4 content box (1123px tall, 40px vertical padding) — the fixed
+ *  geometry both the pagination hook and the overflow-detecting Page
+ *  component measure against. */
+const PAGE_HEIGHT = 1123;
 const PAGE_VERTICAL_PADDING = 80;
 const FOOTER_HEIGHT = 46;
+/** A continuation ("Bilag") page's title costs extra height on top of the
+ *  page's own padding. */
+const APPENDIX_TITLE_HEIGHT = 46;
+/** offsetHeight doesn't include an element's own trailing margin (it
+ *  collapses out of the measured box), so these approximate the CSS
+ *  margin-bottom of `.cv-header` / `.cv-section` for budgeting purposes. */
+const HEADER_GAP = 24;
+const SECTION_GAP = 18;
 
 function selectedActivityTexts(
   selectedActivities: Record<string, number[]>,
@@ -176,62 +183,163 @@ function SectionFlow({
   );
 }
 
-/** Packs appendix sections into page-sized chunks by actually measuring
- *  each section's rendered height (in a hidden, full-width copy) and
- *  greedily filling pages in order — the same section never reorders,
- *  it just starts a new page when it wouldn't fit. Measured at a fixed
- *  single-column width regardless of the chosen page structure, so a
- *  two-column struct's CSS columns only make an already-safe page more
- *  compact, never overflow it. */
-function sameChunks(a: string[][], b: string[][]): boolean {
-  if (a.length !== b.length) return false;
-  return a.every((chunk, i) => chunk.length === b[i].length && chunk.every((id, j) => id === b[i][j]));
+function HeaderBlock({
+  name,
+  appliedTitle,
+  phone,
+  mail,
+  location,
+  headKind,
+}: {
+  name: string;
+  appliedTitle: string;
+  phone: string;
+  mail: string;
+  location: string;
+  headKind: string;
+}) {
+  return (
+    <header className={`cv-header head-${headKind}`}>
+      <h1>{name || "—"}</h1>
+      {appliedTitle && <p className="cv-applied-title">{appliedTitle}</p>}
+      <p className="cv-contact">{[phone, mail, location].filter(Boolean).join(" · ")}</p>
+    </header>
+  );
 }
 
-function useAppendixChunks(
-  ids: string[],
+function sameIds(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((id, i) => id === b[i]);
+}
+
+interface PaginationResult {
+  page1Main: string[];
+  page1Aside: string[];
+  overflowChunks: string[][];
+}
+
+function samePagination(a: PaginationResult, b: PaginationResult): boolean {
+  return (
+    sameIds(a.page1Main, b.page1Main) &&
+    sameIds(a.page1Aside, b.page1Aside) &&
+    a.overflowChunks.length === b.overflowChunks.length &&
+    a.overflowChunks.every((chunk, i) => sameIds(chunk, b.overflowChunks[i]))
+  );
+}
+
+/** Greedily takes as many leading ids as fit within `budget` (always at
+ *  least one, even if it alone overflows) and returns the rest — a
+ *  reading-order-preserving prefix split, not general bin-packing. */
+function splitPrefix(ids: string[], heights: Map<string, number>, budget: number): { fit: string[]; overflow: string[] } {
+  const fit: string[] = [];
+  const overflow: string[] = [];
+  let used = 0;
+  ids.forEach((id) => {
+    const h = (heights.get(id) ?? 0) + SECTION_GAP;
+    if (fit.length === 0 || used + h <= budget) {
+      fit.push(id);
+      used += h;
+    } else {
+      overflow.push(id);
+    }
+  });
+  return { fit, overflow };
+}
+
+/** Packs a list of ids into page-sized chunks by greedily filling pages in
+ *  order, same algorithm as the old fixed appendix packer. */
+function chunkByBudget(ids: string[], heights: Map<string, number>, budget: number): string[][] {
+  const result: string[][] = [];
+  let current: string[] = [];
+  let used = 0;
+  ids.forEach((id) => {
+    const h = (heights.get(id) ?? 0) + SECTION_GAP;
+    if (current.length && used + h > budget) {
+      result.push(current);
+      current = [];
+      used = 0;
+    }
+    current.push(id);
+    used += h;
+  });
+  if (current.length) result.push(current);
+  return result;
+}
+
+/** Automatic pagination: measures the header and every active category's
+ *  real rendered height via a hidden off-screen twin (single fixed column
+ *  width, regardless of struct — a two-column struct's CSS columns just
+ *  make an already-safe page more compact, never overflow it), then
+ *  decides how much fits on page 1 and greedily flows the rest onto
+ *  continuation "Bilag" pages. For the sidebar struct, main and aside are
+ *  simultaneous columns rather than stacked, so each gets its own
+ *  independent prefix-fit against the same page-1 budget; their combined
+ *  overflow is re-sequenced back into `activeIds`' original order before
+ *  being chunked into continuation pages. Returns no continuation pages
+ *  at all when everything already fits on page 1. */
+function usePagination(
+  activeIds: string[],
+  mainIds: string[],
+  asideIds: string[],
+  isSidebar: boolean,
   variants: Record<string, string>,
   lang: Lang,
-  budgetPx: number,
-): { chunks: string[][]; measureRef: RefObject<HTMLDivElement | null> } {
+  footerEnabled: boolean,
+): { result: PaginationResult; measureRef: RefObject<HTMLDivElement | null> } {
   const measureRef = useRef<HTMLDivElement>(null);
-  const [chunks, setChunks] = useState<string[][]>(() => (ids.length ? [ids] : []));
+  const [result, setResult] = useState<PaginationResult>(() => ({
+    page1Main: mainIds,
+    page1Aside: asideIds,
+    overflowChunks: [],
+  }));
 
   useEffect(() => {
     const container = measureRef.current;
-    if (!container || ids.length === 0) {
-      setChunks(ids.length ? [ids] : []);
+    if (!container || activeIds.length === 0) {
+      setResult((prev) => {
+        const next: PaginationResult = { page1Main: mainIds, page1Aside: asideIds, overflowChunks: [] };
+        return samePagination(prev, next) ? prev : next;
+      });
       return;
     }
-    const GAP = 18; // approximates .cv-section's own margin-bottom
+
+    const appendixBudget = PAGE_HEIGHT - PAGE_VERTICAL_PADDING - APPENDIX_TITLE_HEIGHT - (footerEnabled ? FOOTER_HEIGHT : 0);
 
     const measure = () => {
       const heights = new Map<string, number>();
-      ids.forEach((id) => {
+      activeIds.forEach((id) => {
         const el = container.querySelector<HTMLElement>(`[data-measure-id="${CSS.escape(id)}"]`);
         if (el) heights.set(id, el.offsetHeight);
       });
-      const result: string[][] = [];
-      let current: string[] = [];
-      let used = 0;
-      ids.forEach((id) => {
-        const h = (heights.get(id) ?? 0) + GAP;
-        if (current.length && used + h > budgetPx) {
-          result.push(current);
-          current = [];
-          used = 0;
-        }
-        current.push(id);
-        used += h;
-      });
-      if (current.length) result.push(current);
-      const next = result.length ? result : [ids];
-      setChunks((prev) => (sameChunks(prev, next) ? prev : next));
+      const headerEl = container.querySelector<HTMLElement>('[data-measure-id="__header__"]');
+      const headerHeight = (headerEl?.offsetHeight ?? 0) + HEADER_GAP;
+      const page1Budget = PAGE_HEIGHT - PAGE_VERTICAL_PADDING - (footerEnabled ? FOOTER_HEIGHT : 0) - headerHeight;
+
+      let page1Main: string[];
+      let page1Aside: string[];
+      let overflowSet: Set<string>;
+
+      if (isSidebar) {
+        const mainSplit = splitPrefix(mainIds, heights, page1Budget);
+        const asideSplit = splitPrefix(asideIds, heights, page1Budget);
+        page1Main = mainSplit.fit;
+        page1Aside = asideSplit.fit;
+        overflowSet = new Set([...mainSplit.overflow, ...asideSplit.overflow]);
+      } else {
+        const split = splitPrefix(mainIds, heights, page1Budget);
+        page1Main = split.fit;
+        page1Aside = [];
+        overflowSet = new Set(split.overflow);
+      }
+
+      const overflow = activeIds.filter((id) => overflowSet.has(id));
+      const overflowChunks = overflow.length ? chunkByBudget(overflow, heights, appendixBudget) : [];
+      const next: PaginationResult = { page1Main, page1Aside, overflowChunks };
+      setResult((prev) => (samePagination(prev, next) ? prev : next));
     };
 
     // Content edits (new/removed items, longer text) resize the measured
-    // section elements without changing `ids` itself, so re-chunking has
-    // to react to the actual DOM rather than a React dependency array.
+    // elements without changing the id lists themselves, so re-pagination
+    // has to react to the actual DOM rather than a React dependency array.
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(container);
@@ -243,17 +351,17 @@ function useAppendixChunks(
       ro.disconnect();
       mo.disconnect();
     };
-    // Re-attach observers whenever the visible set, its formats, language,
-    // or the page budget (density/footer) changes; the observers alone
+    // Re-attach observers whenever the visible set, columns, its formats,
+    // language, or the page budget (footer) changes; the observers alone
     // handle content edits within an already-observed category.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ids.join("|"), JSON.stringify(variants), lang, budgetPx]);
+  }, [activeIds.join("|"), mainIds.join("|"), asideIds.join("|"), isSidebar, JSON.stringify(variants), lang, footerEnabled]);
 
-  return { chunks: chunks.length ? chunks : [[]], measureRef };
+  return { result, measureRef };
 }
 
-function AppendixPages({
-  ids,
+function OverflowPages({
+  chunks,
   categories,
   variants,
   lang,
@@ -261,7 +369,7 @@ function AppendixPages({
   footerEnabled,
   footerRevision,
 }: {
-  ids: string[];
+  chunks: string[][];
   categories: Record<string, Category>;
   variants: Record<string, string>;
   lang: Lang;
@@ -270,21 +378,8 @@ function AppendixPages({
   footerRevision: string;
 }) {
   const T = t(lang);
-  const budget = 1123 - PAGE_VERTICAL_PADDING - APPENDIX_TITLE_HEIGHT - (footerEnabled ? FOOTER_HEIGHT : 0);
-  const { chunks, measureRef } = useAppendixChunks(ids, variants, lang, budget);
-
   return (
     <>
-      <div ref={measureRef} className={`${pageClass} cv-measure-hidden`} aria-hidden="true">
-        {ids.map((id) => {
-          const cat = categories[id];
-          return (
-            <div key={id} data-measure-id={id}>
-              <SectionBlock category={cat} lang={lang} variant={variants[id] ?? defaultVariant(cat.kind)} />
-            </div>
-          );
-        })}
-      </div>
       {chunks.map((chunkIds, i) => (
         <Page
           key={i}
@@ -361,15 +456,12 @@ export function CvPreview({ lang }: { lang: Lang }) {
   const order = useStore((s) => s.order);
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
-  const place = useStore((s) => s.place);
   const variant = useStore((s) => s.variant);
   const header = useStore((s) => s.header);
   const appliedTitle = useStore((s) => s.appliedTitle);
   const design = useStore((s) => s.design);
 
-  const active = order.filter((id) => categories[id] && !categories[id].isHidden && on[id]);
-  const cvIds = active.filter((id) => (place[id] ?? "cv") === "cv");
-  const apxIds = active.filter((id) => (place[id] ?? "cv") === "apx");
+  const activeIds = order.filter((id) => categories[id] && !categories[id].isHidden && on[id]);
 
   const font = byId(FONTS, design.font);
   const scheme = byId(SCHEMES, design.scheme);
@@ -389,13 +481,41 @@ export function CvPreview({ lang }: { lang: Lang }) {
     "--cv-chip-fg": scheme.chipFg,
   } as CSSProperties;
 
-  const sidebarIds = design.struct === "sidebar" ? cvIds.filter((id) => SIDE_DEFAULT.has(id)) : [];
-  const mainIds = design.struct === "sidebar" ? cvIds.filter((id) => !SIDE_DEFAULT.has(id)) : cvIds;
+  const isSidebar = design.struct === "sidebar";
+  const sidebarIds = isSidebar ? activeIds.filter((id) => SIDE_DEFAULT.has(id)) : [];
+  const mainIds = isSidebar ? activeIds.filter((id) => !SIDE_DEFAULT.has(id)) : activeIds;
   const pageClass = `cv-page struct-${design.struct} density-${design.density}`;
   const sidebarClass = `cv-grid-sidebar side-${design.sidebarSide}`;
 
+  const { result, measureRef } = usePagination(
+    activeIds,
+    mainIds,
+    sidebarIds,
+    isSidebar,
+    variant,
+    lang,
+    design.footer.enabled,
+  );
+
   return (
     <div className="cv-preview" style={themeStyle} id="cv-print-area">
+      <div ref={measureRef} className={`${pageClass} cv-measure-hidden`} aria-hidden="true">
+        <div data-measure-id="__header__">
+          <HeaderBlock
+            name={header.name}
+            appliedTitle={appliedTitle[lang]}
+            phone={header.phone}
+            mail={header.mail}
+            location={header.location[lang]}
+            headKind={design.headKind}
+          />
+        </div>
+        {activeIds.map((id) => (
+          <div key={id} data-measure-id={id}>
+            <SectionBlock category={categories[id]} lang={lang} variant={variant[id] ?? defaultVariant(categories[id].kind)} />
+          </div>
+        ))}
+      </div>
       <Page
         className={pageClass}
         lang={lang}
@@ -406,31 +526,32 @@ export function CvPreview({ lang }: { lang: Lang }) {
           revision: design.footer.revision,
         }}
       >
-        <header className={`cv-header head-${design.headKind}`}>
-          <h1>{header.name || "—"}</h1>
-          {appliedTitle[lang] && <p className="cv-applied-title">{appliedTitle[lang]}</p>}
-          <p className="cv-contact">
-            {[header.phone, header.mail, header.location[lang]].filter(Boolean).join(" · ")}
-          </p>
-        </header>
-        {design.struct === "sidebar" ? (
+        <HeaderBlock
+          name={header.name}
+          appliedTitle={appliedTitle[lang]}
+          phone={header.phone}
+          mail={header.mail}
+          location={header.location[lang]}
+          headKind={design.headKind}
+        />
+        {isSidebar ? (
           <div className={sidebarClass}>
             <div className="cv-main">
-              <SectionFlow ids={mainIds} categories={categories} variants={variant} lang={lang} />
+              <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
             </div>
             <aside className="cv-aside">
-              <SectionFlow ids={sidebarIds} categories={categories} variants={variant} lang={lang} />
+              <SectionFlow ids={result.page1Aside} categories={categories} variants={variant} lang={lang} />
             </aside>
           </div>
         ) : (
           <div className="cv-flow">
-            <SectionFlow ids={mainIds} categories={categories} variants={variant} lang={lang} />
+            <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
           </div>
         )}
       </Page>
-      {apxIds.length > 0 && (
-        <AppendixPages
-          ids={apxIds}
+      {result.overflowChunks.length > 0 && (
+        <OverflowPages
+          chunks={result.overflowChunks}
           categories={categories}
           variants={variant}
           lang={lang}

@@ -1,4 +1,4 @@
-import type { Activity, AppState, ByLang, Category, LibraryItem, Placement } from "../model/types";
+import type { Activity, AppState, ByLang, Category, LibraryItem } from "../model/types";
 import { parseCsv } from "./parseCsv";
 import { META_KEYWORDS_ROW_ID, META_TITLE_ROW_ID, NODE_ROLE, parseNodeRole } from "./columns";
 
@@ -208,12 +208,11 @@ function dedupe(items: ParsedItem[]): ParsedItem[] {
  *  good); every category the plan does mention is (re)created from the
  *  file, which becomes that category's whole truth — a category that
  *  ends up with zero elements stays genuinely empty. */
-export function applyImportPlan(state: AppState, plan: ImportPlan, defaultPlacement: Placement = "cv"): AppState {
+export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
   const categories: Record<string, Category> = {};
   const items: Record<string, LibraryItem> = { ...state.items };
   const selectedItems: Record<string, string[]> = { ...state.selectedItems };
   const selectedActivities: Record<string, number[]> = { ...state.selectedActivities };
-  const place: Record<string, Placement> = { ...state.place };
   const on: Record<string, boolean> = { ...state.on };
   const keep = new Set(plan.order);
   const removedFromOrder = new Set<string>();
@@ -230,7 +229,6 @@ export function applyImportPlan(state: AppState, plan: ImportPlan, defaultPlacem
         }
       });
       delete selectedItems[cat.id];
-      delete place[cat.id];
       delete on[cat.id];
       return;
     }
@@ -266,7 +264,6 @@ export function applyImportPlan(state: AppState, plan: ImportPlan, defaultPlacem
           isReplacedByImport: true,
         };
 
-    if (!place[key]) place[key] = defaultPlacement;
     const isTag = categories[key].kind === "tags";
 
     // Full rebuild for this category: drop everything it used to hold.
@@ -316,7 +313,6 @@ export function applyImportPlan(state: AppState, plan: ImportPlan, defaultPlacem
     on,
     selectedItems,
     selectedActivities,
-    place,
     appliedTitle: plan.metaTitle ?? state.appliedTitle,
     keywords: plan.metaKeywords ?? state.keywords,
   };

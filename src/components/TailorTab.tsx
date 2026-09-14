@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useStore } from "../state/store";
-import type { Lang, Placement } from "../model/types";
+import type { Lang } from "../model/types";
 import { t } from "../i18n";
 import { defaultVariant, variantsFor } from "../data/designTokens";
 
@@ -42,10 +42,8 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const order = useStore((s) => s.order);
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
-  const place = useStore((s) => s.place);
   const variant = useStore((s) => s.variant);
   const toggleCategoryOn = useStore((s) => s.toggleCategoryOn);
-  const setPlacement = useStore((s) => s.setPlacement);
   const setVariant = useStore((s) => s.setVariant);
   const moveCategory = useStore((s) => s.moveCategory);
   const reorderCategory = useStore((s) => s.reorderCategory);
@@ -132,14 +130,6 @@ export function TailorTab({ lang }: { lang: Lang }) {
                     ))}
                   </select>
                 )}
-                <select
-                  className="field placement-select"
-                  value={place[id] ?? "cv"}
-                  onChange={(e) => setPlacement(id, e.target.value as Placement)}
-                >
-                  <option value="cv">{T.placementCv}</option>
-                  <option value="apx">{T.placementAppendix}</option>
-                </select>
                 <button type="button" className="icon-btn" disabled={i === 0} onClick={() => moveCategory(id, -1)} title={T.moveUp}>
                   ↑
                 </button>
