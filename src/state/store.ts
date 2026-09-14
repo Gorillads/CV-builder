@@ -13,6 +13,43 @@ function newId(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}_${idSeq}`;
 }
 
+/** Older saved data may still have a category with kind:null (the old
+ *  "pure prose, no elements" shape Profil used to use) — converts it into
+ *  a kind:"entry" category with its blurb text moved into a single item,
+ *  so an existing user's real typed content survives the format change
+ *  instead of silently vanishing. */
+function migrateNullKindCategories(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const categories = s.categories;
+  if (!categories || typeof categories !== "object") return state;
+
+  const items = { ...((s.items as Record<string, LibraryItem>) ?? {}) };
+  const selectedItems = { ...((s.selectedItems as Record<string, string[]>) ?? {}) };
+  const nextCategories = { ...(categories as Record<string, Category>) };
+
+  Object.entries(nextCategories).forEach(([id, cat]) => {
+    if (!cat || (cat as Category).kind !== null) return;
+    const blurb = (cat as Category).blurb ?? { da: "", en: "" };
+    nextCategories[id] = { ...(cat as Category), kind: "entry", blurb: { da: "", en: "" } };
+    if (blurb.da || blurb.en) {
+      const itemId = newId(`migrated_${id}`);
+      items[itemId] = {
+        id: itemId,
+        categoryId: id,
+        isUserCreated: true,
+        da: { head: "", meta: "", desc: blurb.da, tagValue: "" },
+        en: { head: "", meta: "", desc: blurb.en || blurb.da, tagValue: "" },
+        activities: [],
+        group: { da: "", en: "" },
+      };
+      selectedItems[id] = [itemId, ...(selectedItems[id] ?? [])];
+    }
+  });
+
+  return { ...s, categories: nextCategories, items, selectedItems };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -350,6 +387,8 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
+      version: 1,
+      migrate: (persisted) => migrateNullKindCategories(persisted) as Store,
     },
   ),
 );

@@ -78,15 +78,18 @@ function EntryBlock({
   }
 
   const acts = selectedActivityTexts(selectedActivities, item, lang);
+  const showHead = text.head || (variant !== "rows" && text.meta);
 
   return (
     <div className={"cv-entry" + (variant === "rows" ? " cv-entry--rows" : "")}>
       {variant === "rows" && <div className="cv-entry-meta-col">{text.meta}</div>}
       <div className="cv-entry-body">
-        <div className="cv-entry-head">
-          <strong>{text.head}</strong>
-          {variant !== "rows" && text.meta && <span className="cv-entry-meta">{text.meta}</span>}
-        </div>
+        {showHead && (
+          <div className="cv-entry-head">
+            <strong>{text.head}</strong>
+            {variant !== "rows" && text.meta && <span className="cv-entry-meta">{text.meta}</span>}
+          </div>
+        )}
         {text.desc && <p className="cv-entry-desc">{text.desc}</p>}
         {acts.length > 0 && (
           <ul className="cv-entry-acts">

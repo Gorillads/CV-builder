@@ -4,7 +4,10 @@ export type ByLang<T> = { da: T; en: T };
 
 /** "entry": dated/sourced items with a description and bullet activities.
  *  "tags": a flat pill list (e.g. Kompetencer).
- *  null: pure prose — just a title + blurb, no elements (e.g. Profil). */
+ *  null: pure prose — just a title + blurb, no elements. No built-in
+ *  category uses this anymore (every category now stores its content as
+ *  elements, for a uniform CSV shape), but it's kept as a category shape
+ *  the data model still supports. */
 export type CategoryKind = "entry" | "tags" | null;
 
 export interface Category {
