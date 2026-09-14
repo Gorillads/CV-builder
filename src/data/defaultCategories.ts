@@ -32,11 +32,16 @@ const SEEDS: CategorySeed[] = [
   {
     id: "profil",
     title: ["Profil", "Profile"],
-    kind: null,
+    kind: "entry",
     onByDefault: true,
-    blurb: [
-      "Kort profiltekst der opsummerer din baggrund og hvad du søger. Redigér denne tekst direkte.",
-      "Short profile summarising your background and what you're looking for. Edit this text directly.",
+    items: [
+      {
+        head: ["", ""],
+        desc: [
+          "Kort profiltekst der opsummerer din baggrund og hvad du søger. Redigér denne tekst direkte.",
+          "Short profile summarising your background and what you're looking for. Edit this text directly.",
+        ],
+      },
     ],
   },
   {
