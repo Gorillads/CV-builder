@@ -62,8 +62,6 @@ export interface Store extends AppState {
   reorderCategory(draggedId: string, targetId: string): void;
 
   addItem(categoryId: string): string;
-  /** Takes the item out of this CV; it stays in the library. */
-  removeItemFromCv(categoryId: string, itemId: string): void;
   /** Deletes the item from the library outright (and drops it from every
    *  category's selection). */
   deleteItem(itemId: string): void;
@@ -256,14 +254,6 @@ export const useStore = create<Store>()(
         void cat;
         return id;
       },
-
-      removeItemFromCv: (categoryId, itemId) =>
-        set((s) => ({
-          selectedItems: {
-            ...s.selectedItems,
-            [categoryId]: (s.selectedItems[categoryId] ?? []).filter((id) => id !== itemId),
-          },
-        })),
 
       deleteItem: (itemId) =>
         set((s) => {
