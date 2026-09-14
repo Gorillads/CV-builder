@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
 import type { Activity, AppState, Category, Lang, LibraryItem, Placement } from "../model/types";
 import { blankElementText } from "../model/types";
@@ -12,6 +12,36 @@ function newId(prefix: string): string {
   idSeq += 1;
   return `${prefix}_${Date.now().toString(36)}_${idSeq}`;
 }
+
+/** Falls back to an in-memory map when localStorage isn't reachable (a
+ *  sandboxed iframe with storage access blocked can throw just reading
+ *  the `localStorage` property) — otherwise that throw happens during
+ *  the persist middleware's initial hydration, before React ever
+ *  renders, and the app shows a blank page with no visible error. */
+const memoryFallback = new Map<string, string>();
+const safeStorage: StateStorage = {
+  getItem: (name) => {
+    try {
+      return localStorage.getItem(name);
+    } catch {
+      return memoryFallback.get(name) ?? null;
+    }
+  },
+  setItem: (name, value) => {
+    try {
+      localStorage.setItem(name, value);
+    } catch {
+      memoryFallback.set(name, value);
+    }
+  },
+  removeItem: (name) => {
+    try {
+      localStorage.removeItem(name);
+    } catch {
+      memoryFallback.delete(name);
+    }
+  },
+};
 
 export interface Store extends AppState {
   setLang(lang: Lang): void;
@@ -337,6 +367,7 @@ export const useStore = create<Store>()(
     }),
     {
       name: "cv-builder-state-v1",
+      storage: createJSONStorage(() => safeStorage),
     },
   ),
 );
