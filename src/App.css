@@ -58,19 +58,54 @@
 .app-body {
   flex: 1;
   display: flex;
-  gap: 16px;
   padding: 16px;
   align-items: flex-start;
 }
 
+/* Width comes from the --editor-width custom property (set inline from
+   drag state in App.tsx) rather than a direct inline width, so the
+   narrow-screen media query below — a same-specificity class rule later
+   in the cascade — can still win over it with a plain `width: 100%`. */
 .editor-panel {
-  flex: 1 1 480px;
+  width: var(--editor-width, 480px);
   min-width: 340px;
   max-width: 640px;
+  flex: none;
+}
+
+/* Sits between the two panels in place of a plain gap: a wide invisible
+   hit area with a thin centered line, dragged to resize .editor-panel
+   (see handleResizeStart in App.tsx) and double-clicked to reset it. */
+.panel-resizer {
+  flex: none;
+  align-self: stretch;
+  width: 16px;
+  cursor: col-resize;
+  position: relative;
+  touch-action: none;
+  z-index: 1;
+}
+
+.panel-resizer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--border);
+  transition: background 0.15s;
+}
+
+.panel-resizer:hover::after,
+.panel-resizer:active::after {
+  background: var(--accent);
 }
 
 .preview-panel {
-  flex: 1 1 600px;
+  flex: 1 1 auto;
+  min-width: 0;
   position: sticky;
   top: 16px;
 }
@@ -960,6 +995,9 @@ textarea.field {
   }
   .preview-panel {
     position: static;
+  }
+  .panel-resizer {
+    display: none;
   }
 }
 
