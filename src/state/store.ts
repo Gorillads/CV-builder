@@ -6,6 +6,7 @@ import { blankElementText } from "../model/types";
 import { createDefaultState } from "../data/defaultCategories";
 import { applyImportPlan, parseImportPlan, type ImportParseResult } from "../csv/importCsv";
 import { exportCsv } from "../csv/exportCsv";
+import { exportJson, parseJsonBackup, type JsonParseResult } from "../json/backupJson";
 
 let idSeq = 0;
 function newId(prefix: string): string {
@@ -154,6 +155,14 @@ export interface Store extends AppState {
   parseImport(text: string): ImportParseResult;
   commitImport(plan: Parameters<typeof applyImportPlan>[1]): void;
   exportCsvText(): string;
+
+  /** Full-state backup, distinct from the CSV: also carries header contact
+   *  details, design tokens, per-category variants, on/off toggles and
+   *  order, applied title and keywords — restoring one puts the app back
+   *  exactly as it was, not just the content library. */
+  parseJsonImport(text: string): JsonParseResult;
+  commitJsonImport(data: Partial<AppState>): void;
+  exportJsonText(): string;
 
   resetAll(): void;
 }
@@ -406,6 +415,10 @@ export const useStore = create<Store>()(
       parseImport: (text) => parseImportPlan(text, get().categories),
       commitImport: (plan) => set((s) => applyImportPlan(s, plan)),
       exportCsvText: () => exportCsv(get()),
+
+      parseJsonImport: (text) => parseJsonBackup(text),
+      commitJsonImport: (data) => set({ ...createDefaultState(), ...data }),
+      exportJsonText: () => exportJson(get()),
 
       resetAll: () => set(createDefaultState()),
     }),
