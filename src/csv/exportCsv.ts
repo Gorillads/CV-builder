@@ -41,10 +41,10 @@ export function exportCsv(state: AppState): string {
     }
 
     const own = Object.values(state.items).filter((it) => it.categoryId === key);
-    const selectionOrder = state.selectedItems[key] ?? [];
+    const itemOrder = state.itemOrder[key] ?? [];
     const ordered = own.slice().sort((a, b) => {
-      const ra = selectionOrder.indexOf(a.id);
-      const rb = selectionOrder.indexOf(b.id);
+      const ra = itemOrder.indexOf(a.id);
+      const rb = itemOrder.indexOf(b.id);
       return (ra === -1 ? 1e6 : ra) - (rb === -1 ? 1e6 : rb);
     });
 

@@ -66,6 +66,11 @@ export interface AppState {
   on: Record<string, boolean>;
   /** Per category: ordered ids of items selected for the current CV. */
   selectedItems: Record<string, string[]>;
+  /** Per category: display/CV order of every item in the category
+   *  (selected or not) — the single order shown and drag-reorderable in
+   *  both the Content and Tailor tabs, and the order items are emitted in
+   *  on the CV and in the CSV export. */
+  itemOrder: Record<string, string[]>;
   /** Per item: indices into its activities[] selected for the current CV.
    *  Absent means "all activities selected" (the default). */
   selectedActivities: Record<string, number[]>;

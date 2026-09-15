@@ -264,10 +264,6 @@ textarea.field {
   justify-content: space-between;
 }
 
-.item-card-row--end {
-  justify-content: flex-end;
-}
-
 .item-card-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -337,11 +333,14 @@ textarea.field {
   background: var(--panel);
 }
 
-.tailor-row.dragging {
+/* Generic drag-state modifiers, shared by every draggable row/card in the
+   app (category cards, item cards and their activity rows in the Content
+   tab; category/item/activity rows in the Tailor tab). */
+.dragging {
   opacity: 0.4;
 }
 
-.tailor-row.drag-over {
+.drag-over {
   border-color: var(--accent);
   box-shadow: 0 -2px 0 0 var(--accent);
 }
@@ -352,10 +351,15 @@ textarea.field {
   line-height: 1;
   font-size: 15px;
   user-select: none;
+  flex: none;
 }
 
 .drag-handle:active {
   cursor: grabbing;
+}
+
+.drag-handle--small {
+  font-size: 12px;
 }
 
 .tailor-row .in-cv {
@@ -367,6 +371,10 @@ textarea.field {
   flex-direction: column;
   gap: 2px;
   margin: 4px 0 0 30px;
+}
+
+.item-checklist-item {
+  border-radius: 4px;
 }
 
 .item-checklist-row {
@@ -391,6 +399,10 @@ textarea.field {
   font-size: 11.5px;
   color: var(--text-soft);
   opacity: 0.85;
+}
+
+.activity-checklist-row.dragging {
+  opacity: 0.4;
 }
 
 .placement-select {
