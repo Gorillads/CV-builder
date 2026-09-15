@@ -11,8 +11,6 @@ function ItemEditor({ itemId, lang }: { itemId: string; lang: Lang }) {
   const addActivity = useStore((s) => s.addActivity);
   const removeActivity = useStore((s) => s.removeActivity);
   const setActivity = useStore((s) => s.setActivity);
-  const toggleActivitySelected = useStore((s) => s.toggleActivitySelected);
-  const selectedActivityIds = useStore((s) => s.selectedActivities[itemId]);
   const T = t(lang);
 
   if (!item) return null;
@@ -62,12 +60,6 @@ function ItemEditor({ itemId, lang }: { itemId: string; lang: Lang }) {
         <div className="activities-label">{T.activities}</div>
         {item.activities.map((a, i) => (
           <div className="activity-row" key={i}>
-            <input
-              type="checkbox"
-              checked={selectedActivityIds ? selectedActivityIds.includes(i) : true}
-              onChange={() => toggleActivitySelected(itemId, i)}
-              title={T.inCv}
-            />
             <input
               className="field"
               value={a[lang]}

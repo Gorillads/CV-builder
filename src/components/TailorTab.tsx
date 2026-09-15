@@ -1,8 +1,38 @@
 import { useState } from "react";
-import { useStore } from "../state/store";
+import { useStore, isActivitySelected } from "../state/store";
+import { useShallow } from "zustand/react/shallow";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
 import { defaultVariant, variantsFor } from "../data/designTokens";
+
+/** An item's own bullet pool, checkable one by one — the counterpart to
+ *  the item-level checkbox above it. Content tab owns the text (adding/
+ *  editing/removing bullets); this tab owns which of them make it onto
+ *  the current CV, exactly like item selection itself. */
+function ActivityChecklist({ itemId, lang }: { itemId: string; lang: Lang }) {
+  const item = useStore((s) => s.items[itemId]);
+  const selected = useStore(
+    useShallow((s) => (item ? item.activities.map((_, i) => isActivitySelected(s, item, i)) : [])),
+  );
+  const toggleActivitySelected = useStore((s) => s.toggleActivitySelected);
+
+  if (!item || !item.activities.length) return null;
+
+  return (
+    <div className="activity-checklist">
+      {item.activities.map((a, i) => (
+        <label className="activity-checklist-row" key={i}>
+          <input
+            type="checkbox"
+            checked={selected[i]}
+            onChange={() => toggleActivitySelected(itemId, i)}
+          />
+          {a[lang] || a.da}
+        </label>
+      ))}
+    </div>
+  );
+}
 
 function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang }) {
   const T = t(lang);
@@ -24,14 +54,17 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
         const desc = text.desc.trim();
         const label = text.head || (desc.length > 40 ? `${desc.slice(0, 40)}…` : desc) || T.custom;
         return (
-          <label className="item-checklist-row" key={item.id}>
-            <input
-              type="checkbox"
-              checked={selectedIds.includes(item.id)}
-              onChange={() => toggleItemInCv(categoryId, item.id)}
-            />
-            {label}
-          </label>
+          <div key={item.id}>
+            <label className="item-checklist-row">
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(item.id)}
+                onChange={() => toggleItemInCv(categoryId, item.id)}
+              />
+              {label}
+            </label>
+            <ActivityChecklist itemId={item.id} lang={lang} />
+          </div>
         );
       })}
     </div>
