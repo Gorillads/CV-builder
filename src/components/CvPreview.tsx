@@ -121,8 +121,12 @@ function EntryList({
 function SectionBlock({ category, lang, variant }: { category: Category; lang: Lang; variant: string }) {
   const items = useStore(
     useShallow((s) => {
-      const ids = s.selectedItems[category.id] ?? [];
-      return ids.map((id) => s.items[id]).filter((it): it is LibraryItem => !!it);
+      const selected = new Set(s.selectedItems[category.id] ?? []);
+      const ids = s.itemOrder[category.id] ?? [];
+      return ids
+        .filter((id) => selected.has(id))
+        .map((id) => s.items[id])
+        .filter((it): it is LibraryItem => !!it);
     }),
   );
   const selectedActivities = useStore((s) => s.selectedActivities);
@@ -467,7 +471,11 @@ function ZoomViewport({ zoom, children }: { zoom: number; children: ReactNode })
   useEffect(() => {
     const el = frameRef.current;
     if (!el) return;
-    const measure = () => setSize({ width: el.offsetWidth, height: el.offsetHeight });
+    const measure = () => {
+      const width = el.offsetWidth;
+      const height = el.offsetHeight;
+      setSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
+    };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);

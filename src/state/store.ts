@@ -18,15 +18,18 @@ function newId(prefix: string): string {
  *  a category with kind:null (the old "pure prose, no elements" shape
  *  Profil used to use), a category kind:"tags" whose items kept their
  *  name in a separate `tagValue` field instead of `head`, an item created
- *  before the optional `comment` field existed at all, and an item from
- *  when that same idea was a subgroup label stored separately as
- *  `item.group` rather than a per-language comment under the heading.
+ *  before the optional `comment` field existed at all, an item from when
+ *  that same idea was a subgroup label stored separately as `item.group`
+ *  rather than a per-language comment under the heading, and state saved
+ *  before item order was tracked independently of CV selection at all.
  *  This folds all of it into the current shape — moving a blank-kind
  *  category's blurb text into a real item, copying any item's `tagValue`
  *  into `head`, moving `group.da`/`group.en` into `da.comment`/`en.comment`,
- *  and backfilling a blank `comment` — so an existing user's real typed
- *  content survives the format changes instead of silently vanishing (or
- *  crashing the app outright). */
+ *  backfilling a blank `comment`, and backfilling `itemOrder` from the
+ *  same selected-then-rest order the editor used to show before it had an
+ *  explicit order of its own — so an existing user's real typed content,
+ *  and the order they already see it in, survives the format changes
+ *  instead of silently vanishing or jumping around. */
 function migrateToUnifiedCategoryModel(state: unknown): unknown {
   if (!state || typeof state !== "object") return state;
   const s = state as Record<string, unknown>;
@@ -78,7 +81,18 @@ function migrateToUnifiedCategoryModel(state: unknown): unknown {
     }
   });
 
-  return { ...s, categories: nextCategories, items, selectedItems };
+  const itemOrder = { ...((s.itemOrder as Record<string, string[]>) ?? {}) };
+  Object.keys(nextCategories).forEach((catId) => {
+    if (itemOrder[catId]) return;
+    const selected = selectedItems[catId] ?? [];
+    const ownIds = Object.values(items)
+      .filter((it) => it && it.categoryId === catId)
+      .map((it) => it.id as string);
+    const rest = ownIds.filter((id) => !selected.includes(id));
+    itemOrder[catId] = [...selected, ...rest];
+  });
+
+  return { ...s, categories: nextCategories, items, selectedItems, itemOrder };
 }
 
 /** Falls back to an in-memory map when localStorage isn't reachable (a
@@ -130,9 +144,14 @@ export interface Store extends AppState {
 
   addItem(categoryId: string): string;
   /** Deletes the item from the library outright (and drops it from every
-   *  category's selection). */
+   *  category's selection and order). */
   deleteItem(itemId: string): void;
+  /** Reorders within the category's itemOrder — the same order shown (and
+   *  drag-reorderable) in both the Content and Tailor tabs. */
   moveItem(categoryId: string, itemId: string, direction: -1 | 1): void;
+  /** Drag-and-drop reorder: moves draggedId to sit just before targetId
+   *  within the category's itemOrder. */
+  reorderItem(categoryId: string, draggedId: string, targetId: string): void;
   toggleItemInCv(categoryId: string, itemId: string): void;
   setItemField(itemId: string, lang: Lang, field: "head" | "meta" | "comment" | "desc", value: string): void;
 
@@ -140,6 +159,10 @@ export interface Store extends AppState {
   removeActivity(itemId: string, index: number): void;
   setActivity(itemId: string, index: number, lang: Lang, value: string): void;
   toggleActivitySelected(itemId: string, index: number): void;
+  /** Drag-and-drop reorder of an item's own activity pool; remaps any
+   *  explicit selectedActivities indices so already-picked bullets stay
+   *  picked after the move. */
+  reorderActivity(itemId: string, from: number, to: number): void;
 
   setAppliedTitle(lang: Lang, value: string): void;
   setKeywords(lang: Lang, value: string): void;
@@ -224,6 +247,7 @@ export const useStore = create<Store>()(
           order: [...s.order, id],
           on: { ...s.on, [id]: true },
           selectedItems: { ...s.selectedItems, [id]: [] },
+          itemOrder: { ...s.itemOrder, [id]: [] },
         }));
       },
 
@@ -240,12 +264,15 @@ export const useStore = create<Store>()(
             });
             const selectedItems = { ...s.selectedItems };
             delete selectedItems[categoryId];
+            const itemOrder = { ...s.itemOrder };
+            delete itemOrder[categoryId];
             const on = { ...s.on };
             delete on[categoryId];
             return {
               categories,
               items,
               selectedItems,
+              itemOrder,
               on,
               order: s.order.filter((id) => id !== categoryId),
             };
@@ -312,6 +339,7 @@ export const useStore = create<Store>()(
         set((s) => ({
           items: { ...s.items, [id]: item },
           selectedItems: { ...s.selectedItems, [categoryId]: [...(s.selectedItems[categoryId] ?? []), id] },
+          itemOrder: { ...s.itemOrder, [categoryId]: [...(s.itemOrder[categoryId] ?? []), id] },
           on: { ...s.on, [categoryId]: true },
         }));
         void cat;
@@ -326,19 +354,35 @@ export const useStore = create<Store>()(
           Object.keys(s.selectedItems).forEach((catId) => {
             selectedItems[catId] = s.selectedItems[catId].filter((id) => id !== itemId);
           });
+          const itemOrder: Record<string, string[]> = {};
+          Object.keys(s.itemOrder).forEach((catId) => {
+            itemOrder[catId] = s.itemOrder[catId].filter((id) => id !== itemId);
+          });
           const selectedActivities = { ...s.selectedActivities };
           delete selectedActivities[itemId];
-          return { items, selectedItems, selectedActivities };
+          return { items, selectedItems, itemOrder, selectedActivities };
         }),
 
       moveItem: (categoryId, itemId, direction) =>
         set((s) => {
-          const ids = (s.selectedItems[categoryId] ?? []).slice();
+          const ids = (s.itemOrder[categoryId] ?? []).slice();
           const i = ids.indexOf(itemId);
           const j = i + direction;
           if (i < 0 || j < 0 || j >= ids.length) return s;
           [ids[i], ids[j]] = [ids[j], ids[i]];
-          return { selectedItems: { ...s.selectedItems, [categoryId]: ids } };
+          return { itemOrder: { ...s.itemOrder, [categoryId]: ids } };
+        }),
+
+      reorderItem: (categoryId, draggedId, targetId) =>
+        set((s) => {
+          if (draggedId === targetId) return s;
+          const ids = (s.itemOrder[categoryId] ?? []).slice();
+          const from = ids.indexOf(draggedId);
+          if (from === -1 || ids.indexOf(targetId) === -1) return s;
+          ids.splice(from, 1);
+          const insertAt = ids.indexOf(targetId);
+          ids.splice(insertAt, 0, draggedId);
+          return { itemOrder: { ...s.itemOrder, [categoryId]: ids } };
         }),
 
       toggleItemInCv: (categoryId, itemId) =>
@@ -393,6 +437,29 @@ export const useStore = create<Store>()(
           return { selectedActivities: { ...s.selectedActivities, [itemId]: next } };
         }),
 
+      reorderActivity: (itemId, from, to) =>
+        set((s) => {
+          const item = s.items[itemId];
+          if (!item || from === to || from < 0 || to < 0 || from >= item.activities.length || to >= item.activities.length) {
+            return s;
+          }
+          const activities = item.activities.slice();
+          const [moved] = activities.splice(from, 1);
+          activities.splice(to, 0, moved);
+
+          const sel = s.selectedActivities[itemId];
+          let selectedActivities = s.selectedActivities;
+          if (sel) {
+            const remap = (i: number) => {
+              if (i === from) return to;
+              if (from < to) return i > from && i <= to ? i - 1 : i;
+              return i >= to && i < from ? i + 1 : i;
+            };
+            selectedActivities = { ...s.selectedActivities, [itemId]: sel.map(remap).sort((a, b) => a - b) };
+          }
+          return { items: { ...s.items, [itemId]: { ...item, activities } }, selectedActivities };
+        }),
+
       setAppliedTitle: (lang, value) => set((s) => ({ appliedTitle: { ...s.appliedTitle, [lang]: value } })),
       setKeywords: (lang, value) => set((s) => ({ keywords: { ...s.keywords, [lang]: value } })),
       setHeaderField: (field, value) => set((s) => ({ header: { ...s.header, [field]: value } })),
@@ -418,7 +485,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 4,
+      version: 5,
       migrate: (persisted) => migrateToUnifiedCategoryModel(persisted) as Store,
     },
   ),

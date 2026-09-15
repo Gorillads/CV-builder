@@ -220,6 +220,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
   const categories: Record<string, Category> = {};
   const items: Record<string, LibraryItem> = { ...state.items };
   const selectedItems: Record<string, string[]> = { ...state.selectedItems };
+  const itemOrder: Record<string, string[]> = { ...state.itemOrder };
   const selectedActivities: Record<string, number[]> = { ...state.selectedActivities };
   const on: Record<string, boolean> = { ...state.on };
   const keep = new Set(plan.order);
@@ -237,6 +238,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
         }
       });
       delete selectedItems[cat.id];
+      delete itemOrder[cat.id];
       delete on[cat.id];
       return;
     }
@@ -280,6 +282,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
     });
 
     const picked: string[] = [];
+    const rowOrder: string[] = [];
     dedupe(parsed.items).forEach((parsedItem) => {
       const id = `imp_${key}_${parsedItem.rowIndex}`;
       items[id] = {
@@ -303,9 +306,11 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
       if (parsedItem.selectedActivityIndices != null) {
         selectedActivities[id] = parsedItem.selectedActivityIndices;
       }
+      rowOrder.push(id);
       if (parsedItem.inCv) picked.push(id);
     });
     selectedItems[key] = picked;
+    itemOrder[key] = rowOrder;
     on[key] = picked.length > 0;
   });
 
@@ -316,6 +321,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
     items,
     on,
     selectedItems,
+    itemOrder,
     selectedActivities,
     appliedTitle: plan.metaTitle ?? state.appliedTitle,
     keywords: plan.metaKeywords ?? state.keywords,

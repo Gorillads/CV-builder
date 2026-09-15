@@ -212,6 +212,7 @@ export function createDefaultState(): AppState {
   const categories: Record<string, Category> = {};
   const items: Record<string, LibraryItem> = {};
   const selectedItems: Record<string, string[]> = {};
+  const itemOrder: Record<string, string[]> = {};
   const on: Record<string, boolean> = {};
   const order: string[] = [];
 
@@ -251,6 +252,7 @@ export function createDefaultState(): AppState {
       ids.push(id);
     });
     selectedItems[seed.id] = ids;
+    itemOrder[seed.id] = [...ids];
   });
 
   return {
@@ -260,6 +262,7 @@ export function createDefaultState(): AppState {
     items,
     on,
     selectedItems,
+    itemOrder,
     selectedActivities: {},
     variant: {},
     appliedTitle: { da: "", en: "" },
