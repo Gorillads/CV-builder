@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useStore } from "./state/store";
 import { t } from "./i18n";
 import { ContentTab } from "./components/ContentTab";
@@ -16,6 +16,29 @@ const ZOOM_MIN = 40;
 const ZOOM_MAX = 150;
 const ZOOM_STEP = 10;
 
+const EDITOR_WIDTH_MIN = 340;
+const EDITOR_WIDTH_MAX = 640;
+const EDITOR_WIDTH_DEFAULT = 480;
+const EDITOR_WIDTH_STORAGE_KEY = "cv-builder-editor-width";
+
+function loadEditorWidth(): number {
+  try {
+    const saved = Number(localStorage.getItem(EDITOR_WIDTH_STORAGE_KEY));
+    if (saved >= EDITOR_WIDTH_MIN && saved <= EDITOR_WIDTH_MAX) return saved;
+  } catch {
+    // localStorage unavailable — fall through to the default.
+  }
+  return EDITOR_WIDTH_DEFAULT;
+}
+
+function saveEditorWidth(width: number): void {
+  try {
+    localStorage.setItem(EDITOR_WIDTH_STORAGE_KEY, String(width));
+  } catch {
+    // ignore — purely a remembered UI preference, not required to work.
+  }
+}
+
 function App() {
   const lang = useStore((s) => s.lang);
   const setLang = useStore((s) => s.setLang);
@@ -25,8 +48,34 @@ function App() {
   const [tab, setTab] = useState<Tab>("content");
   const [mainPageStatus, setMainPageStatus] = useState<PageOverflow | null>(null);
   const [zoomPct, setZoomPct] = useState(100);
+  const [editorWidth, setEditorWidth] = useState(loadEditorWidth);
+  const editorWidthRef = useRef(editorWidth);
   const T = t(lang);
   useGoogleFont(font);
+
+  const handleResizeStart = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = editorWidth;
+    const onMove = (moveEvent: PointerEvent) => {
+      const next = Math.min(EDITOR_WIDTH_MAX, Math.max(EDITOR_WIDTH_MIN, startWidth + (moveEvent.clientX - startX)));
+      editorWidthRef.current = next;
+      setEditorWidth(next);
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      saveEditorWidth(editorWidthRef.current);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
+  const handleResizeReset = () => {
+    editorWidthRef.current = EDITOR_WIDTH_DEFAULT;
+    setEditorWidth(EDITOR_WIDTH_DEFAULT);
+    saveEditorWidth(EDITOR_WIDTH_DEFAULT);
+  };
 
   return (
     <div className="app">
@@ -45,7 +94,7 @@ function App() {
         </div>
       </header>
 
-      <div className="app-body">
+      <div className="app-body" style={{ "--editor-width": `${editorWidth}px` } as React.CSSProperties}>
         <div className="editor-panel">
           <div className="header-fields">
             <input
@@ -84,6 +133,16 @@ function App() {
           {tab === "tailor" && <TailorTab lang={lang} />}
           {tab === "design" && <DesignTab lang={lang} />}
         </div>
+
+        <div
+          className="panel-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={T.resizePanels}
+          title={T.resizePanels}
+          onPointerDown={handleResizeStart}
+          onDoubleClick={handleResizeReset}
+        />
 
         <div className="preview-panel">
           <div className="preview-toolbar">
