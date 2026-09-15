@@ -66,10 +66,13 @@
    drag state in App.tsx) rather than a direct inline width, so the
    narrow-screen media query below — a same-specificity class rule later
    in the cascade — can still win over it with a plain `width: 100%`. */
+/* max-width is deliberately absent — the real ceiling is computed in JS
+   (clampEditorWidth in App.tsx) from the current window width, so the
+   divider can drag much further right while still leaving the preview
+   panel a usable minimum, rather than stopping at a fixed pixel value. */
 .editor-panel {
   width: var(--editor-width, 480px);
   min-width: 340px;
-  max-width: 640px;
   flex: none;
 }
 
