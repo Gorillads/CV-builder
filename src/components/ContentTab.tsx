@@ -1,28 +1,50 @@
 import { useState } from "react";
 import { useStore } from "../state/store";
-import type { Lang } from "../model/types";
+import type { Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
 import { CategoryCard } from "./CategoryCard";
+import { categoryMatchesQuery } from "../search/contentSearch";
 
 export function ContentTab({ lang }: { lang: Lang }) {
   const T = t(lang);
   const order = useStore((s) => s.order);
   const categories = useStore((s) => s.categories);
+  const items = useStore((s) => s.items);
+  const itemOrder = useStore((s) => s.itemOrder);
   const addCategory = useStore((s) => s.addCategory);
   const reorderCategory = useStore((s) => s.reorderCategory);
   const [newName, setNewName] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  const visible = order.filter((id) => categories[id]);
+  const query = searchInput.trim().toLowerCase();
+
+  const visible = order.filter((id) => {
+    const cat = categories[id];
+    if (!cat) return false;
+    if (!query) return true;
+    const catItems = (itemOrder[id] ?? [])
+      .map((itemId) => items[itemId])
+      .filter((it): it is LibraryItem => !!it);
+    return categoryMatchesQuery(cat, catItems, lang, query);
+  });
 
   return (
     <div className="tab-content">
+      <input
+        className="field search-field"
+        placeholder={T.searchContentPlaceholder}
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+      />
+      {query && visible.length === 0 && <p className="search-empty">{T.searchNoResults}</p>}
       {visible.map((id) => (
         <CategoryCard
           key={id}
           category={categories[id]}
           lang={lang}
+          searchQuery={query}
           dragProps={{
             isDragging: draggedId === id,
             isDragOver: dragOverId === id && draggedId !== id,

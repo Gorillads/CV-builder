@@ -391,6 +391,13 @@ textarea.field {
   gap: 8px;
 }
 
+.search-empty {
+  color: var(--text-soft);
+  font-size: 13px;
+  text-align: center;
+  padding: 12px 0;
+}
+
 .tailor-field {
   display: flex;
   flex-direction: column;
