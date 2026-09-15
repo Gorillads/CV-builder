@@ -48,7 +48,6 @@ export const UI = {
     preview: "Forhåndsvisning",
     appendix: "Bilag",
     confirmDeleteCategory: (name: string) => `Slet kategorien "${name}" permanent? Dette kan ikke fortrydes.`,
-    confirmHideCategory: (name: string) => `Skjul kategorien "${name}"? Den kan gendannes senere.`,
     confirmDeleteItem: (name: string) => `Slet "${name}"?`,
     confirmImport: (rows: number, sections: number) =>
       `Importen erstatter hele biblioteket for ${sections} kategori(er) med ${rows} række(r) fra filen. Kategorier der ikke er i filen, fjernes. Fortsæt?`,
@@ -125,7 +124,6 @@ export const UI = {
     preview: "Preview",
     appendix: "Appendix",
     confirmDeleteCategory: (name: string) => `Permanently delete the category "${name}"? This can't be undone.`,
-    confirmHideCategory: (name: string) => `Hide the category "${name}"? It can be restored later.`,
     confirmDeleteItem: (name: string) => `Delete "${name}"?`,
     confirmImport: (rows: number, sections: number) =>
       `Importing will replace the whole library for ${sections} section(s) with ${rows} row(s) from the file. Sections not in the file will be removed. Continue?`,

@@ -327,6 +327,12 @@ textarea.field {
   justify-content: space-between;
 }
 
+.item-card-row-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .item-card-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;

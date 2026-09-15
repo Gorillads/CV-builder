@@ -205,18 +205,20 @@ function ItemEditor({
       }}
     >
       <div className="item-card-row">
-        <span
-          className="drag-handle"
-          draggable
-          onDragStart={dragProps.onHandleDragStart}
-          onDragEnd={dragProps.onDragEnd}
-          title={T.dragToReorder}
-        >
-          ⠿
-        </span>
-        <button type="button" className="icon-btn" onClick={() => toggleItemCollapsed(itemId)} title={T.collapse}>
-          ▾
-        </button>
+        <div className="item-card-row-left">
+          <span
+            className="drag-handle"
+            draggable
+            onDragStart={dragProps.onHandleDragStart}
+            onDragEnd={dragProps.onDragEnd}
+            title={T.dragToReorder}
+          >
+            ⠿
+          </span>
+          <button type="button" className="icon-btn" onClick={() => toggleItemCollapsed(itemId)} title={T.collapse}>
+            ▾
+          </button>
+        </div>
         <button type="button" className="link-btn danger" onClick={handleDelete}>
           {T.deleteItem}
         </button>
@@ -306,10 +308,6 @@ export function CategoryCard({
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
 
-  const handleHide = () => {
-    if (window.confirm(T.confirmHideCategory(category.title[lang]))) hideCategory(category.id);
-  };
-
   const handleDelete = () => {
     if (window.confirm(T.confirmDeleteCategory(category.title[lang]))) deleteCategory(category.id);
   };
@@ -386,7 +384,7 @@ export function CategoryCard({
           onChange={(e) => setCategoryTitle(category.id, lang, e.target.value)}
         />
         {category.isCustom && <span className="badge">{T.custom}</span>}
-        <button type="button" className="link-btn" onClick={handleHide}>
+        <button type="button" className="link-btn" onClick={() => hideCategory(category.id)}>
           {T.hideCategory}
         </button>
         <button type="button" className="link-btn danger" onClick={handleDelete}>
