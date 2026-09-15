@@ -25,6 +25,13 @@ interface IndexDragProps {
   onDragEnd: () => void;
 }
 
+/** Rough one-line budget for a bullet at the CV's default font size and
+ *  page width (706px content width ÷ ~6.3px average character width for
+ *  a 12.5–13px sans body font) — a nudge toward scannable, single-line
+ *  bullets rather than a precise per-layout measurement, since the exact
+ *  wrap point also depends on the chosen font, density and struct. */
+const ACTIVITY_SOFT_LIMIT = 110;
+
 function ActivityEditor({
   itemId,
   index,
@@ -39,8 +46,12 @@ function ActivityEditor({
   const activity = useStore((s) => s.items[itemId]?.activities[index]);
   const removeActivity = useStore((s) => s.removeActivity);
   const setActivity = useStore((s) => s.setActivity);
+  const T = t(lang);
 
   if (!activity) return null;
+
+  const length = activity[lang].length;
+  const overLimit = length > ACTIVITY_SOFT_LIMIT;
 
   return (
     <div
@@ -63,6 +74,9 @@ function ActivityEditor({
         ⠿
       </span>
       <input className="field" value={activity[lang]} onChange={(e) => setActivity(itemId, index, lang, e.target.value)} />
+      <span className={"char-counter" + (overLimit ? " char-counter--over" : "")} title={T.charCounterHint}>
+        {length}/{ACTIVITY_SOFT_LIMIT}
+      </span>
       <button type="button" className="icon-btn" onClick={() => removeActivity(itemId, index)}>
         ×
       </button>

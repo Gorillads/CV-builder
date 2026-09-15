@@ -339,6 +339,22 @@ textarea.field {
   gap: 6px;
 }
 
+/* A soft nudge, not a hard block (see ACTIVITY_SOFT_LIMIT in
+   CategoryCard.tsx) — just flags a bullet likely to wrap past one line
+   on the actual CV. */
+.char-counter {
+  flex: none;
+  font-size: 11px;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.char-counter--over {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 .new-category-form {
   display: flex;
   gap: 8px;
