@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "./state/store";
 import { t } from "./i18n";
 import { ContentTab } from "./components/ContentTab";
@@ -17,14 +17,28 @@ const ZOOM_MAX = 150;
 const ZOOM_STEP = 10;
 
 const EDITOR_WIDTH_MIN = 340;
-const EDITOR_WIDTH_MAX = 640;
+// A generous ceiling — the real cap is dynamic (see clampEditorWidth),
+// derived from the current window width so the preview panel never gets
+// squeezed away entirely.
+const EDITOR_WIDTH_MAX = 1600;
 const EDITOR_WIDTH_DEFAULT = 480;
 const EDITOR_WIDTH_STORAGE_KEY = "cv-builder-editor-width";
+/** Keep the CV preview at least this wide, however far the divider drags. */
+const PREVIEW_WIDTH_MIN = 320;
+/** .panel-resizer's own width plus .app-body's left+right padding — the
+ *  chrome between the two panels that isn't available to either one. */
+const LAYOUT_CHROME_WIDTH = 16 + 32;
+
+function clampEditorWidth(width: number): number {
+  const viewportMax = window.innerWidth - LAYOUT_CHROME_WIDTH - PREVIEW_WIDTH_MIN;
+  const max = Math.min(EDITOR_WIDTH_MAX, Math.max(EDITOR_WIDTH_MIN, viewportMax));
+  return Math.min(max, Math.max(EDITOR_WIDTH_MIN, width));
+}
 
 function loadEditorWidth(): number {
   try {
     const saved = Number(localStorage.getItem(EDITOR_WIDTH_STORAGE_KEY));
-    if (saved >= EDITOR_WIDTH_MIN && saved <= EDITOR_WIDTH_MAX) return saved;
+    if (saved >= EDITOR_WIDTH_MIN && saved <= EDITOR_WIDTH_MAX) return clampEditorWidth(saved);
   } catch {
     // localStorage unavailable — fall through to the default.
   }
@@ -53,12 +67,22 @@ function App() {
   const T = t(lang);
   useGoogleFont(font);
 
+  useEffect(() => {
+    const onResize = () => {
+      const next = clampEditorWidth(editorWidthRef.current);
+      editorWidthRef.current = next;
+      setEditorWidth(next);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const handleResizeStart = (e: React.PointerEvent) => {
     e.preventDefault();
     const startX = e.clientX;
     const startWidth = editorWidth;
     const onMove = (moveEvent: PointerEvent) => {
-      const next = Math.min(EDITOR_WIDTH_MAX, Math.max(EDITOR_WIDTH_MIN, startWidth + (moveEvent.clientX - startX)));
+      const next = clampEditorWidth(startWidth + (moveEvent.clientX - startX));
       editorWidthRef.current = next;
       setEditorWidth(next);
     };
