@@ -11,6 +11,9 @@ import { usePageOverflow, pxToMm, type PageOverflow } from "../hooks/usePageOver
  *  geometry both the pagination hook and the overflow-detecting Page
  *  component measure against. */
 const PAGE_HEIGHT = 1123;
+/** Matches .cv-page's CSS width — used only as the zoom viewport's initial
+ *  size guess, before its first real measurement lands (see ZoomViewport). */
+const PAGE_WIDTH = 794;
 const PAGE_VERTICAL_PADDING = 80;
 const FOOTER_HEIGHT = 46;
 /** A continuation ("Bilag") page's title costs extra height on top of the
@@ -459,15 +462,54 @@ function Page({
   );
 }
 
+/** Visually scales its children (the real, unscaled pages) for the zoom
+ *  control, while keeping the space it occupies in the surrounding layout
+ *  sized to match — otherwise a `transform: scale` alone would either
+ *  leave dead space below the shrunk pages (zoomed out) or need its own
+ *  scrollbar for the part that grew past its box (zoomed in). Measures its
+ *  own natural (pre-transform) size via ResizeObserver, the same pattern
+ *  already used by the pagination/overflow hooks above, so it stays
+ *  correct for however many pages and indicator lines are actually
+ *  rendered rather than a hand-computed guess. */
+function ZoomViewport({ zoom, children }: { zoom: number; children: ReactNode }) {
+  const frameRef = useRef<HTMLDivElement>(null);
+  // Height guess includes headroom for the space-remaining/overflow line
+  // below the page, so the viewport doesn't clip it for the one frame
+  // before the real measurement below lands.
+  const [size, setSize] = useState({ width: PAGE_WIDTH, height: PAGE_HEIGHT + 60 });
+
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const measure = () => setSize({ width: el.offsetWidth, height: el.offsetHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
+
+  return (
+    <div className="cv-zoom-viewport" style={{ width: size.width * zoom, height: size.height * zoom }}>
+      <div ref={frameRef} className="cv-zoom-frame" style={{ transform: `scale(${zoom})` }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function CvPreview({
   lang,
   onMainPageStatus,
+  zoom = 1,
 }: {
   lang: Lang;
   /** Reports the main (first) page's overflow/remaining-space status on
    *  every measurement, so a caller can show it somewhere always-visible
    *  (e.g. pinned in the toolbar) instead of only below the page itself. */
   onMainPageStatus?: (overflow: PageOverflow) => void;
+  /** On-screen display scale, purely visual — pagination and overflow
+   *  measurement always happen against the real (unscaled) page size. */
+  zoom?: number;
 }) {
   const T = t(lang);
   const order = useStore((s) => s.order);
@@ -513,7 +555,6 @@ export function CvPreview({
     lang,
     design.footer.enabled,
   );
-
   return (
     <div className="cv-preview" style={themeStyle} id="cv-print-area">
       <div ref={measureRef} className={`${pageClass} cv-measure-hidden`} aria-hidden="true">
@@ -533,51 +574,53 @@ export function CvPreview({
           </div>
         ))}
       </div>
-      <Page
-        className={pageClass}
-        lang={lang}
-        footer={{
-          enabled: design.footer.enabled,
-          label: T.footerCvLabel,
-          pageNumberLabel: T.pageLabel(1),
-          revision: design.footer.revision,
-        }}
-        onOverflowChange={onMainPageStatus}
-      >
-        <HeaderBlock
-          name={header.name}
-          appliedTitle={appliedTitle[lang]}
-          phone={header.phone}
-          mail={header.mail}
-          location={header.location[lang]}
-          headKind={design.headKind}
-        />
-        {isSidebar ? (
-          <div className={sidebarClass}>
-            <div className="cv-main">
+      <ZoomViewport zoom={zoom}>
+        <Page
+          className={pageClass}
+          lang={lang}
+          footer={{
+            enabled: design.footer.enabled,
+            label: T.footerCvLabel,
+            pageNumberLabel: T.pageLabel(1),
+            revision: design.footer.revision,
+          }}
+          onOverflowChange={onMainPageStatus}
+        >
+          <HeaderBlock
+            name={header.name}
+            appliedTitle={appliedTitle[lang]}
+            phone={header.phone}
+            mail={header.mail}
+            location={header.location[lang]}
+            headKind={design.headKind}
+          />
+          {isSidebar ? (
+            <div className={sidebarClass}>
+              <div className="cv-main">
+                <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
+              </div>
+              <aside className="cv-aside">
+                <SectionFlow ids={result.page1Aside} categories={categories} variants={variant} lang={lang} />
+              </aside>
+            </div>
+          ) : (
+            <div className="cv-flow">
               <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
             </div>
-            <aside className="cv-aside">
-              <SectionFlow ids={result.page1Aside} categories={categories} variants={variant} lang={lang} />
-            </aside>
-          </div>
-        ) : (
-          <div className="cv-flow">
-            <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
-          </div>
+          )}
+        </Page>
+        {result.overflowChunks.length > 0 && (
+          <OverflowPages
+            chunks={result.overflowChunks}
+            categories={categories}
+            variants={variant}
+            lang={lang}
+            pageClass={pageClass}
+            footerEnabled={design.footer.enabled}
+            footerRevision={design.footer.revision}
+          />
         )}
-      </Page>
-      {result.overflowChunks.length > 0 && (
-        <OverflowPages
-          chunks={result.overflowChunks}
-          categories={categories}
-          variants={variant}
-          lang={lang}
-          pageClass={pageClass}
-          footerEnabled={design.footer.enabled}
-          footerRevision={design.footer.revision}
-        />
-      )}
+      </ZoomViewport>
     </div>
   );
 }
