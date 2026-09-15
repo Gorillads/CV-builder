@@ -106,6 +106,34 @@
   border-color: #e6b8b8;
 }
 
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zoom-level {
+  font-size: 12px;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.zoom-level:hover {
+  color: var(--text);
+}
+
 .header-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -451,6 +479,24 @@ textarea.field {
   gap: 16px;
   overflow-x: auto;
   padding-bottom: 4px;
+}
+
+/* Sized in JS to the zoomed footprint of all pages (see CvPreview.tsx),
+   so a zoom below 100% doesn't leave dead space and a zoom above 100%
+   scrolls cleanly within .cv-preview's own overflow-x. .cv-zoom-frame is
+   the element actually scaled; its own box stays at natural size and the
+   viewport clips/sizes around the transformed result. */
+.cv-zoom-viewport {
+  flex: none;
+  overflow: hidden;
+}
+
+.cv-zoom-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 794px;
+  transform-origin: top left;
 }
 
 /* A4 at 96dpi (210mm × 297mm) — the page is a fixed size so the on-screen
@@ -942,6 +988,20 @@ textarea.field {
     inset: 0;
     display: block;
     overflow: visible;
+    gap: 0;
+  }
+
+  /* Printing always happens at true size — the on-screen zoom level is a
+     display convenience only. */
+  .cv-zoom-viewport {
+    width: auto !important;
+    height: auto !important;
+    overflow: visible;
+  }
+
+  .cv-zoom-frame {
+    transform: none !important;
+    width: auto;
     gap: 0;
   }
 

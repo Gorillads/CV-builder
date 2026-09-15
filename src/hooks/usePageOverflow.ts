@@ -41,18 +41,17 @@ export function usePageOverflow<T extends HTMLElement>(): [React.RefObject<T | n
 
       let remainingPx = -over;
       if (!overflowing) {
-        const style = getComputedStyle(el);
-        const innerBottom =
-          el.getBoundingClientRect().bottom -
-          (parseFloat(style.paddingBottom) || 0) -
-          (parseFloat(style.borderBottomWidth) || 0);
+        // offsetTop/offsetHeight/clientHeight are layout-derived and stay
+        // accurate even when an ancestor (e.g. the on-screen zoom control)
+        // visually scales this element with a CSS transform — unlike
+        // getBoundingClientRect, which would report scaled screen pixels.
         const blocks = el.querySelectorAll<HTMLElement>(":scope > .cv-header, :scope .cv-section, :scope > .cv-footer");
-        let contentBottom = el.getBoundingClientRect().top + (parseFloat(style.paddingTop) || 0);
+        let contentBottom = 0;
         blocks.forEach((b) => {
-          const bottom = b.getBoundingClientRect().bottom;
+          const bottom = b.offsetTop + b.offsetHeight;
           if (bottom > contentBottom) contentBottom = bottom;
         });
-        remainingPx = Math.round(innerBottom - contentBottom);
+        remainingPx = Math.round(el.clientHeight - contentBottom);
       }
 
       setState((prev) => {

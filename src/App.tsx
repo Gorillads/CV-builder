@@ -12,6 +12,10 @@ import "./App.css";
 
 type Tab = "content" | "tailor" | "design";
 
+const ZOOM_MIN = 40;
+const ZOOM_MAX = 150;
+const ZOOM_STEP = 10;
+
 function App() {
   const lang = useStore((s) => s.lang);
   const setLang = useStore((s) => s.setLang);
@@ -20,6 +24,7 @@ function App() {
   const font = useStore((s) => s.design.font);
   const [tab, setTab] = useState<Tab>("content");
   const [mainPageStatus, setMainPageStatus] = useState<PageOverflow | null>(null);
+  const [zoomPct, setZoomPct] = useState(100);
   const T = t(lang);
   useGoogleFont(font);
 
@@ -82,18 +87,43 @@ function App() {
 
         <div className="preview-panel">
           <div className="preview-toolbar">
-            {mainPageStatus && (
-              <div className={"page-status-pill" + (mainPageStatus.overflowing ? " page-status-pill--overflow" : "")}>
-                {mainPageStatus.overflowing
-                  ? `⚠ ${T.pageOverflow(mainPageStatus.overflowPx)}`
-                  : T.spaceRemaining(pxToMm(mainPageStatus.remainingPx))}
+            <div className="toolbar-left">
+              {mainPageStatus && (
+                <div className={"page-status-pill" + (mainPageStatus.overflowing ? " page-status-pill--overflow" : "")}>
+                  {mainPageStatus.overflowing
+                    ? `⚠ ${T.pageOverflow(mainPageStatus.overflowPx)}`
+                    : T.spaceRemaining(pxToMm(mainPageStatus.remainingPx))}
+                </div>
+              )}
+              <div className="zoom-controls">
+                <button
+                  type="button"
+                  className="icon-btn"
+                  disabled={zoomPct <= ZOOM_MIN}
+                  onClick={() => setZoomPct((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
+                  title={T.zoomOut}
+                >
+                  −
+                </button>
+                <button type="button" className="zoom-level" onClick={() => setZoomPct(100)} title={T.zoomReset}>
+                  {zoomPct}%
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  disabled={zoomPct >= ZOOM_MAX}
+                  onClick={() => setZoomPct((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
+                  title={T.zoomIn}
+                >
+                  +
+                </button>
               </div>
-            )}
+            </div>
             <button type="button" className="btn" onClick={() => window.print()}>
               {T.print}
             </button>
           </div>
-          <CvPreview lang={lang} onMainPageStatus={setMainPageStatus} />
+          <CvPreview lang={lang} onMainPageStatus={setMainPageStatus} zoom={zoomPct / 100} />
         </div>
       </div>
     </div>
