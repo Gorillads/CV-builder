@@ -17,15 +17,16 @@ function newId(prefix: string): string {
 /** Older saved data may still carry now-removed or later-added concepts:
  *  a category with kind:null (the old "pure prose, no elements" shape
  *  Profil used to use), a category kind:"tags" whose items kept their
- *  name in a separate `tagValue` field instead of `head`, and an item
- *  created before the optional subgroup `group` field existed at all —
- *  every reader downstream assumes `item.group` is always an object, so a
- *  missing one is a hard crash (a fully blank page), not just missing
- *  text. This folds all three into the current shape — moving a blank-
- *  kind category's blurb text into a real item, copying any item's
- *  `tagValue` into `head`, and backfilling a blank `group` — so an
- *  existing user's real typed content survives the format changes
- *  instead of silently vanishing (or crashing the app outright). */
+ *  name in a separate `tagValue` field instead of `head`, an item created
+ *  before the optional `comment` field existed at all, and an item from
+ *  when that same idea was a subgroup label stored separately as
+ *  `item.group` rather than a per-language comment under the heading.
+ *  This folds all of it into the current shape — moving a blank-kind
+ *  category's blurb text into a real item, copying any item's `tagValue`
+ *  into `head`, moving `group.da`/`group.en` into `da.comment`/`en.comment`,
+ *  and backfilling a blank `comment` — so an existing user's real typed
+ *  content survives the format changes instead of silently vanishing (or
+ *  crashing the app outright). */
 function migrateToUnifiedCategoryModel(state: unknown): unknown {
   if (!state || typeof state !== "object") return state;
   const s = state as Record<string, unknown>;
@@ -49,10 +50,9 @@ function migrateToUnifiedCategoryModel(state: unknown): unknown {
           id: itemId,
           categoryId: id,
           isUserCreated: true,
-          da: { head: "", meta: "", desc: oldBlurb.da ?? "" },
-          en: { head: "", meta: "", desc: oldBlurb.en || oldBlurb.da || "" },
+          da: { head: "", meta: "", comment: "", desc: oldBlurb.da ?? "" },
+          en: { head: "", meta: "", comment: "", desc: oldBlurb.en || oldBlurb.da || "" },
           activities: [],
-          group: { da: "", en: "" },
         };
         selectedItems[id] = [itemId, ...(selectedItems[id] ?? [])];
       }
@@ -61,16 +61,20 @@ function migrateToUnifiedCategoryModel(state: unknown): unknown {
 
   Object.keys(items).forEach((id) => {
     if (!items[id]) return;
-    (["da", "en"] as const).forEach((lang) => {
-      const text = items[id][lang] as Record<string, unknown> | undefined;
-      if (!text || !("tagValue" in text)) return;
-      const { tagValue, ...rest } = text;
-      const head = rest.head || (tagValue as string) || "";
-      items[id] = { ...items[id], [lang]: { ...rest, head } };
-    });
     const group = items[id].group as { da?: string; en?: string } | undefined;
-    if (!group) {
-      items[id] = { ...items[id], group: { da: "", en: "" } };
+    (["da", "en"] as const).forEach((lang) => {
+      const text = (items[id][lang] as Record<string, unknown> | undefined) ?? {};
+      let rest = text;
+      if ("tagValue" in text) {
+        const { tagValue, ...withoutTagValue } = text;
+        rest = { ...withoutTagValue, head: withoutTagValue.head || (tagValue as string) || "" };
+      }
+      const comment = "comment" in rest ? rest.comment : (group?.[lang] ?? "");
+      items[id] = { ...items[id], [lang]: { ...rest, comment } };
+    });
+    if ("group" in items[id]) {
+      const { group: _oldGroup, ...withoutGroup } = items[id];
+      items[id] = withoutGroup;
     }
   });
 
@@ -130,10 +134,7 @@ export interface Store extends AppState {
   deleteItem(itemId: string): void;
   moveItem(categoryId: string, itemId: string, direction: -1 | 1): void;
   toggleItemInCv(categoryId: string, itemId: string): void;
-  setItemField(itemId: string, lang: Lang, field: "head" | "meta" | "desc", value: string): void;
-  /** Optional subgroup label ("Kategori" in the CSV) an item is clustered
-   *  under within its category; blank clears it back to ungrouped. */
-  setItemGroup(itemId: string, lang: Lang, value: string): void;
+  setItemField(itemId: string, lang: Lang, field: "head" | "meta" | "comment" | "desc", value: string): void;
 
   addActivity(itemId: string, da: string, en: string): void;
   removeActivity(itemId: string, index: number): void;
@@ -307,7 +308,6 @@ export const useStore = create<Store>()(
           da: blankElementText(),
           en: blankElementText(),
           activities: [],
-          group: { da: "", en: "" },
         };
         set((s) => ({
           items: { ...s.items, [id]: item },
@@ -353,13 +353,6 @@ export const useStore = create<Store>()(
           const item = s.items[itemId];
           if (!item) return s;
           return { items: { ...s.items, [itemId]: { ...item, [lang]: { ...item[lang], [field]: value } } } };
-        }),
-
-      setItemGroup: (itemId, lang, value) =>
-        set((s) => {
-          const item = s.items[itemId];
-          if (!item) return s;
-          return { items: { ...s.items, [itemId]: { ...item, group: { ...item.group, [lang]: value } } } };
         }),
 
       addActivity: (itemId, da, en) =>
@@ -425,7 +418,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 3,
+      version: 4,
       migrate: (persisted) => migrateToUnifiedCategoryModel(persisted) as Store,
     },
   ),

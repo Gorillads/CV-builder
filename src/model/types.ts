@@ -34,11 +34,6 @@ export interface LibraryItem {
   /** Pool of candidate bullets; which ones are picked for the current CV
    *  is tracked separately per item in AppState.selectedActivities. */
   activities: Activity[];
-  /** Optional subgroup label within the category (the CSV's "Kategori"
-   *  node, e.g. splitting a "Courses" category into "Bachelor"/"Master").
-   *  Items sharing the same label render clustered under one subheading;
-   *  absent/empty means the item isn't part of any subgroup. */
-  group: ByLang<string>;
 }
 
 export interface ElementText {
@@ -47,11 +42,14 @@ export interface ElementText {
   /** Year/source line, language-neutral in practice but stored per language
    *  for parity with the CSV shape. */
   meta: string;
+  /** Short optional note shown right below the heading — a quick bit of
+   *  context the heading alone doesn't convey. */
+  comment: string;
   desc: string;
 }
 
 export function blankElementText(): ElementText {
-  return { head: "", meta: "", desc: "" };
+  return { head: "", meta: "", comment: "", desc: "" };
 }
 
 export interface AppState {

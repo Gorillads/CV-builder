@@ -1,13 +1,20 @@
 /** The CSV is an indented outline rather than one row per element: each
- *  row is a node in a Titel → Tekst / Kategori → Element → Aktivitet
- *  hierarchy (see src/csv/exportCsv.ts and importCsv.ts). The "Knude"
- *  (node) column carries the role name, dash-prefixed by nesting depth;
- *  the value columns are read differently depending on that role. */
+ *  row is a node in a Titel → Tekst → Element → Aktivitet hierarchy (see
+ *  src/csv/exportCsv.ts and importCsv.ts). The "Knude" (node) column
+ *  carries the role name, dash-prefixed by nesting depth; the value
+ *  columns are read differently depending on that role.
+ *
+ *  NODE_ROLE.category ("Kategori") is no longer written by export — an
+ *  item's short note now lives inline as its own Kommentar column — but
+ *  importCsv.ts still reads it from older files, folding it into the
+ *  Kommentar of the elements that used to follow it. */
 export const CSV_HEADER = [
   "Knude",
   "Dansk",
   "Engelsk",
   "Årstal/kilde",
+  "Kommentar (DA)",
+  "Kommentar (EN)",
   "Beskrivelse (DA)",
   "Beskrivelse (EN)",
   "Med i CV",
@@ -16,6 +23,8 @@ export const CSV_HEADER = [
 export const NODE_ROLE = {
   title: "Titel",
   text: "Tekst",
+  /** Legacy-only: a pre-comment-column export used this row to label a
+   *  run of elements; import still tolerates it (see above). */
   category: "Kategori",
   element: "Element",
   activity: "Aktivitet",
