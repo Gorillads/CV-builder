@@ -56,6 +56,7 @@ function migrateToUnifiedCategoryModel(state: unknown): unknown {
   });
 
   Object.keys(items).forEach((id) => {
+    if (!items[id]) return;
     (["da", "en"] as const).forEach((lang) => {
       const text = items[id][lang] as Record<string, unknown> | undefined;
       if (!text || !("tagValue" in text)) return;
