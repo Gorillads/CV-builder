@@ -23,6 +23,9 @@ export const UI = {
     add: "Tilføj",
     searchContentPlaceholder: "Søg i indhold...",
     searchNoResults: "Ingen resultater",
+    presetsLabel: "Start med en skabelon:",
+    confirmApplyPreset: (name: string) =>
+      `Indlæs skabelonen "${name}"? Dette erstatter alt indhold og alle indstillinger i editoren.`,
     blurb: "Introtekst",
     hideCategory: "Skjul kategori",
     showCategory: "Vis kategori",
@@ -101,6 +104,9 @@ export const UI = {
     add: "Add",
     searchContentPlaceholder: "Search content...",
     searchNoResults: "No results",
+    presetsLabel: "Start with a template:",
+    confirmApplyPreset: (name: string) =>
+      `Load the "${name}" template? This replaces all content and settings in the editor.`,
     blurb: "Intro text",
     hideCategory: "Hide category",
     showCategory: "Show category",

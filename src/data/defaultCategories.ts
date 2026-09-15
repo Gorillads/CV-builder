@@ -1,10 +1,11 @@
 import type {
   AppState,
+  ByLang,
   Category,
   LibraryItem,
 } from "../model/types";
 
-interface CategorySeed {
+export interface CategorySeed {
   id: string;
   title: [string, string];
   blurb?: [string, string];
@@ -12,9 +13,26 @@ interface CategorySeed {
   items?: Array<{
     head: [string, string];
     meta?: string;
+    comment?: [string, string];
     desc: [string, string];
     activities?: Array<[string, string]>;
   }>;
+}
+
+/** Everything a preset (or the blank default) needs to fully determine an
+ *  AppState beyond the shared category/item-building logic in
+ *  buildStateFromConfig: which categories/elements to seed, the design
+ *  tokens that give it its look, and the header/tailor fields that show
+ *  what belongs in those free-text spots too. */
+export interface StateConfig {
+  seeds: CategorySeed[];
+  design: AppState["design"];
+  header: AppState["header"];
+  appliedTitle: ByLang<string>;
+  keywords: ByLang<string>;
+  /** Per-category display variant (see src/data/designTokens' VARIANTS);
+   *  absent means every category uses the "standard" variant. */
+  variant?: Record<string, string>;
 }
 
 /* The 16 built-in categories, in their default display order, all sharing
@@ -28,7 +46,8 @@ interface CategorySeed {
  * they sit later in the default order, so they're typically the first
  * content to overflow onto automatic "Bilag" pages once the CV exceeds one
  * page. Content here is generic placeholder copy, not a real resume: bring
- * your own content in-app or via CSV import. */
+ * your own content in-app or via CSV import (or start from one of the
+ * example templates in src/data/presets.ts instead of a blank one). */
 const SEEDS: CategorySeed[] = [
   {
     id: "profil",
@@ -202,13 +221,28 @@ const SEEDS: CategorySeed[] = [
   },
 ];
 
+const DEFAULT_DESIGN: AppState["design"] = {
+  font: "industry",
+  scheme: "staal",
+  headSize: "standard",
+  struct: "single",
+  headKind: "left",
+  density: "standard",
+  sidebarSide: "right",
+  headingSize: "standard",
+  footer: { enabled: false, revision: "" },
+};
+
 let seq = 0;
 function nextId(prefix: string): string {
   seq += 1;
   return `${prefix}${seq}`;
 }
 
-export function createDefaultState(): AppState {
+/** Shared by the blank default state and every preset in
+ *  src/data/presets.ts — turns a seed list plus design/header/tailor
+ *  fields into a full, ready-to-use AppState. */
+export function buildStateFromConfig(config: StateConfig): AppState {
   const categories: Record<string, Category> = {};
   const items: Record<string, LibraryItem> = {};
   const selectedItems: Record<string, string[]> = {};
@@ -216,7 +250,7 @@ export function createDefaultState(): AppState {
   const on: Record<string, boolean> = {};
   const order: string[] = [];
 
-  SEEDS.forEach((seed) => {
+  config.seeds.forEach((seed) => {
     categories[seed.id] = {
       id: seed.id,
       title: { da: seed.title[0], en: seed.title[1] },
@@ -238,13 +272,13 @@ export function createDefaultState(): AppState {
         da: {
           head: it.head[0],
           meta: it.meta ?? "",
-          comment: "",
+          comment: it.comment?.[0] ?? "",
           desc: it.desc[0],
         },
         en: {
           head: it.head[1],
           meta: it.meta ?? "",
-          comment: "",
+          comment: it.comment?.[1] ?? "",
           desc: it.desc[1],
         },
         activities: (it.activities ?? []).map(([da, en]) => ({ da, en, isCollapsed: false })),
@@ -265,25 +299,20 @@ export function createDefaultState(): AppState {
     selectedItems,
     itemOrder,
     selectedActivities: {},
-    variant: {},
+    variant: { ...(config.variant ?? {}) },
+    appliedTitle: config.appliedTitle,
+    keywords: config.keywords,
+    header: config.header,
+    design: config.design,
+  };
+}
+
+export function createDefaultState(): AppState {
+  return buildStateFromConfig({
+    seeds: SEEDS,
+    design: DEFAULT_DESIGN,
+    header: { name: "", phone: "", mail: "", location: { da: "", en: "" } },
     appliedTitle: { da: "", en: "" },
     keywords: { da: "", en: "" },
-    header: {
-      name: "",
-      phone: "",
-      mail: "",
-      location: { da: "", en: "" },
-    },
-    design: {
-      font: "industry",
-      scheme: "staal",
-      headSize: "standard",
-      struct: "single",
-      headKind: "left",
-      density: "standard",
-      sidebarSide: "right",
-      headingSize: "standard",
-      footer: { enabled: false, revision: "" },
-    },
-  };
+  });
 }

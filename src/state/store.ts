@@ -4,6 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import type { Activity, AppState, Category, Lang, LibraryItem } from "../model/types";
 import { blankElementText } from "../model/types";
 import { createDefaultState } from "../data/defaultCategories";
+import { buildPresetState } from "../data/presets";
 import { applyImportPlan, parseImportPlan, type ImportParseResult } from "../csv/importCsv";
 import { exportCsv } from "../csv/exportCsv";
 import { exportJson, parseJsonBackup, type JsonParseResult } from "../json/backupJson";
@@ -217,6 +218,12 @@ export interface Store extends AppState {
   parseJsonImport(text: string): JsonParseResult;
   commitJsonImport(data: Partial<AppState>): void;
   exportJsonText(): string;
+
+  /** Replaces all content and settings with one of the example CVs from
+   *  src/data/presets.ts (Classic/Modern/Artistic) — the same "replace
+   *  everything" shape as commitJsonImport, just from a built-in example
+   *  instead of a file. A no-op if the id doesn't match a known preset. */
+  applyPreset(id: string): void;
 
   resetAll(): void;
 }
@@ -530,6 +537,11 @@ export const useStore = create<Store>()(
       parseJsonImport: (text) => parseJsonBackup(text),
       commitJsonImport: (data) => set({ ...createDefaultState(), ...data }),
       exportJsonText: () => exportJson(get()),
+
+      applyPreset: (id) => {
+        const preset = buildPresetState(id);
+        if (preset) set(preset);
+      },
 
       resetAll: () => set(createDefaultState()),
     }),

@@ -4,6 +4,7 @@ import type { Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
 import { CategoryCard } from "./CategoryCard";
 import { categoryMatchesQuery } from "../search/contentSearch";
+import { PRESETS } from "../data/presets";
 
 export function ContentTab({ lang }: { lang: Lang }) {
   const T = t(lang);
@@ -13,6 +14,7 @@ export function ContentTab({ lang }: { lang: Lang }) {
   const itemOrder = useStore((s) => s.itemOrder);
   const addCategory = useStore((s) => s.addCategory);
   const reorderCategory = useStore((s) => s.reorderCategory);
+  const applyPreset = useStore((s) => s.applyPreset);
   const [newName, setNewName] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -30,8 +32,26 @@ export function ContentTab({ lang }: { lang: Lang }) {
     return categoryMatchesQuery(cat, catItems, lang, query);
   });
 
+  const handleApplyPreset = (id: string, name: string) => {
+    if (window.confirm(T.confirmApplyPreset(name))) applyPreset(id);
+  };
+
   return (
     <div className="tab-content">
+      <div className="preset-bar">
+        <span className="preset-bar-label">{T.presetsLabel}</span>
+        {PRESETS.map((preset) => (
+          <button
+            key={preset.id}
+            type="button"
+            className="preset-btn"
+            title={preset.description[lang]}
+            onClick={() => handleApplyPreset(preset.id, preset.name[lang])}
+          >
+            {preset.name[lang]}
+          </button>
+        ))}
+      </div>
       <input
         className="field search-field"
         placeholder={T.searchContentPlaceholder}
