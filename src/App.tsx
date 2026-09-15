@@ -7,6 +7,7 @@ import { DesignTab } from "./components/DesignTab";
 import { CvPreview } from "./components/CvPreview";
 import { ImportExportBar } from "./components/ImportExportBar";
 import { useGoogleFont } from "./hooks/useGoogleFont";
+import { pxToMm, type PageOverflow } from "./hooks/usePageOverflow";
 import "./App.css";
 
 type Tab = "content" | "tailor" | "design";
@@ -18,6 +19,7 @@ function App() {
   const setHeaderField = useStore((s) => s.setHeaderField);
   const font = useStore((s) => s.design.font);
   const [tab, setTab] = useState<Tab>("content");
+  const [mainPageStatus, setMainPageStatus] = useState<PageOverflow | null>(null);
   const T = t(lang);
   useGoogleFont(font);
 
@@ -80,11 +82,18 @@ function App() {
 
         <div className="preview-panel">
           <div className="preview-toolbar">
+            {mainPageStatus && (
+              <div className={"page-status-pill" + (mainPageStatus.overflowing ? " page-status-pill--overflow" : "")}>
+                {mainPageStatus.overflowing
+                  ? `⚠ ${T.pageOverflow(mainPageStatus.overflowPx)}`
+                  : T.spaceRemaining(pxToMm(mainPageStatus.remainingPx))}
+              </div>
+            )}
             <button type="button" className="btn" onClick={() => window.print()}>
               {T.print}
             </button>
           </div>
-          <CvPreview lang={lang} />
+          <CvPreview lang={lang} onMainPageStatus={setMainPageStatus} />
         </div>
       </div>
     </div>

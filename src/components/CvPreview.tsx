@@ -5,7 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
 import { FONTS, SCHEMES, HEAD_SIZES, HEADING_SIZES, SIDE_DEFAULT, byId, defaultVariant } from "../data/designTokens";
-import { usePageOverflow, pxToMm } from "../hooks/usePageOverflow";
+import { usePageOverflow, pxToMm, type PageOverflow } from "../hooks/usePageOverflow";
 
 /** A4 content box (1123px tall, 40px vertical padding) — the fixed
  *  geometry both the pagination hook and the overflow-detecting Page
@@ -413,20 +413,29 @@ interface FooterInfo {
 
 /** One printed sheet: measures its own content against the fixed A4 box
  *  (see usePageOverflow) and surfaces a warning below it when the CV
- *  won't actually fit on one page. */
+ *  won't actually fit on one page. `onOverflowChange` lets a parent
+ *  mirror this page's status somewhere else on screen — used for the
+ *  main page's status pill pinned in the toolbar, which stays visible
+ *  without scrolling all the way down to this page's own bottom edge. */
 function Page({
   className,
   children,
   lang,
   footer,
+  onOverflowChange,
 }: {
   className: string;
   children: ReactNode;
   lang: Lang;
   footer: FooterInfo;
+  onOverflowChange?: (overflow: PageOverflow) => void;
 }) {
   const T = t(lang);
   const [ref, overflow] = usePageOverflow<HTMLDivElement>();
+
+  useEffect(() => {
+    onOverflowChange?.(overflow);
+  }, [overflow, onOverflowChange]);
 
   return (
     <>
@@ -450,7 +459,16 @@ function Page({
   );
 }
 
-export function CvPreview({ lang }: { lang: Lang }) {
+export function CvPreview({
+  lang,
+  onMainPageStatus,
+}: {
+  lang: Lang;
+  /** Reports the main (first) page's overflow/remaining-space status on
+   *  every measurement, so a caller can show it somewhere always-visible
+   *  (e.g. pinned in the toolbar) instead of only below the page itself. */
+  onMainPageStatus?: (overflow: PageOverflow) => void;
+}) {
   const T = t(lang);
   const order = useStore((s) => s.order);
   const categories = useStore((s) => s.categories);
@@ -524,6 +542,7 @@ export function CvPreview({ lang }: { lang: Lang }) {
           pageNumberLabel: T.pageLabel(1),
           revision: design.footer.revision,
         }}
+        onOverflowChange={onMainPageStatus}
       >
         <HeaderBlock
           name={header.name}
