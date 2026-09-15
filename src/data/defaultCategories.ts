@@ -237,15 +237,16 @@ export function createDefaultState(): AppState {
         da: {
           head: it.head[0],
           meta: it.meta ?? "",
+          comment: "",
           desc: it.desc[0],
         },
         en: {
           head: it.head[1],
           meta: it.meta ?? "",
+          comment: "",
           desc: it.desc[1],
         },
         activities: (it.activities ?? []).map(([da, en]) => ({ da, en })),
-        group: { da: "", en: "" },
       };
       ids.push(id);
     });

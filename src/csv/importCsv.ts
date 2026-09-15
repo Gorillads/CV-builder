@@ -23,8 +23,8 @@ interface ParsedItem {
   rowIndex: number;
   head: ByLang<string>;
   meta: string;
+  comment: ByLang<string>;
   desc: ByLang<string>;
-  group: ByLang<string>;
   activities: Activity[];
   selectedActivityIndices: number[] | null;
   inCv: boolean;
@@ -60,15 +60,17 @@ function resolveCategoryKey(raw: string, existing: Record<string, Category>): st
   return match ? match.id : slugify(raw);
 }
 
-/** Row-by-row outline parser: walks the Titel → Tekst / Kategori →
- *  Element → Aktivitet hierarchy (see src/csv/columns.ts) top to bottom,
- *  tracking which category/subgroup/item is currently "open" rather than
- *  relying on the dash-count depth, so a hand-edited file with an
- *  imperfect indent still parses correctly. */
+/** Row-by-row outline parser: walks the Titel → Tekst → Element →
+ *  Aktivitet hierarchy (see src/csv/columns.ts) top to bottom, tracking
+ *  which category/item is currently "open" rather than relying on the
+ *  dash-count depth, so a hand-edited file with an imperfect indent still
+ *  parses correctly. A legacy "Kategori" row (see NODE_ROLE.category) is
+ *  still tolerated: its text becomes the Kommentar of the elements that
+ *  follow, until the next Kategori row or Titel. */
 export function parseImportPlan(text: string, existingCategories: Record<string, Category>): ImportParseResult {
   const rows = parseCsv(text);
 
-  let cNode = -1, cDa = -1, cEn = -1, cMeta = -1, cDDa = -1, cDEn = -1, cUse = -1;
+  let cNode = -1, cDa = -1, cEn = -1, cMeta = -1, cCDa = -1, cCEn = -1, cDDa = -1, cDEn = -1, cUse = -1;
 
   if (rows.length) {
     const head = rows[0].map((v) => String(v).trim().toLowerCase());
@@ -76,6 +78,8 @@ export function parseImportPlan(text: string, existingCategories: Record<string,
     cDa = findColumn(head, ["dansk", "danish"]);
     cEn = findColumn(head, ["engelsk", "english"]);
     cMeta = findColumn(head, ["årstal/kilde", "year/source", "årstal", "meta"]);
+    cCDa = findColumn(head, ["kommentar (da)", "comment (da)"]);
+    cCEn = findColumn(head, ["kommentar (en)", "comment (en)"]);
     cDDa = findColumn(head, ["beskrivelse (da)", "description (da)"]);
     cDEn = findColumn(head, ["beskrivelse (en)", "description (en)"]);
     cUse = findColumn(head, ["med i cv", "in cv"]);
@@ -90,7 +94,9 @@ export function parseImportPlan(text: string, existingCategories: Record<string,
   let metaKeywords: ByLang<string> | null = null;
 
   let currentKey: string | null = null;
-  let currentGroup: ByLang<string> | null = null;
+  /** Set only by a legacy "Kategori" row (see NODE_ROLE.category); folded
+   *  into the Kommentar of whichever elements follow it. */
+  let pendingLegacyComment: ByLang<string> | null = null;
   let currentItem: ParsedItem | null = null;
   let rowIndex = 0;
 
@@ -120,7 +126,7 @@ export function parseImportPlan(text: string, existingCategories: Record<string,
         order.push(key);
       }
       currentKey = key;
-      currentGroup = null;
+      pendingLegacyComment = null;
       currentItem = null;
       return;
     }
@@ -137,22 +143,24 @@ export function parseImportPlan(text: string, existingCategories: Record<string,
     }
 
     if (role === NODE_ROLE.category) {
-      currentGroup = da || en ? { da, en } : null;
+      pendingLegacyComment = da || en ? { da, en } : null;
       currentItem = null;
       return;
     }
 
     if (role === NODE_ROLE.element) {
       if (!da && !en) return;
+      const commentDa = (cCDa >= 0 ? String(r[cCDa] || "").trim() : "") || pendingLegacyComment?.da || "";
+      const commentEn = (cCEn >= 0 ? String(r[cCEn] || "").trim() : "") || pendingLegacyComment?.en || "";
       const item: ParsedItem = {
         rowIndex: rowIndex++,
         head: { da, en },
         meta: String(cMeta >= 0 ? r[cMeta] : "").trim(),
+        comment: { da: commentDa, en: commentEn },
         desc: {
           da: String(cDDa >= 0 ? r[cDDa] : "").trim(),
           en: String(cDEn >= 0 ? r[cDEn] : "").trim(),
         },
-        group: currentGroup ?? { da: "", en: "" },
         activities: [],
         selectedActivityIndices: null,
         inCv: (() => {
@@ -281,15 +289,16 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
         da: {
           head: parsedItem.head.da,
           meta: parsedItem.meta,
+          comment: parsedItem.comment.da,
           desc: parsedItem.desc.da,
         },
         en: {
           head: parsedItem.head.en,
           meta: parsedItem.meta,
+          comment: parsedItem.comment.en || parsedItem.comment.da,
           desc: parsedItem.desc.en || parsedItem.desc.da,
         },
         activities: parsedItem.activities,
-        group: parsedItem.group,
       };
       if (parsedItem.selectedActivityIndices != null) {
         selectedActivities[id] = parsedItem.selectedActivityIndices;

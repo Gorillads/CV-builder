@@ -6,7 +6,6 @@ import { t } from "../i18n";
 function ItemEditor({ itemId, lang }: { itemId: string; lang: Lang }) {
   const item = useStore((s) => s.items[itemId]);
   const setItemField = useStore((s) => s.setItemField);
-  const setItemGroup = useStore((s) => s.setItemGroup);
   const deleteItem = useStore((s) => s.deleteItem);
   const addActivity = useStore((s) => s.addActivity);
   const removeActivity = useStore((s) => s.removeActivity);
@@ -43,11 +42,11 @@ function ItemEditor({ itemId, lang }: { itemId: string; lang: Lang }) {
         />
       </div>
       <input
-        className="field item-group"
-        placeholder={T.groupPlaceholder}
-        title={T.group}
-        value={item.group?.[lang] ?? ""}
-        onChange={(e) => setItemGroup(itemId, lang, e.target.value)}
+        className="field item-comment"
+        placeholder={T.commentPlaceholder}
+        title={T.comment}
+        value={text.comment}
+        onChange={(e) => setItemField(itemId, lang, "comment", e.target.value)}
       />
       <textarea
         className="field"

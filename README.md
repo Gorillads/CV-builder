@@ -39,13 +39,11 @@ Engelsk/Årstal-kilde/Beskrivelse/"Med i CV" columns depending on its role:
 ```
 Titel                courses
 -Tekst               These are the completed courses...
--Kategori            Bachelor
---Element            Project Management
----Aktivitet         Stakeholder interviews
--Kategori            Master
---Element            LCA
----Aktivitet         Carbon emission calculations
----Aktivitet         Weighting and normalization of emissions
+-Element             Project Management
+--Aktivitet          Stakeholder interviews
+-Element             LCA
+--Aktivitet          Carbon emission calculations
+--Aktivitet          Weighting and normalization of emissions
 ```
 
 - **Titel** starts a new category. It's matched against existing
@@ -53,16 +51,19 @@ Titel                courses
   re-importing a category unchanged keeps its identity; changing its
   title in the file creates a new category instead of renaming in place.
 - **Tekst**, directly under a Titel, is that category's intro blurb.
-- **Kategori** is an optional subgroup label (e.g. splitting a "Courses"
-  category into "Bachelor"/"Master") — every Element until the next
-  Kategori or Titel belongs to it. Most categories skip this level
-  entirely; Elements then sit directly under Titel.
 - **Element** is one library item — Dansk/Engelsk carry its heading, with
-  year/source and description as their own columns; "Med i CV" marks it
-  as selected for the current CV.
+  year/source, an optional short Kommentar shown right under the heading,
+  and a description as their own columns; "Med i CV" marks it as selected
+  for the current CV.
 - **Aktivitet**, under an Element, is one candidate bullet; "Med i CV"
   marks it as one of the picked bullets (absent activities default to
   all picked, matching in-app behavior).
+
+An older export may still have a "Kategori" row grouping several Elements
+under a shared subgroup label — that format has been replaced by the
+per-element Kommentar columns, but importing such a file still works:
+each Kategori row's text becomes the Kommentar of the Elements that used
+to follow it.
 
 Leading dashes are cosmetic (they just show nesting depth for readability
 in a spreadsheet) — the importer identifies a row by its Knude keyword
@@ -126,8 +127,7 @@ banner suggesting you move a section to the appendix or switch to the
 - ✅ Category + library item data model, Zustand store, localStorage
   persistence
 - ✅ CSV export/import with full-rebuild semantics, an indented outline
-  format with an optional subgroup level, dedup, new-category-from-
-  unrecognised-title
+  format, dedup, new-category-from-unrecognised-title
 - ✅ In-app editor (Indhold tab): category cards, element/activity editing,
   hide/delete, add category
 - ✅ Tailor-to-the-job tab: category on/off, reorder, per-item CV
@@ -141,8 +141,7 @@ banner suggesting you move a section to the appendix or switch to the
   every category alike
 - ✅ Automatic pagination: whatever doesn't fit on the first page flows
   onto as many further "Bilag" pages as needed — no manual placement
-- ✅ Optional item subgroups ("Kategori" in the CSV) rendered as
-  subheadings within a category
+- ✅ Optional per-item comment, shown right below the heading
 
 To bring in real content from the original prototype, open
 `design_handoff_cv_csv_editor/CV Skabelon.dc.html` in a browser, use its
