@@ -169,6 +169,11 @@ function SectionFlow({
     <>
       {ids.map((id) => {
         const cat = categories[id];
+        // The pagination result can briefly hold an id from before a
+        // category was deleted (it's recomputed in an effect, one render
+        // after the id disappears from `categories`) — skip it rather than
+        // crash on that transient frame.
+        if (!cat) return null;
         return <SectionBlock key={id} category={cat} lang={lang} variant={variants[id] ?? defaultVariant()} />;
       })}
     </>

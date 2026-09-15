@@ -212,15 +212,19 @@ export function CategoryCard({
   const itemOrder = useStore(useShallow((s) => s.itemOrder[category.id] ?? []));
   const setCategoryTitle = useStore((s) => s.setCategoryTitle);
   const setCategoryBlurb = useStore((s) => s.setCategoryBlurb);
-  const removeCategory = useStore((s) => s.removeCategory);
+  const hideCategory = useStore((s) => s.hideCategory);
+  const deleteCategory = useStore((s) => s.deleteCategory);
   const addItem = useStore((s) => s.addItem);
   const reorderItem = useStore((s) => s.reorderItem);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
 
-  const handleRemove = () => {
-    const msg = category.isCustom ? T.confirmDeleteCategory(category.title[lang]) : T.confirmHideCategory(category.title[lang]);
-    if (window.confirm(msg)) removeCategory(category.id);
+  const handleHide = () => {
+    if (window.confirm(T.confirmHideCategory(category.title[lang]))) hideCategory(category.id);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm(T.confirmDeleteCategory(category.title[lang]))) deleteCategory(category.id);
   };
 
   return (
@@ -255,8 +259,11 @@ export function CategoryCard({
           onChange={(e) => setCategoryTitle(category.id, lang, e.target.value)}
         />
         {category.isCustom && <span className="badge">{T.custom}</span>}
-        <button type="button" className="link-btn danger" onClick={handleRemove}>
-          {category.isCustom ? T.deleteCategory : T.hideCategory}
+        <button type="button" className="link-btn" onClick={handleHide}>
+          {T.hideCategory}
+        </button>
+        <button type="button" className="link-btn danger" onClick={handleDelete}>
+          {T.deleteCategory}
         </button>
       </div>
       <textarea

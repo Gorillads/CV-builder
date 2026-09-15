@@ -131,10 +131,13 @@ export interface Store extends AppState {
   setCategoryTitle(categoryId: string, lang: Lang, value: string): void;
   setCategoryBlurb(categoryId: string, lang: Lang, value: string): void;
   addCategory(name: string): void;
-  /** Built-ins are hidden (restorable via restoreHiddenCategories); custom
-   *  categories are removed for good. Same operation the CSV import uses
-   *  when a category drops out of an imported file. */
-  removeCategory(categoryId: string): void;
+  /** Hides the category (restorable via restoreHiddenCategories) — same
+   *  action regardless of whether it's a built-in or a custom category. */
+  hideCategory(categoryId: string): void;
+  /** Removes the category for good, along with its items and selections.
+   *  Same action regardless of whether it's a built-in or a custom
+   *  category — there's no "restore" for this one. */
+  deleteCategory(categoryId: string): void;
   restoreHiddenCategories(): void;
   toggleCategoryOn(categoryId: string): void;
   setVariant(categoryId: string, variant: string): void;
@@ -251,36 +254,40 @@ export const useStore = create<Store>()(
         }));
       },
 
-      removeCategory: (categoryId) =>
+      hideCategory: (categoryId) =>
         set((s) => {
           const cat = s.categories[categoryId];
           if (!cat) return s;
-          if (cat.isCustom) {
-            const categories = { ...s.categories };
-            delete categories[categoryId];
-            const items = { ...s.items };
-            Object.keys(items).forEach((id) => {
-              if (items[id].categoryId === categoryId) delete items[id];
-            });
-            const selectedItems = { ...s.selectedItems };
-            delete selectedItems[categoryId];
-            const itemOrder = { ...s.itemOrder };
-            delete itemOrder[categoryId];
-            const on = { ...s.on };
-            delete on[categoryId];
-            return {
-              categories,
-              items,
-              selectedItems,
-              itemOrder,
-              on,
-              order: s.order.filter((id) => id !== categoryId),
-            };
-          }
           return {
             categories: { ...s.categories, [categoryId]: { ...cat, isHidden: true } },
             order: s.order.filter((id) => id !== categoryId),
             on: { ...s.on, [categoryId]: false },
+          };
+        }),
+
+      deleteCategory: (categoryId) =>
+        set((s) => {
+          const cat = s.categories[categoryId];
+          if (!cat) return s;
+          const categories = { ...s.categories };
+          delete categories[categoryId];
+          const items = { ...s.items };
+          Object.keys(items).forEach((id) => {
+            if (items[id].categoryId === categoryId) delete items[id];
+          });
+          const selectedItems = { ...s.selectedItems };
+          delete selectedItems[categoryId];
+          const itemOrder = { ...s.itemOrder };
+          delete itemOrder[categoryId];
+          const on = { ...s.on };
+          delete on[categoryId];
+          return {
+            categories,
+            items,
+            selectedItems,
+            itemOrder,
+            on,
+            order: s.order.filter((id) => id !== categoryId),
           };
         }),
 
