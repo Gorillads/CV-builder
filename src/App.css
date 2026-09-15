@@ -398,6 +398,33 @@ textarea.field {
   padding: 12px 0;
 }
 
+.preset-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-bar-label {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.preset-btn {
+  border: 1px solid var(--accent);
+  background: none;
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.preset-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
 .tailor-field {
   display: flex;
   flex-direction: column;
