@@ -50,10 +50,11 @@ export function exportCsv(state: AppState): string {
 
     let openGroup: string | null = null;
     ordered.forEach((item) => {
-      const groupDa = item.group.da.trim();
-      const groupKey = groupDa || item.group.en.trim();
+      const group = item.group ?? { da: "", en: "" };
+      const groupDa = group.da.trim();
+      const groupKey = groupDa || group.en.trim();
       if (groupKey && groupKey !== openGroup) {
-        rows.push([node(NODE_ROLE.category, 1), item.group.da, item.group.en, "", "", "", ""]);
+        rows.push([node(NODE_ROLE.category, 1), group.da, group.en, "", "", "", ""]);
         openGroup = groupKey;
       } else if (!groupKey) {
         openGroup = null;

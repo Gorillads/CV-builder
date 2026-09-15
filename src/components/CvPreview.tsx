@@ -95,7 +95,7 @@ function EntryBlock({
 }
 
 function groupLabelOf(item: LibraryItem, lang: Lang): string {
-  return (item.group[lang] || item.group.da || item.group.en || "").trim();
+  return (item.group?.[lang] || item.group?.da || item.group?.en || "").trim();
 }
 
 /** Renders entry items in order, inserting a subheading whenever the

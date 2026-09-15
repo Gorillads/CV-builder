@@ -13,15 +13,18 @@ function newId(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}_${idSeq}`;
 }
 
-/** Older saved data may still carry two now-removed concepts: a category
- *  with kind:null (the old "pure prose, no elements" shape Profil used to
- *  use) and a category kind:"tags" whose items kept their name in a
- *  separate `tagValue` field instead of `head`. Every category is now the
- *  same shape (no kind at all, name always in `head`), so this folds both
- *  old shapes into the new one — moving a blank-kind category's blurb
- *  text into a real item, and copying any item's `tagValue` into `head` —
- *  so an existing user's real typed content survives the format change
- *  instead of silently vanishing. */
+/** Older saved data may still carry now-removed or later-added concepts:
+ *  a category with kind:null (the old "pure prose, no elements" shape
+ *  Profil used to use), a category kind:"tags" whose items kept their
+ *  name in a separate `tagValue` field instead of `head`, and an item
+ *  created before the optional subgroup `group` field existed at all —
+ *  every reader downstream assumes `item.group` is always an object, so a
+ *  missing one is a hard crash (a fully blank page), not just missing
+ *  text. This folds all three into the current shape — moving a blank-
+ *  kind category's blurb text into a real item, copying any item's
+ *  `tagValue` into `head`, and backfilling a blank `group` — so an
+ *  existing user's real typed content survives the format changes
+ *  instead of silently vanishing (or crashing the app outright). */
 function migrateToUnifiedCategoryModel(state: unknown): unknown {
   if (!state || typeof state !== "object") return state;
   const s = state as Record<string, unknown>;
@@ -64,6 +67,10 @@ function migrateToUnifiedCategoryModel(state: unknown): unknown {
       const head = rest.head || (tagValue as string) || "";
       items[id] = { ...items[id], [lang]: { ...rest, head } };
     });
+    const group = items[id].group as { da?: string; en?: string } | undefined;
+    if (!group) {
+      items[id] = { ...items[id], group: { da: "", en: "" } };
+    }
   });
 
   return { ...s, categories: nextCategories, items, selectedItems };
@@ -405,7 +412,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 2,
+      version: 3,
       migrate: (persisted) => migrateToUnifiedCategoryModel(persisted) as Store,
     },
   ),

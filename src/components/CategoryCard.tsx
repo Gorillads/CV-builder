@@ -48,7 +48,7 @@ function ItemEditor({ itemId, lang }: { itemId: string; lang: Lang }) {
         className="field item-group"
         placeholder={T.groupPlaceholder}
         title={T.group}
-        value={item.group[lang]}
+        value={item.group?.[lang] ?? ""}
         onChange={(e) => setItemGroup(itemId, lang, e.target.value)}
       />
       <textarea
