@@ -176,7 +176,7 @@ export function parseImportPlan(text: string, existingCategories: Record<string,
     if (role === NODE_ROLE.activity) {
       if (!currentItem) return;
       if (!da && !en) return;
-      currentItem.activities.push({ da, en });
+      currentItem.activities.push({ da, en, isCollapsed: false });
       const use = String(cUse >= 0 ? r[cUse] : "").trim().toLowerCase();
       const included = cUse < 0 || ["ja", "yes", "x", "1", "true"].includes(use);
       if (included) {
@@ -292,6 +292,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
           desc: parsedItem.desc.en || parsedItem.desc.da,
         },
         activities: parsedItem.activities,
+        isCollapsed: false,
       };
       if (parsedItem.selectedActivityIndices != null) {
         selectedActivities[id] = parsedItem.selectedActivityIndices;

@@ -46,16 +46,52 @@ function ActivityEditor({
   const activity = useStore((s) => s.items[itemId]?.activities[index]);
   const removeActivity = useStore((s) => s.removeActivity);
   const setActivity = useStore((s) => s.setActivity);
+  const toggleActivityCollapsed = useStore((s) => s.toggleActivityCollapsed);
   const T = t(lang);
 
   if (!activity) return null;
+
+  const rowClass =
+    "activity-row" +
+    (activity.isCollapsed ? " activity-row--collapsed" : "") +
+    (dragProps.isDragging ? " dragging" : "") +
+    (dragProps.isDragOver ? " drag-over" : "");
+
+  if (activity.isCollapsed) {
+    return (
+      <div
+        className={rowClass}
+        onDragOver={(e) => {
+          e.preventDefault();
+          dragProps.onDragOver();
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          dragProps.onDrop();
+        }}
+      >
+        <span
+          className="drag-handle drag-handle--small"
+          draggable
+          onDragStart={dragProps.onHandleDragStart}
+          onDragEnd={dragProps.onDragEnd}
+        >
+          ⠿
+        </span>
+        <button type="button" className="collapse-toggle" onClick={() => toggleActivityCollapsed(itemId, index)} title={T.expand}>
+          ▸
+        </button>
+        <span className="collapsed-label">{activity[lang]}</span>
+      </div>
+    );
+  }
 
   const length = activity[lang].length;
   const overLimit = length > ACTIVITY_SOFT_LIMIT;
 
   return (
     <div
-      className={"activity-row" + (dragProps.isDragging ? " dragging" : "") + (dragProps.isDragOver ? " drag-over" : "")}
+      className={rowClass}
       onDragOver={(e) => {
         e.preventDefault();
         dragProps.onDragOver();
@@ -73,6 +109,9 @@ function ActivityEditor({
       >
         ⠿
       </span>
+      <button type="button" className="collapse-toggle" onClick={() => toggleActivityCollapsed(itemId, index)} title={T.collapse}>
+        ▾
+      </button>
       <input className="field" value={activity[lang]} onChange={(e) => setActivity(itemId, index, lang, e.target.value)} />
       <span className={"char-counter" + (overLimit ? " char-counter--over" : "")} title={T.charCounterHint}>
         {length}/{ACTIVITY_SOFT_LIMIT}
@@ -82,6 +121,13 @@ function ActivityEditor({
       </button>
     </div>
   );
+}
+
+/** Same fallback chain TailorTab's item checklist uses, so an item's
+ *  collapsed label matches what you'd recognize it by there too. */
+function itemLabel(text: { head: string; desc: string }, fallback: string): string {
+  const desc = text.desc.trim();
+  return text.head || (desc.length > 40 ? `${desc.slice(0, 40)}…` : desc) || fallback;
 }
 
 function ItemEditor({
@@ -98,6 +144,7 @@ function ItemEditor({
   const deleteItem = useStore((s) => s.deleteItem);
   const addActivity = useStore((s) => s.addActivity);
   const reorderActivity = useStore((s) => s.reorderActivity);
+  const toggleItemCollapsed = useStore((s) => s.toggleItemCollapsed);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const T = t(lang);
@@ -109,9 +156,45 @@ function ItemEditor({
     if (window.confirm(T.confirmDeleteItem(text.head || "?"))) deleteItem(itemId);
   };
 
+  const cardClass =
+    "item-card" +
+    (item.isCollapsed ? " item-card--collapsed" : "") +
+    (dragProps.isDragging ? " dragging" : "") +
+    (dragProps.isDragOver ? " drag-over" : "");
+
+  if (item.isCollapsed) {
+    return (
+      <div
+        className={cardClass}
+        onDragOver={(e) => {
+          e.preventDefault();
+          dragProps.onDragOver();
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          dragProps.onDrop();
+        }}
+      >
+        <span
+          className="drag-handle"
+          draggable
+          onDragStart={dragProps.onHandleDragStart}
+          onDragEnd={dragProps.onDragEnd}
+          title={T.dragToReorder}
+        >
+          ⠿
+        </span>
+        <button type="button" className="collapse-toggle" onClick={() => toggleItemCollapsed(itemId)} title={T.expand}>
+          ▸
+        </button>
+        <span className="collapsed-label">{itemLabel(text, T.custom)}</span>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={"item-card" + (dragProps.isDragging ? " dragging" : "") + (dragProps.isDragOver ? " drag-over" : "")}
+      className={cardClass}
       onDragOver={(e) => {
         e.preventDefault();
         dragProps.onDragOver();
@@ -131,6 +214,9 @@ function ItemEditor({
         >
           ⠿
         </span>
+        <button type="button" className="collapse-toggle" onClick={() => toggleItemCollapsed(itemId)} title={T.collapse}>
+          ▾
+        </button>
         <button type="button" className="link-btn danger" onClick={handleDelete}>
           {T.deleteItem}
         </button>
@@ -213,6 +299,7 @@ export function CategoryCard({
   const setCategoryTitle = useStore((s) => s.setCategoryTitle);
   const setCategoryBlurb = useStore((s) => s.setCategoryBlurb);
   const hideCategory = useStore((s) => s.hideCategory);
+  const unhideCategory = useStore((s) => s.unhideCategory);
   const deleteCategory = useStore((s) => s.deleteCategory);
   const addItem = useStore((s) => s.addItem);
   const reorderItem = useStore((s) => s.reorderItem);
@@ -227,9 +314,49 @@ export function CategoryCard({
     if (window.confirm(T.confirmDeleteCategory(category.title[lang]))) deleteCategory(category.id);
   };
 
+  const cardClass =
+    "category-card" +
+    (category.isHidden ? " category-card--collapsed" : "") +
+    (dragProps?.isDragging ? " dragging" : "") +
+    (dragProps?.isDragOver ? " drag-over" : "");
+
+  if (category.isHidden) {
+    return (
+      <div
+        className={cardClass}
+        onDragOver={(e) => {
+          if (!dragProps) return;
+          e.preventDefault();
+          dragProps.onDragOver();
+        }}
+        onDrop={(e) => {
+          if (!dragProps) return;
+          e.preventDefault();
+          dragProps.onDrop();
+        }}
+      >
+        {dragProps && (
+          <span
+            className="drag-handle"
+            draggable
+            onDragStart={dragProps.onHandleDragStart}
+            onDragEnd={dragProps.onDragEnd}
+            title={T.dragToReorder}
+          >
+            ⠿
+          </span>
+        )}
+        <span className="collapsed-label">{category.title[lang]}</span>
+        <button type="button" className="link-btn" onClick={() => unhideCategory(category.id)}>
+          {T.showCategory}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={"category-card" + (dragProps?.isDragging ? " dragging" : "") + (dragProps?.isDragOver ? " drag-over" : "")}
+      className={cardClass}
       onDragOver={(e) => {
         if (!dragProps) return;
         e.preventDefault();
