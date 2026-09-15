@@ -78,7 +78,7 @@ function ActivityEditor({
         >
           ⠿
         </span>
-        <button type="button" className="collapse-toggle" onClick={() => toggleActivityCollapsed(itemId, index)} title={T.expand}>
+        <button type="button" className="icon-btn" onClick={() => toggleActivityCollapsed(itemId, index)} title={T.expand}>
           ▸
         </button>
         <span className="collapsed-label">{activity[lang]}</span>
@@ -109,7 +109,7 @@ function ActivityEditor({
       >
         ⠿
       </span>
-      <button type="button" className="collapse-toggle" onClick={() => toggleActivityCollapsed(itemId, index)} title={T.collapse}>
+      <button type="button" className="icon-btn" onClick={() => toggleActivityCollapsed(itemId, index)} title={T.collapse}>
         ▾
       </button>
       <input className="field" value={activity[lang]} onChange={(e) => setActivity(itemId, index, lang, e.target.value)} />
@@ -184,7 +184,7 @@ function ItemEditor({
         >
           ⠿
         </span>
-        <button type="button" className="collapse-toggle" onClick={() => toggleItemCollapsed(itemId)} title={T.expand}>
+        <button type="button" className="icon-btn" onClick={() => toggleItemCollapsed(itemId)} title={T.expand}>
           ▸
         </button>
         <span className="collapsed-label">{itemLabel(text, T.custom)}</span>
@@ -214,7 +214,7 @@ function ItemEditor({
         >
           ⠿
         </span>
-        <button type="button" className="collapse-toggle" onClick={() => toggleItemCollapsed(itemId)} title={T.collapse}>
+        <button type="button" className="icon-btn" onClick={() => toggleItemCollapsed(itemId)} title={T.collapse}>
           ▾
         </button>
         <button type="button" className="link-btn danger" onClick={handleDelete}>
