@@ -229,20 +229,10 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
   Object.values(state.categories).forEach((cat) => {
     if (keep.has(cat.id)) return;
     removedFromOrder.add(cat.id);
-    if (cat.isCustom) {
-      // Dropped for good: strip its items and selection too.
-      Object.keys(items).forEach((id) => {
-        if (items[id].categoryId === cat.id) {
-          delete items[id];
-          delete selectedActivities[id];
-        }
-      });
-      delete selectedItems[cat.id];
-      delete itemOrder[cat.id];
-      delete on[cat.id];
-      return;
-    }
-    // Built-in: hidden, restorable — its own content is left untouched.
+    // Hidden, restorable, built-in or custom alike — its own content is
+    // left untouched. Deleting for good is a separate, explicit,
+    // confirmed action in the editor, never a side effect of an import
+    // simply not mentioning a category.
     categories[cat.id] = { ...cat, isHidden: true };
     on[cat.id] = false;
   });
