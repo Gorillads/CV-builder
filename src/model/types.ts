@@ -17,6 +17,10 @@ export interface Category {
 export interface Activity {
   da: string;
   en: string;
+  /** Collapses this bullet to a single line in the Content tab — a display
+   *  convenience for scanning/reordering a long list, unrelated to whether
+   *  it's picked for the current CV (see AppState.selectedActivities). */
+  isCollapsed: boolean;
 }
 
 /** One element in a category's library: a dated/sourced item with a
@@ -34,6 +38,10 @@ export interface LibraryItem {
   /** Pool of candidate bullets; which ones are picked for the current CV
    *  is tracked separately per item in AppState.selectedActivities. */
   activities: Activity[];
+  /** Collapses this element to a single line in the Content tab — same
+   *  display convenience as Activity.isCollapsed, unrelated to whether
+   *  it's picked for the current CV (see AppState.selectedItems). */
+  isCollapsed: boolean;
 }
 
 export interface ElementText {
@@ -54,10 +62,11 @@ export function blankElementText(): ElementText {
 
 export interface AppState {
   lang: Lang;
-  /** Display order of category ids currently in the registry. Hiding a
-   *  category removes it from this list (restorable); it is distinct from
-   *  a category being toggled off for the current CV (see `on`), which
-   *  keeps its place in `order` but drops it from the rendered CV. */
+  /** Display order of every category id in the registry, hidden ones
+   *  included — a hidden category (see Category.isHidden) keeps its place
+   *  here and is still draggable, just collapsed to one line in the
+   *  Content tab. Distinct from a category being toggled off for the
+   *  current CV (see `on`), which is a separate, unrelated switch. */
   order: string[];
   categories: Record<string, Category>;
   items: Record<string, LibraryItem>;

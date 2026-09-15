@@ -9,22 +9,15 @@ export function ContentTab({ lang }: { lang: Lang }) {
   const order = useStore((s) => s.order);
   const categories = useStore((s) => s.categories);
   const addCategory = useStore((s) => s.addCategory);
-  const restoreHiddenCategories = useStore((s) => s.restoreHiddenCategories);
   const reorderCategory = useStore((s) => s.reorderCategory);
   const [newName, setNewName] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  const visible = order.filter((id) => categories[id] && !categories[id].isHidden);
-  const hasHidden = Object.values(categories).some((c) => c.isHidden);
+  const visible = order.filter((id) => categories[id]);
 
   return (
     <div className="tab-content">
-      {hasHidden && (
-        <button type="button" className="link-btn" onClick={restoreHiddenCategories}>
-          {T.restoreHidden}
-        </button>
-      )}
       {visible.map((id) => (
         <CategoryCard
           key={id}

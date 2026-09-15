@@ -259,6 +259,39 @@ textarea.field {
   gap: 8px;
 }
 
+/* Collapsed state, shared shape across category/item/activity rows: a
+   single line (drag handle, label, toggle) that keeps its place in the
+   drag-reorderable list instead of taking up its full editor height. */
+.category-card--collapsed,
+.item-card--collapsed {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapsed-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.category-card--collapsed .collapsed-label {
+  font-weight: 600;
+}
+
+.collapse-toggle {
+  border: none;
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 2px;
+  flex: none;
+}
+
 .category-card-header {
   display: flex;
   align-items: center;

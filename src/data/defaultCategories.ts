@@ -247,7 +247,8 @@ export function createDefaultState(): AppState {
           comment: "",
           desc: it.desc[1],
         },
-        activities: (it.activities ?? []).map(([da, en]) => ({ da, en })),
+        activities: (it.activities ?? []).map(([da, en]) => ({ da, en, isCollapsed: false })),
+        isCollapsed: false,
       };
       ids.push(id);
     });

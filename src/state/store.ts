@@ -79,6 +79,12 @@ function migrateToUnifiedCategoryModel(state: unknown): unknown {
       const { group: _oldGroup, ...withoutGroup } = items[id];
       items[id] = withoutGroup;
     }
+    const activities = (items[id].activities as Array<Record<string, unknown>> | undefined) ?? [];
+    items[id] = {
+      ...items[id],
+      isCollapsed: typeof items[id].isCollapsed === "boolean" ? items[id].isCollapsed : false,
+      activities: activities.map((a) => ({ ...a, isCollapsed: typeof a.isCollapsed === "boolean" ? a.isCollapsed : false })),
+    };
   });
 
   const itemOrder = { ...((s.itemOrder as Record<string, string[]>) ?? {}) };
@@ -92,7 +98,16 @@ function migrateToUnifiedCategoryModel(state: unknown): unknown {
     itemOrder[catId] = [...selected, ...rest];
   });
 
-  return { ...s, categories: nextCategories, items, selectedItems, itemOrder };
+  // A category hidden by an earlier version of hideCategory was dropped
+  // from `order` entirely; hidden categories now keep their place there
+  // (collapsed to one line instead), so any that's missing needs to be
+  // added back, or it becomes unreachable.
+  const order = Array.isArray(s.order) ? [...(s.order as string[])] : [];
+  Object.keys(nextCategories).forEach((catId) => {
+    if (!order.includes(catId)) order.push(catId);
+  });
+
+  return { ...s, categories: nextCategories, items, selectedItems, itemOrder, order };
 }
 
 /** Falls back to an in-memory map when localStorage isn't reachable (a
@@ -131,14 +146,19 @@ export interface Store extends AppState {
   setCategoryTitle(categoryId: string, lang: Lang, value: string): void;
   setCategoryBlurb(categoryId: string, lang: Lang, value: string): void;
   addCategory(name: string): void;
-  /** Hides the category (restorable via restoreHiddenCategories) — same
-   *  action regardless of whether it's a built-in or a custom category. */
+  /** Hides the category — collapsed to a single line in the Content tab
+   *  and dropped from the Tailor tab, CV output and CSV export, but it
+   *  keeps its place in `order` so it's still draggable and reachable via
+   *  unhideCategory. Same action regardless of whether it's a built-in or
+   *  a custom category. */
   hideCategory(categoryId: string): void;
+  /** Reverses hideCategory: expands the category back to its full card,
+   *  right where it already sits in the order. */
+  unhideCategory(categoryId: string): void;
   /** Removes the category for good, along with its items and selections.
    *  Same action regardless of whether it's a built-in or a custom
    *  category — there's no "restore" for this one. */
   deleteCategory(categoryId: string): void;
-  restoreHiddenCategories(): void;
   toggleCategoryOn(categoryId: string): void;
   setVariant(categoryId: string, variant: string): void;
   moveCategory(categoryId: string, direction: -1 | 1): void;
@@ -157,11 +177,18 @@ export interface Store extends AppState {
   reorderItem(categoryId: string, draggedId: string, targetId: string): void;
   toggleItemInCv(categoryId: string, itemId: string): void;
   setItemField(itemId: string, lang: Lang, field: "head" | "meta" | "comment" | "desc", value: string): void;
+  /** Collapses/expands the item's editor card to a single line — a Content
+   *  tab display convenience for scanning/reordering, unrelated to
+   *  toggleItemInCv (which is about what's on the current CV). */
+  toggleItemCollapsed(itemId: string): void;
 
   addActivity(itemId: string, da: string, en: string): void;
   removeActivity(itemId: string, index: number): void;
   setActivity(itemId: string, index: number, lang: Lang, value: string): void;
   toggleActivitySelected(itemId: string, index: number): void;
+  /** Collapses/expands one activity row to a single line — same display
+   *  convenience as toggleItemCollapsed, unrelated to toggleActivitySelected. */
+  toggleActivityCollapsed(itemId: string, index: number): void;
   /** Drag-and-drop reorder of an item's own activity pool; remaps any
    *  explicit selectedActivities indices so already-picked bullets stay
    *  picked after the move. */
@@ -260,9 +287,15 @@ export const useStore = create<Store>()(
           if (!cat) return s;
           return {
             categories: { ...s.categories, [categoryId]: { ...cat, isHidden: true } },
-            order: s.order.filter((id) => id !== categoryId),
             on: { ...s.on, [categoryId]: false },
           };
+        }),
+
+      unhideCategory: (categoryId) =>
+        set((s) => {
+          const cat = s.categories[categoryId];
+          if (!cat) return s;
+          return { categories: { ...s.categories, [categoryId]: { ...cat, isHidden: false } } };
         }),
 
       deleteCategory: (categoryId) =>
@@ -291,31 +324,26 @@ export const useStore = create<Store>()(
           };
         }),
 
-      restoreHiddenCategories: () =>
-        set((s) => {
-          const categories = { ...s.categories };
-          const order = [...s.order];
-          Object.values(categories).forEach((cat) => {
-            if (cat.isHidden) {
-              categories[cat.id] = { ...cat, isHidden: false };
-              if (!order.includes(cat.id)) order.push(cat.id);
-            }
-          });
-          return { categories, order };
-        }),
-
       toggleCategoryOn: (categoryId) =>
         set((s) => ({ on: { ...s.on, [categoryId]: !s.on[categoryId] } })),
 
       setVariant: (categoryId, variant) =>
         set((s) => ({ variant: { ...s.variant, [categoryId]: variant } })),
 
+      // Swaps positions within the visible (non-hidden) subsequence rather
+      // than plain adjacent indices in `order` — hidden categories keep
+      // their own slot in `order` (see hideCategory), so a naive index swap
+      // could silently trade places with an invisible neighbor instead of
+      // the next visible one.
       moveCategory: (categoryId, direction) =>
         set((s) => {
+          const visibleIds = s.order.filter((id) => s.categories[id] && !s.categories[id].isHidden);
+          const vi = visibleIds.indexOf(categoryId);
+          const vj = vi + direction;
+          if (vi < 0 || vj < 0 || vj >= visibleIds.length) return s;
           const order = s.order.slice();
           const i = order.indexOf(categoryId);
-          const j = i + direction;
-          if (i < 0 || j < 0 || j >= order.length) return s;
+          const j = order.indexOf(visibleIds[vj]);
           [order[i], order[j]] = [order[j], order[i]];
           return { order };
         }),
@@ -342,6 +370,7 @@ export const useStore = create<Store>()(
           da: blankElementText(),
           en: blankElementText(),
           activities: [],
+          isCollapsed: false,
         };
         set((s) => ({
           items: { ...s.items, [id]: item },
@@ -406,11 +435,18 @@ export const useStore = create<Store>()(
           return { items: { ...s.items, [itemId]: { ...item, [lang]: { ...item[lang], [field]: value } } } };
         }),
 
+      toggleItemCollapsed: (itemId) =>
+        set((s) => {
+          const item = s.items[itemId];
+          if (!item) return s;
+          return { items: { ...s.items, [itemId]: { ...item, isCollapsed: !item.isCollapsed } } };
+        }),
+
       addActivity: (itemId, da, en) =>
         set((s) => {
           const item = s.items[itemId];
           if (!item) return s;
-          const activities: Activity[] = [...item.activities, { da, en: en || da }];
+          const activities: Activity[] = [...item.activities, { da, en: en || da, isCollapsed: false }];
           return { items: { ...s.items, [itemId]: { ...item, activities } } };
         }),
 
@@ -442,6 +478,14 @@ export const useStore = create<Store>()(
           const current = selectedActivityIndices(s, item);
           const next = current.includes(index) ? current.filter((i) => i !== index) : [...current, index].sort((a, b) => a - b);
           return { selectedActivities: { ...s.selectedActivities, [itemId]: next } };
+        }),
+
+      toggleActivityCollapsed: (itemId, index) =>
+        set((s) => {
+          const item = s.items[itemId];
+          if (!item) return s;
+          const activities = item.activities.map((a, i) => (i === index ? { ...a, isCollapsed: !a.isCollapsed } : a));
+          return { items: { ...s.items, [itemId]: { ...item, activities } } };
         }),
 
       reorderActivity: (itemId, from, to) =>
@@ -492,7 +536,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 5,
+      version: 6,
       migrate: (persisted) => migrateToUnifiedCategoryModel(persisted) as Store,
     },
   ),
