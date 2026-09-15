@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useStore } from "../state/store";
 import { useShallow } from "zustand/react/shallow";
-import type { Category, Lang } from "../model/types";
+import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
+import { activityMatchesQuery, itemMatchesQuery } from "../search/contentSearch";
 
 /** Category-level drag handling is owned by ContentTab (it sees every
  *  card, not just one), so CategoryCard only renders the handle and
@@ -37,11 +38,16 @@ function ActivityEditor({
   index,
   lang,
   dragProps,
+  searchQuery,
 }: {
   itemId: string;
   index: number;
   lang: Lang;
   dragProps: IndexDragProps;
+  /** Pre-trimmed, lowercased search text from the Content tab's search
+   *  bar, or "" when not searching — a matching activity is shown
+   *  expanded even if isCollapsed, so the hit is actually visible. */
+  searchQuery: string;
 }) {
   const activity = useStore((s) => s.items[itemId]?.activities[index]);
   const removeActivity = useStore((s) => s.removeActivity);
@@ -51,13 +57,16 @@ function ActivityEditor({
 
   if (!activity) return null;
 
+  const matchesSearch = !!searchQuery && activityMatchesQuery(activity, lang, searchQuery);
+  const showCollapsed = activity.isCollapsed && !matchesSearch;
+
   const rowClass =
     "activity-row" +
-    (activity.isCollapsed ? " activity-row--collapsed" : "") +
+    (showCollapsed ? " activity-row--collapsed" : "") +
     (dragProps.isDragging ? " dragging" : "") +
     (dragProps.isDragOver ? " drag-over" : "");
 
-  if (activity.isCollapsed) {
+  if (showCollapsed) {
     return (
       <div
         className={rowClass}
@@ -134,10 +143,15 @@ function ItemEditor({
   itemId,
   lang,
   dragProps,
+  searchQuery,
 }: {
   itemId: string;
   lang: Lang;
   dragProps: CategoryDragProps;
+  /** See ActivityEditor — CategoryCard only renders an ItemEditor at all
+   *  while searching if this item matched, so a non-empty query here is
+   *  reason enough to force it open. */
+  searchQuery: string;
 }) {
   const item = useStore((s) => s.items[itemId]);
   const setItemField = useStore((s) => s.setItemField);
@@ -156,13 +170,15 @@ function ItemEditor({
     if (window.confirm(T.confirmDeleteItem(text.head || "?"))) deleteItem(itemId);
   };
 
+  const showCollapsed = item.isCollapsed && !searchQuery;
+
   const cardClass =
     "item-card" +
-    (item.isCollapsed ? " item-card--collapsed" : "") +
+    (showCollapsed ? " item-card--collapsed" : "") +
     (dragProps.isDragging ? " dragging" : "") +
     (dragProps.isDragOver ? " drag-over" : "");
 
-  if (item.isCollapsed) {
+  if (showCollapsed) {
     return (
       <div
         className={cardClass}
@@ -260,6 +276,7 @@ function ItemEditor({
             itemId={itemId}
             index={i}
             lang={lang}
+            searchQuery={searchQuery}
             dragProps={{
               isDragging: draggedIndex === i,
               isDragOver: dragOverIndex === i && draggedIndex !== i,
@@ -289,15 +306,22 @@ export function CategoryCard({
   category,
   lang,
   dragProps,
+  searchQuery = "",
 }: {
   category: Category;
   lang: Lang;
   /** Optional so CategoryCard still renders sensibly if ever used without
    *  a drag-capable parent; ContentTab always supplies it. */
   dragProps?: CategoryDragProps;
+  /** Pre-trimmed, lowercased text from the Content tab's search bar. Only
+   *  categories that already matched (see ContentTab) get rendered while
+   *  this is set, so its mere presence here means "expand and show only
+   *  the elements that matched too" rather than needing a fresh check. */
+  searchQuery?: string;
 }) {
   const T = t(lang);
   const itemOrder = useStore(useShallow((s) => s.itemOrder[category.id] ?? []));
+  const items = useStore((s) => s.items);
   const setCategoryTitle = useStore((s) => s.setCategoryTitle);
   const setCategoryBlurb = useStore((s) => s.setCategoryBlurb);
   const hideCategory = useStore((s) => s.hideCategory);
@@ -312,13 +336,22 @@ export function CategoryCard({
     if (window.confirm(T.confirmDeleteCategory(category.title[lang]))) deleteCategory(category.id);
   };
 
+  const visibleItemIds = searchQuery
+    ? itemOrder.filter((id) => {
+        const it: LibraryItem | undefined = items[id];
+        return it && itemMatchesQuery(it, lang, searchQuery);
+      })
+    : itemOrder;
+
+  const showCollapsed = category.isHidden && !searchQuery;
+
   const cardClass =
     "category-card" +
-    (category.isHidden ? " category-card--collapsed" : "") +
+    (showCollapsed ? " category-card--collapsed" : "") +
     (dragProps?.isDragging ? " dragging" : "") +
     (dragProps?.isDragOver ? " drag-over" : "");
 
-  if (category.isHidden) {
+  if (showCollapsed) {
     return (
       <div
         className={cardClass}
@@ -399,11 +432,12 @@ export function CategoryCard({
         onChange={(e) => setCategoryBlurb(category.id, lang, e.target.value)}
       />
       <div className="item-list">
-        {itemOrder.map((id) => (
+        {visibleItemIds.map((id) => (
           <ItemEditor
             key={id}
             itemId={id}
             lang={lang}
+            searchQuery={searchQuery}
             dragProps={{
               isDragging: draggedItemId === id,
               isDragOver: dragOverItemId === id && draggedItemId !== id,
