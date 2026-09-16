@@ -1021,11 +1021,15 @@ textarea.field {
   gap: 0;
 }
 
+/* Bleeds 44px into .cv-page's own right padding (the same way .cv-page's
+   own content never has to account for that padding) so the sidebar's
+   actual text column gets the same width it would if the page had no
+   padding on that side — this is purely about content width, unrelated
+   to the tinted backdrop (see .cv-sidebar-fill), which handles the
+   full-height bleed on its own. */
 .cv-aside {
-  background: var(--cv-chip-bg);
-  margin: -40px -44px -40px 0;
-  padding: 40px 44px 40px 20px;
-  border-radius: 0 2px 2px 0;
+  margin-right: -44px;
+  padding: 0 44px 0 20px;
 }
 
 .cv-grid-sidebar.side-left {
@@ -1034,8 +1038,32 @@ textarea.field {
 
 .cv-grid-sidebar.side-left .cv-aside {
   order: -1;
-  margin: -40px 0 -40px -44px;
-  padding: 40px 20px 40px 44px;
+  margin-right: 0;
+  margin-left: -44px;
+  padding: 0 20px 0 44px;
+}
+
+/* Full page-height backdrop for the sidebar column, positioned against
+   .cv-page's own padding box (see .cv-page's position: relative) so it
+   bleeds all the way to the page's real top/bottom/side edges — behind
+   the header too — regardless of how tall the header ends up being.
+   .cv-aside itself only carries the column's actual content and inner
+   padding; this is purely the tinted backdrop underneath it. */
+.cv-sidebar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 200px;
+  background: var(--cv-chip-bg);
+}
+
+.cv-sidebar-fill.side-right {
+  right: 0;
+  border-radius: 0 2px 2px 0;
+}
+
+.cv-sidebar-fill.side-left {
+  left: 0;
   border-radius: 2px 0 0 2px;
 }
 
