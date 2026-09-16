@@ -540,11 +540,6 @@ textarea.field {
   white-space: nowrap;
 }
 
-.sidebar-placement-toggle {
-  flex: none;
-  white-space: nowrap;
-}
-
 .design-group {
   display: flex;
   flex-direction: column;
