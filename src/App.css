@@ -665,12 +665,13 @@ textarea.field {
   line-height: 1.45;
 }
 
-/* Direct content block (.cv-flow or .cv-grid-sidebar) fills whatever
-   height the header leaves, so a tinted sidebar (see .cv-aside) reaches
-   all the way to the page's bottom edge instead of stopping at its own
-   shorter content. */
+/* Direct content block (.cv-flow, .cv-grid-sidebar or .cv-grid-two) fills
+   whatever height the header leaves, so a tinted sidebar (see .cv-aside)
+   reaches all the way to the page's bottom edge instead of stopping at its
+   own shorter content. */
 .cv-page > .cv-flow,
-.cv-page > .cv-grid-sidebar {
+.cv-page > .cv-grid-sidebar,
+.cv-page > .cv-grid-two {
   flex: 1;
 }
 
@@ -1038,13 +1039,16 @@ textarea.field {
 
 /* ---- Page structure (macro layout only) -------------------------------
    single: one flowing column.
-   two: sections flow into two balanced columns.
+   two: sections split into two equal-width columns — which categories go
+     in which column is a per-category choice (see AppState.sidebarPlacement
+     and isInSidebar), handled in JSX the same way as the sidebar struct.
    sidebar: handled in JSX (aside + main), styled here as a grid with a
      tinted aside that bleeds to the page's own edges.
    marked: each section gets a left accent rail instead of a rule. */
 
-.struct-two .cv-flow {
-  columns: 2;
+.cv-grid-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   column-gap: 32px;
 }
 

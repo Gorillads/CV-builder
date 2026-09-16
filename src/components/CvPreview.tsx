@@ -264,20 +264,20 @@ function chunkByBudget(ids: string[], heights: Map<string, number>, budget: numb
 
 /** Automatic pagination: measures the header and every active category's
  *  real rendered height via a hidden off-screen twin (single fixed column
- *  width, regardless of struct — a two-column struct's CSS columns just
- *  make an already-safe page more compact, never overflow it), then
- *  decides how much fits on page 1 and greedily flows the rest onto
- *  continuation "Bilag" pages. For the sidebar struct, main and aside are
- *  simultaneous columns rather than stacked, so each gets its own
- *  independent prefix-fit against the same page-1 budget; their combined
- *  overflow is re-sequenced back into `activeIds`' original order before
- *  being chunked into continuation pages. Returns no continuation pages
- *  at all when everything already fits on page 1. */
+ *  width regardless of struct — a measured height is safe to reuse for a
+ *  narrower column too, since text only wraps to more lines, never fewer),
+ *  then decides how much fits on page 1 and greedily flows the rest onto
+ *  continuation "Bilag" pages. For the sidebar and two-column structs, main
+ *  and the second column are simultaneous columns rather than stacked, so
+ *  each gets its own independent prefix-fit against the same page-1
+ *  budget; their combined overflow is re-sequenced back into `activeIds`'
+ *  original order before being chunked into continuation pages. Returns no
+ *  continuation pages at all when everything already fits on page 1. */
 function usePagination(
   activeIds: string[],
   mainIds: string[],
   asideIds: string[],
-  isSidebar: boolean,
+  splitColumns: boolean,
   variants: Record<string, string>,
   lang: Lang,
   footerEnabled: boolean,
@@ -315,7 +315,7 @@ function usePagination(
       let page1Aside: string[];
       let overflowSet: Set<string>;
 
-      if (isSidebar) {
+      if (splitColumns) {
         const mainSplit = splitPrefix(mainIds, heights, page1Budget);
         const asideSplit = splitPrefix(asideIds, heights, page1Budget);
         page1Main = mainSplit.fit;
@@ -352,7 +352,7 @@ function usePagination(
     // language, or the page budget (footer) changes; the observers alone
     // handle content edits within an already-observed category.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIds.join("|"), mainIds.join("|"), asideIds.join("|"), isSidebar, JSON.stringify(variants), lang, footerEnabled]);
+  }, [activeIds.join("|"), mainIds.join("|"), asideIds.join("|"), splitColumns, JSON.stringify(variants), lang, footerEnabled]);
 
   return { result, measureRef };
 }
@@ -541,8 +541,14 @@ export function CvPreview({
   } as CSSProperties;
 
   const isSidebar = design.struct === "sidebar";
-  const sidebarIds = isSidebar ? activeIds.filter((id) => isInSidebar(id, sidebarPlacement)) : [];
-  const mainIds = isSidebar ? activeIds.filter((id) => !isInSidebar(id, sidebarPlacement)) : activeIds;
+  const isTwo = design.struct === "two";
+  // "sidebar" and "two" both split content into two simultaneous columns
+  // (see isInSidebar/sidebarPlacement) rather than one flowing column —
+  // they differ only in how those columns are styled (a fixed-width tinted
+  // aside vs two equal-width columns), not in which categories go where.
+  const hasColumns = isSidebar || isTwo;
+  const sidebarIds = hasColumns ? activeIds.filter((id) => isInSidebar(id, sidebarPlacement)) : [];
+  const mainIds = hasColumns ? activeIds.filter((id) => !isInSidebar(id, sidebarPlacement)) : activeIds;
   const pageClass = `cv-page struct-${design.struct} density-${design.density}`;
   const sidebarClass = `cv-grid-sidebar side-${design.sidebarSide}`;
 
@@ -550,7 +556,7 @@ export function CvPreview({
     activeIds,
     mainIds,
     sidebarIds,
-    isSidebar,
+    hasColumns,
     variant,
     lang,
     design.footer.enabled,
@@ -603,6 +609,15 @@ export function CvPreview({
               <aside className="cv-aside">
                 <SectionFlow ids={result.page1Aside} categories={categories} variants={variant} lang={lang} />
               </aside>
+            </div>
+          ) : isTwo ? (
+            <div className="cv-grid-two">
+              <div className="cv-col">
+                <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
+              </div>
+              <div className="cv-col">
+                <SectionFlow ids={result.page1Aside} categories={categories} variants={variant} lang={lang} />
+              </div>
             </div>
           ) : (
             <div className="cv-flow">

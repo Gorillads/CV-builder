@@ -211,17 +211,22 @@ export function TailorTab({ lang }: { lang: Lang }) {
                     </option>
                   ))}
                 </select>
-                {design.struct === "sidebar" &&
+                {(design.struct === "sidebar" || design.struct === "two") &&
                   (() => {
                     const inSidebar = isInSidebar(id, sidebarPlacement);
+                    const isTwo = design.struct === "two";
+                    const onLabel = isTwo ? T.inColumnRight : T.inSidebar;
+                    const offLabel = isTwo ? T.inColumnLeft : T.inMainColumn;
+                    const onTitle = isTwo ? T.moveToColumnLeft : T.moveToMainColumn;
+                    const offTitle = isTwo ? T.moveToColumnRight : T.moveToSidebar;
                     return (
                       <button
                         type="button"
                         className={"pill sidebar-placement-toggle" + (inSidebar ? " active" : "")}
                         onClick={() => setSidebarPlacement(id, !inSidebar)}
-                        title={inSidebar ? T.moveToMainColumn : T.moveToSidebar}
+                        title={inSidebar ? onTitle : offTitle}
                       >
-                        {inSidebar ? T.inSidebar : T.inMainColumn}
+                        {inSidebar ? onLabel : offLabel}
                       </button>
                     );
                   })()}
