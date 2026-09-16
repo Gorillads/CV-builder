@@ -585,6 +585,7 @@ export function CvPreview({
           }}
           onOverflowChange={onMainPageStatus}
         >
+          {isSidebar && <div className={`cv-sidebar-fill side-${design.sidebarSide}`} />}
           <HeaderBlock
             name={header.name}
             appliedTitle={appliedTitle[lang]}
