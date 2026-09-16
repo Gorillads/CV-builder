@@ -3,7 +3,7 @@ import { useStore, isActivitySelected } from "../state/store";
 import { useShallow } from "zustand/react/shallow";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
-import { defaultVariant, variantsFor, isInSidebar } from "../data/designTokens";
+import { defaultVariant, variantsFor, defaultActivityStyle, ACTIVITY_STYLES, isInSidebar } from "../data/designTokens";
 
 /** An item's own bullet pool, checkable one by one — the counterpart to
  *  the item-level checkbox above it. Content tab owns the text (adding/
@@ -135,10 +135,12 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
   const variant = useStore((s) => s.variant);
+  const activityStyle = useStore((s) => s.activityStyle);
   const sidebarPlacement = useStore((s) => s.sidebarPlacement);
   const design = useStore((s) => s.design);
   const toggleCategoryOn = useStore((s) => s.toggleCategoryOn);
   const setVariant = useStore((s) => s.setVariant);
+  const setActivityStyle = useStore((s) => s.setActivityStyle);
   const setSidebarPlacement = useStore((s) => s.setSidebarPlacement);
   const reorderCategory = useStore((s) => s.reorderCategory);
   const appliedTitle = useStore((s) => s.appliedTitle);
@@ -163,6 +165,11 @@ export function TailorTab({ lang }: { lang: Lang }) {
         {visible.map((id) => {
           const cat = categories[id];
           const options = variantsFor();
+          const currentVariant = variant[id] ?? defaultVariant();
+          // Activities only render at all for entry variants that show the
+          // full entry body — "line", "chips" and "inline" never show them,
+          // so the format toggle would have nothing to affect there.
+          const showsActivities = currentVariant !== "line" && currentVariant !== "chips" && currentVariant !== "inline";
           return (
             <div className="tailor-item" key={id}>
               <div
@@ -201,7 +208,7 @@ export function TailorTab({ lang }: { lang: Lang }) {
                 </label>
                 <select
                   className="field placement-select"
-                  value={variant[id] ?? defaultVariant()}
+                  value={currentVariant}
                   onChange={(e) => setVariant(id, e.target.value)}
                   title={T.format}
                 >
@@ -211,6 +218,20 @@ export function TailorTab({ lang }: { lang: Lang }) {
                     </option>
                   ))}
                 </select>
+                {showsActivities && (
+                  <select
+                    className="field placement-select"
+                    value={activityStyle[id] ?? defaultActivityStyle()}
+                    onChange={(e) => setActivityStyle(id, e.target.value)}
+                    title={T.activityFormat}
+                  >
+                    {ACTIVITY_STYLES.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name[lang]}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 {(design.struct === "sidebar" || design.struct === "two") &&
                   (() => {
                     const inSidebar = isInSidebar(id, sidebarPlacement);

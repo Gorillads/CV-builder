@@ -176,6 +176,23 @@ export function variantsFor(): Variant[] {
   return VARIANTS;
 }
 
+export interface ActivityStyle {
+  id: string;
+  name: ByLang<string>;
+}
+
+/** How an entry's activity bullets are displayed — independent of `variant`,
+ *  since it only matters for entry variants that render activities at all
+ *  (not "line", "chips" or "inline"). */
+export const ACTIVITY_STYLES: ActivityStyle[] = [
+  { id: "list", name: { da: "Liste", en: "List" } },
+  { id: "inline", name: { da: "Inline (adskilt af punktum)", en: "Inline (dot-separated)" } },
+];
+
+export function defaultActivityStyle(): string {
+  return "list";
+}
+
 /** Categories that default to the second column — the sidebar under
  *  structure="sidebar", or the right-hand column under structure="two" —
  *  before any per-category override in AppState.sidebarPlacement. */

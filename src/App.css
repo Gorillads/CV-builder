@@ -917,6 +917,13 @@ textarea.field {
   margin-bottom: 1px;
 }
 
+/* Alternative to the bulleted .cv-entry-acts list — the same activities on
+   one dot-separated line, for a denser look (see AppState.activityStyle). */
+.cv-entry-acts-inline {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+}
+
 /* ---- Tags: "chips" variant (rounded pills) -------------------------- */
 
 .cv-tags {
@@ -1133,6 +1140,7 @@ textarea.field {
 }
 
 .density-compact .cv-entry-acts,
+.density-compact .cv-entry-acts-inline,
 .density-compact .cv-entry-desc {
   font-size: 11.5px;
 }

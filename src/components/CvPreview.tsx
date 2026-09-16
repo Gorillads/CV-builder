@@ -4,7 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import type { CSSProperties, ReactNode } from "react";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
-import { FONTS, SCHEMES, HEAD_SIZES, HEADING_SIZES, isInSidebar, byId, defaultVariant } from "../data/designTokens";
+import { FONTS, SCHEMES, HEAD_SIZES, HEADING_SIZES, isInSidebar, byId, defaultVariant, defaultActivityStyle } from "../data/designTokens";
 import { usePageOverflow, pxToMm, type PageOverflow } from "../hooks/usePageOverflow";
 
 /** A4 content box (1123px tall, 40px vertical padding) — the fixed
@@ -53,11 +53,13 @@ function EntryBlock({
   item,
   lang,
   variant,
+  activityStyle,
   selectedActivities,
 }: {
   item: LibraryItem;
   lang: Lang;
   variant: string;
+  activityStyle: string;
   selectedActivities: Record<string, number[]>;
 }) {
   const text = item[lang];
@@ -86,13 +88,16 @@ function EntryBlock({
         )}
         {text.comment && <p className="cv-entry-comment">{text.comment}</p>}
         {text.desc && <p className="cv-entry-desc">{text.desc}</p>}
-        {acts.length > 0 && (
-          <ul className="cv-entry-acts">
-            {acts.map((a, i) => (
-              <li key={i}>{a}</li>
-            ))}
-          </ul>
-        )}
+        {acts.length > 0 &&
+          (activityStyle === "inline" ? (
+            <p className="cv-entry-acts-inline">{acts.join(" · ")}</p>
+          ) : (
+            <ul className="cv-entry-acts">
+              {acts.map((a, i) => (
+                <li key={i}>{a}</li>
+              ))}
+            </ul>
+          ))}
       </div>
     </div>
   );
@@ -102,23 +107,42 @@ function EntryList({
   items,
   lang,
   variant,
+  activityStyle,
   selectedActivities,
 }: {
   items: LibraryItem[];
   lang: Lang;
   variant: string;
+  activityStyle: string;
   selectedActivities: Record<string, number[]>;
 }) {
   return (
     <>
       {items.map((it) => (
-        <EntryBlock key={it.id} item={it} lang={lang} variant={variant} selectedActivities={selectedActivities} />
+        <EntryBlock
+          key={it.id}
+          item={it}
+          lang={lang}
+          variant={variant}
+          activityStyle={activityStyle}
+          selectedActivities={selectedActivities}
+        />
       ))}
     </>
   );
 }
 
-function SectionBlock({ category, lang, variant }: { category: Category; lang: Lang; variant: string }) {
+function SectionBlock({
+  category,
+  lang,
+  variant,
+  activityStyle,
+}: {
+  category: Category;
+  lang: Lang;
+  variant: string;
+  activityStyle: string;
+}) {
   const items = useStore(
     useShallow((s) => {
       const selected = new Set(s.selectedItems[category.id] ?? []);
@@ -145,10 +169,22 @@ function SectionBlock({ category, lang, variant }: { category: Category; lang: L
         <TagsBlock items={items} lang={lang} variant={variant} />
       ) : variant === "two-col" ? (
         <div className="cv-entries-grid">
-          <EntryList items={items} lang={lang} variant="standard" selectedActivities={selectedActivities} />
+          <EntryList
+            items={items}
+            lang={lang}
+            variant="standard"
+            activityStyle={activityStyle}
+            selectedActivities={selectedActivities}
+          />
         </div>
       ) : (
-        <EntryList items={items} lang={lang} variant={variant} selectedActivities={selectedActivities} />
+        <EntryList
+          items={items}
+          lang={lang}
+          variant={variant}
+          activityStyle={activityStyle}
+          selectedActivities={selectedActivities}
+        />
       )}
     </section>
   );
@@ -158,11 +194,13 @@ function SectionFlow({
   ids,
   categories,
   variants,
+  activityStyles,
   lang,
 }: {
   ids: string[];
   categories: Record<string, Category>;
   variants: Record<string, string>;
+  activityStyles: Record<string, string>;
   lang: Lang;
 }) {
   return (
@@ -174,7 +212,15 @@ function SectionFlow({
         // after the id disappears from `categories`) — skip it rather than
         // crash on that transient frame.
         if (!cat) return null;
-        return <SectionBlock key={id} category={cat} lang={lang} variant={variants[id] ?? defaultVariant()} />;
+        return (
+          <SectionBlock
+            key={id}
+            category={cat}
+            lang={lang}
+            variant={variants[id] ?? defaultVariant()}
+            activityStyle={activityStyles[id] ?? defaultActivityStyle()}
+          />
+        );
       })}
     </>
   );
@@ -361,6 +407,7 @@ function OverflowPages({
   chunks,
   categories,
   variants,
+  activityStyles,
   lang,
   pageClass,
   footerEnabled,
@@ -369,6 +416,7 @@ function OverflowPages({
   chunks: string[][];
   categories: Record<string, Category>;
   variants: Record<string, string>;
+  activityStyles: Record<string, string>;
   lang: Lang;
   pageClass: string;
   footerEnabled: boolean;
@@ -394,7 +442,13 @@ function OverflowPages({
             {i > 0 ? ` (${i + 1})` : ""}
           </h2>
           <div className="cv-flow">
-            <SectionFlow ids={chunkIds} categories={categories} variants={variants} lang={lang} />
+            <SectionFlow
+              ids={chunkIds}
+              categories={categories}
+              variants={variants}
+              activityStyles={activityStyles}
+              lang={lang}
+            />
           </div>
         </Page>
       ))}
@@ -515,6 +569,7 @@ export function CvPreview({
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
   const variant = useStore((s) => s.variant);
+  const activityStyle = useStore((s) => s.activityStyle);
   const sidebarPlacement = useStore((s) => s.sidebarPlacement);
   const header = useStore((s) => s.header);
   const appliedTitle = useStore((s) => s.appliedTitle);
@@ -576,7 +631,12 @@ export function CvPreview({
         </div>
         {activeIds.map((id) => (
           <div key={id} data-measure-id={id}>
-            <SectionBlock category={categories[id]} lang={lang} variant={variant[id] ?? defaultVariant()} />
+            <SectionBlock
+              category={categories[id]}
+              lang={lang}
+              variant={variant[id] ?? defaultVariant()}
+              activityStyle={activityStyle[id] ?? defaultActivityStyle()}
+            />
           </div>
         ))}
       </div>
@@ -604,24 +664,54 @@ export function CvPreview({
           {isSidebar ? (
             <div className={sidebarClass}>
               <div className="cv-main">
-                <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
+                <SectionFlow
+                  ids={result.page1Main}
+                  categories={categories}
+                  variants={variant}
+                  activityStyles={activityStyle}
+                  lang={lang}
+                />
               </div>
               <aside className="cv-aside">
-                <SectionFlow ids={result.page1Aside} categories={categories} variants={variant} lang={lang} />
+                <SectionFlow
+                  ids={result.page1Aside}
+                  categories={categories}
+                  variants={variant}
+                  activityStyles={activityStyle}
+                  lang={lang}
+                />
               </aside>
             </div>
           ) : isTwo ? (
             <div className="cv-grid-two">
               <div className="cv-col">
-                <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
+                <SectionFlow
+                  ids={result.page1Main}
+                  categories={categories}
+                  variants={variant}
+                  activityStyles={activityStyle}
+                  lang={lang}
+                />
               </div>
               <div className="cv-col">
-                <SectionFlow ids={result.page1Aside} categories={categories} variants={variant} lang={lang} />
+                <SectionFlow
+                  ids={result.page1Aside}
+                  categories={categories}
+                  variants={variant}
+                  activityStyles={activityStyle}
+                  lang={lang}
+                />
               </div>
             </div>
           ) : (
             <div className="cv-flow">
-              <SectionFlow ids={result.page1Main} categories={categories} variants={variant} lang={lang} />
+              <SectionFlow
+                ids={result.page1Main}
+                categories={categories}
+                variants={variant}
+                activityStyles={activityStyle}
+                lang={lang}
+              />
             </div>
           )}
         </Page>
@@ -630,6 +720,7 @@ export function CvPreview({
             chunks={result.overflowChunks}
             categories={categories}
             variants={variant}
+            activityStyles={activityStyle}
             lang={lang}
             pageClass={pageClass}
             footerEnabled={design.footer.enabled}
