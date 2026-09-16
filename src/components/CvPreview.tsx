@@ -4,7 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import type { CSSProperties, ReactNode } from "react";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
-import { FONTS, SCHEMES, HEAD_SIZES, HEADING_SIZES, SIDE_DEFAULT, byId, defaultVariant } from "../data/designTokens";
+import { FONTS, SCHEMES, HEAD_SIZES, HEADING_SIZES, isInSidebar, byId, defaultVariant } from "../data/designTokens";
 import { usePageOverflow, pxToMm, type PageOverflow } from "../hooks/usePageOverflow";
 
 /** A4 content box (1123px tall, 40px vertical padding) — the fixed
@@ -515,6 +515,7 @@ export function CvPreview({
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
   const variant = useStore((s) => s.variant);
+  const sidebarPlacement = useStore((s) => s.sidebarPlacement);
   const header = useStore((s) => s.header);
   const appliedTitle = useStore((s) => s.appliedTitle);
   const design = useStore((s) => s.design);
@@ -540,8 +541,8 @@ export function CvPreview({
   } as CSSProperties;
 
   const isSidebar = design.struct === "sidebar";
-  const sidebarIds = isSidebar ? activeIds.filter((id) => SIDE_DEFAULT.has(id)) : [];
-  const mainIds = isSidebar ? activeIds.filter((id) => !SIDE_DEFAULT.has(id)) : activeIds;
+  const sidebarIds = isSidebar ? activeIds.filter((id) => isInSidebar(id, sidebarPlacement)) : [];
+  const mainIds = isSidebar ? activeIds.filter((id) => !isInSidebar(id, sidebarPlacement)) : activeIds;
   const pageClass = `cv-page struct-${design.struct} density-${design.density}`;
   const sidebarClass = `cv-grid-sidebar side-${design.sidebarSide}`;
 

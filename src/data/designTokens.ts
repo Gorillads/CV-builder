@@ -176,8 +176,17 @@ export function variantsFor(): Variant[] {
   return VARIANTS;
 }
 
-/** Categories that default to the sidebar column when structure="sidebar". */
+/** Categories that default to the sidebar column when structure="sidebar",
+ *  before any per-category override in AppState.sidebarPlacement. */
 export const SIDE_DEFAULT = new Set(["kompetencer", "sprog", "kurser", "certificeringer", "interesser"]);
+
+/** Whether a category renders in the sidebar column when structure="sidebar"
+ *  — an explicit entry in sidebarPlacement wins, otherwise falls back to
+ *  SIDE_DEFAULT so existing documents look the same as before this override
+ *  existed. */
+export function isInSidebar(categoryId: string, sidebarPlacement: Record<string, boolean>): boolean {
+  return sidebarPlacement[categoryId] ?? SIDE_DEFAULT.has(categoryId);
+}
 
 export function byId<T extends { id: string }>(list: T[], id: string): T {
   return list.find((x) => x.id === id) ?? list[0];

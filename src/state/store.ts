@@ -162,6 +162,9 @@ export interface Store extends AppState {
   deleteCategory(categoryId: string): void;
   toggleCategoryOn(categoryId: string): void;
   setVariant(categoryId: string, variant: string): void;
+  /** Explicit per-category override of which column it renders in under the
+   *  sidebar structure — see AppState.sidebarPlacement and isInSidebar. */
+  setSidebarPlacement(categoryId: string, inSidebar: boolean): void;
   moveCategory(categoryId: string, direction: -1 | 1): void;
   /** Drag-and-drop reorder: moves draggedId to sit just before targetId. */
   reorderCategory(draggedId: string, targetId: string): void;
@@ -196,7 +199,6 @@ export interface Store extends AppState {
   reorderActivity(itemId: string, from: number, to: number): void;
 
   setAppliedTitle(lang: Lang, value: string): void;
-  setKeywords(lang: Lang, value: string): void;
   setHeaderField(field: "name" | "phone" | "mail", value: string): void;
   setHeaderLocation(lang: Lang, value: string): void;
 
@@ -213,8 +215,8 @@ export interface Store extends AppState {
 
   /** Full-state backup, distinct from the CSV: also carries header contact
    *  details, design tokens, per-category variants, on/off toggles and
-   *  order, applied title and keywords — restoring one puts the app back
-   *  exactly as it was, not just the content library. */
+   *  order, and applied title — restoring one puts the app back exactly as
+   *  it was, not just the content library. */
   parseJsonImport(text: string): JsonParseResult;
   commitJsonImport(data: Partial<AppState>): void;
   exportJsonText(): string;
@@ -336,6 +338,9 @@ export const useStore = create<Store>()(
 
       setVariant: (categoryId, variant) =>
         set((s) => ({ variant: { ...s.variant, [categoryId]: variant } })),
+
+      setSidebarPlacement: (categoryId, inSidebar) =>
+        set((s) => ({ sidebarPlacement: { ...s.sidebarPlacement, [categoryId]: inSidebar } })),
 
       // Swaps positions within the visible (non-hidden) subsequence rather
       // than plain adjacent indices in `order` — hidden categories keep
@@ -519,7 +524,6 @@ export const useStore = create<Store>()(
         }),
 
       setAppliedTitle: (lang, value) => set((s) => ({ appliedTitle: { ...s.appliedTitle, [lang]: value } })),
-      setKeywords: (lang, value) => set((s) => ({ keywords: { ...s.keywords, [lang]: value } })),
       setHeaderField: (field, value) => set((s) => ({ header: { ...s.header, [field]: value } })),
       setHeaderLocation: (lang, value) =>
         set((s) => ({ header: { ...s.header, location: { ...s.header.location, [lang]: value } } })),

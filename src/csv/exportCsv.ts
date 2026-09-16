@@ -1,5 +1,5 @@
 import type { AppState, LibraryItem } from "../model/types";
-import { CSV_HEADER, META_KEYWORDS_ROW_ID, META_TITLE_ROW_ID, NODE_ROLE } from "./columns";
+import { CSV_HEADER, META_TITLE_ROW_ID, NODE_ROLE } from "./columns";
 
 function esc(v: string | number | null | undefined): string {
   return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
@@ -19,14 +19,12 @@ function selectedActivityIndices(state: AppState, item: LibraryItem): number[] {
  *  outline: one semicolon-delimited CSV, UTF-8 with a BOM so it opens
  *  correctly in Excel. Each row is a node in a
  *  Titel → Tekst → Element → Aktivitet hierarchy — see src/csv/columns.ts.
- *  Two meta rows carry the applied job title and ATS keywords ahead of
- *  the category tree. */
+ *  A meta row carries the applied job title ahead of the category tree. */
 export function exportCsv(state: AppState): string {
   const rows: string[][] = [[...CSV_HEADER]];
   const blank = (knude: string, da: string, en: string) => rows.push([knude, da, en, "", "", "", "", "", ""]);
 
   blank(META_TITLE_ROW_ID, state.appliedTitle.da, state.appliedTitle.en);
-  blank(META_KEYWORDS_ROW_ID, state.keywords.da, state.keywords.en);
 
   const inUse = new Set<string>();
   Object.values(state.selectedItems).forEach((ids) => ids.forEach((id) => inUse.add(id)));

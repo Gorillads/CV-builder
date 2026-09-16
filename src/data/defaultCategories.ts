@@ -29,7 +29,6 @@ export interface StateConfig {
   design: AppState["design"];
   header: AppState["header"];
   appliedTitle: ByLang<string>;
-  keywords: ByLang<string>;
   /** Per-category display variant (see src/data/designTokens' VARIANTS);
    *  absent means every category uses the "standard" variant. */
   variant?: Record<string, string>;
@@ -300,8 +299,8 @@ export function buildStateFromConfig(config: StateConfig): AppState {
     itemOrder,
     selectedActivities: {},
     variant: { ...(config.variant ?? {}) },
+    sidebarPlacement: {},
     appliedTitle: config.appliedTitle,
-    keywords: config.keywords,
     header: config.header,
     design: config.design,
   };
@@ -313,6 +312,5 @@ export function createDefaultState(): AppState {
     design: DEFAULT_DESIGN,
     header: { name: "", phone: "", mail: "", location: { da: "", en: "" } },
     appliedTitle: { da: "", en: "" },
-    keywords: { da: "", en: "" },
   });
 }
