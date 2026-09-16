@@ -771,6 +771,21 @@ textarea.field {
   margin: 0;
 }
 
+/* With flex-basis: auto (the default), a flex item's width is sized
+   from its unwrapped, single-line content first and only shrunk
+   afterward — the shrunk box doesn't get its text re-wrapped to fit, it
+   just silently overflows past it on one line. A long applied title
+   sharing the header row with the name and contact line was overflowing
+   straight off the page's edge this way. Rather than squeezing it into a
+   narrow sliver next to the name, give it the full row width on a line of
+   its own below the name/contact line, which is wide enough that it fits
+   on one line without shrinking or wrapping. */
+.cv-header.head-inline .cv-applied-title {
+  flex: 1 1 100%;
+  order: 3;
+  min-width: 0;
+}
+
 .cv-header.head-inline .cv-applied-title,
 .cv-header.head-inline .cv-contact {
   margin: 0;
@@ -904,6 +919,12 @@ textarea.field {
   border-radius: 999px;
   padding: 2px 10px;
   font-size: 11.5px;
+  /* A chip is normally one short, un-wrapped label — but a longer one
+     (e.g. a full sentence used as a competency) would otherwise just
+     overflow past a narrow sidebar column instead of stopping at it, so
+     it wraps internally as a fallback rather than bleeding off the page. */
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 /* ---- Tags: "list" variant (standard — plain bold lines) ------------- */
@@ -1048,13 +1069,17 @@ textarea.field {
    bleeds all the way to the page's real top/bottom/side edges — behind
    the header too — regardless of how tall the header ends up being.
    .cv-aside itself only carries the column's actual content and inner
-   padding; this is purely the tinted backdrop underneath it. */
+   padding; this is purely the tinted backdrop underneath it. A positioned
+   element paints above static in-flow content by default regardless of
+   DOM order, so without z-index this backdrop would sit on top of (and
+   hide) the sidebar's own text — z-index: -1 puts it back behind it. */
 .cv-sidebar-fill {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 200px;
   background: var(--cv-chip-bg);
+  z-index: -1;
 }
 
 .cv-sidebar-fill.side-right {
