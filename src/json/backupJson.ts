@@ -15,6 +15,7 @@ export function exportJson(state: AppState): string {
     itemOrder: state.itemOrder,
     selectedActivities: state.selectedActivities,
     variant: state.variant,
+    activityStyle: state.activityStyle,
     sidebarPlacement: state.sidebarPlacement,
     appliedTitle: state.appliedTitle,
     header: state.header,

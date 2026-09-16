@@ -299,6 +299,7 @@ export function buildStateFromConfig(config: StateConfig): AppState {
     itemOrder,
     selectedActivities: {},
     variant: { ...(config.variant ?? {}) },
+    activityStyle: {},
     sidebarPlacement: {},
     appliedTitle: config.appliedTitle,
     header: config.header,

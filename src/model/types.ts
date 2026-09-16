@@ -87,6 +87,12 @@ export interface AppState {
    *  (see src/data/designTokens), chosen independently of the page-level
    *  structure. Absent means the standard (simplest, full-detail) variant. */
   variant: Record<string, string>;
+  /** Per category: how an entry's activity bullets are displayed — an id
+   *  into ACTIVITY_STYLES (see src/data/designTokens): a bulleted list, or
+   *  a single dot-separated line. Independent of `variant`, since it only
+   *  affects entry variants that render activities at all. Absent means
+   *  the list style (the current default). */
+  activityStyle: Record<string, string>;
   /** Per category: explicit override of which column it renders in when
    *  design.struct is "sidebar" or "two" — true for the second column (the
    *  sidebar, or the right-hand column under "two"), false for the first.
