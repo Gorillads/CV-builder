@@ -140,7 +140,6 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const toggleCategoryOn = useStore((s) => s.toggleCategoryOn);
   const setVariant = useStore((s) => s.setVariant);
   const setSidebarPlacement = useStore((s) => s.setSidebarPlacement);
-  const moveCategory = useStore((s) => s.moveCategory);
   const reorderCategory = useStore((s) => s.reorderCategory);
   const appliedTitle = useStore((s) => s.appliedTitle);
   const setAppliedTitle = useStore((s) => s.setAppliedTitle);
@@ -161,7 +160,7 @@ export function TailorTab({ lang }: { lang: Lang }) {
       </div>
 
       <div className="tailor-list">
-        {visible.map((id, i) => {
+        {visible.map((id) => {
           const cat = categories[id];
           const options = variantsFor();
           return (
@@ -226,18 +225,6 @@ export function TailorTab({ lang }: { lang: Lang }) {
                       </button>
                     );
                   })()}
-                <button type="button" className="icon-btn" disabled={i === 0} onClick={() => moveCategory(id, -1)} title={T.moveUp}>
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  className="icon-btn"
-                  disabled={i === visible.length - 1}
-                  onClick={() => moveCategory(id, 1)}
-                  title={T.moveDown}
-                >
-                  ↓
-                </button>
               </div>
               <ItemChecklist categoryId={id} lang={lang} />
             </div>
