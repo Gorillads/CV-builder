@@ -165,7 +165,6 @@ export interface Store extends AppState {
   /** Explicit per-category override of which column it renders in under the
    *  sidebar structure — see AppState.sidebarPlacement and isInSidebar. */
   setSidebarPlacement(categoryId: string, inSidebar: boolean): void;
-  moveCategory(categoryId: string, direction: -1 | 1): void;
   /** Drag-and-drop reorder: moves draggedId to sit just before targetId. */
   reorderCategory(draggedId: string, targetId: string): void;
 
@@ -341,24 +340,6 @@ export const useStore = create<Store>()(
 
       setSidebarPlacement: (categoryId, inSidebar) =>
         set((s) => ({ sidebarPlacement: { ...s.sidebarPlacement, [categoryId]: inSidebar } })),
-
-      // Swaps positions within the visible (non-hidden) subsequence rather
-      // than plain adjacent indices in `order` — hidden categories keep
-      // their own slot in `order` (see hideCategory), so a naive index swap
-      // could silently trade places with an invisible neighbor instead of
-      // the next visible one.
-      moveCategory: (categoryId, direction) =>
-        set((s) => {
-          const visibleIds = s.order.filter((id) => s.categories[id] && !s.categories[id].isHidden);
-          const vi = visibleIds.indexOf(categoryId);
-          const vj = vi + direction;
-          if (vi < 0 || vj < 0 || vj >= visibleIds.length) return s;
-          const order = s.order.slice();
-          const i = order.indexOf(categoryId);
-          const j = order.indexOf(visibleIds[vj]);
-          [order[i], order[j]] = [order[j], order[i]];
-          return { order };
-        }),
 
       reorderCategory: (draggedId, targetId) =>
         set((s) => {
