@@ -843,7 +843,6 @@ export const PRESETS: Preset[] = [
         location: { da: "København", en: "Copenhagen" },
       },
       appliedTitle: { da: "Økonomichef", en: "Finance Manager" },
-      keywords: { da: "regnskab, IFRS, budgettering, ERP, revision", en: "accounting, IFRS, budgeting, ERP, audit" },
     },
   },
   {
@@ -863,7 +862,6 @@ export const PRESETS: Preset[] = [
         location: { da: "Aarhus", en: "Aarhus" },
       },
       appliedTitle: { da: "Senior Product Manager", en: "Senior Product Manager" },
-      keywords: { da: "produktledelse, agil, roadmap, data, Scrum", en: "product management, agile, roadmap, data, Scrum" },
       variant: { kompetencer: "chips" },
     },
   },
@@ -884,7 +882,6 @@ export const PRESETS: Preset[] = [
         location: { da: "Odense", en: "Odense" },
       },
       appliedTitle: { da: "Grafisk designer", en: "Graphic Designer" },
-      keywords: { da: "illustration, branding, visuel identitet, layout", en: "illustration, branding, visual identity, layout" },
       variant: { kompetencer: "chips" },
     },
   },

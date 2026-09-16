@@ -131,7 +131,7 @@ banner suggesting you move a section to the appendix or switch to the
 - ✅ In-app editor (Indhold tab): category cards, element/activity editing,
   hide/delete, add category
 - ✅ Tailor-to-the-job tab: category on/off, reorder, per-item CV
-  checklist, applied title + ATS keywords
+  checklist, applied title, per-category sidebar placement
 - ✅ CV preview styled as an actual sheet, with the design token system
   above
 - ✅ Print/PDF export with a real print stylesheet, and overflow

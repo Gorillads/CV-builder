@@ -42,4 +42,3 @@ export function parseNodeRole(cell: string): NodeRole | null {
 }
 
 export const META_TITLE_ROW_ID = "_meta_titel";
-export const META_KEYWORDS_ROW_ID = "_meta_noegleord";

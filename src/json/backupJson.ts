@@ -2,8 +2,8 @@ import type { AppState } from "../model/types";
 
 /** A full-state backup — unlike the CSV, this also carries header contact
  *  details, design tokens, per-category display variants, on/off toggles
- *  and order, applied title and ATS keywords, so restoring one puts the
- *  app back exactly as it was, not just the content library. */
+ *  and order, and applied title, so restoring one puts the app back
+ *  exactly as it was, not just the content library. */
 export function exportJson(state: AppState): string {
   const data: AppState = {
     lang: state.lang,
@@ -15,8 +15,8 @@ export function exportJson(state: AppState): string {
     itemOrder: state.itemOrder,
     selectedActivities: state.selectedActivities,
     variant: state.variant,
+    sidebarPlacement: state.sidebarPlacement,
     appliedTitle: state.appliedTitle,
-    keywords: state.keywords,
     header: state.header,
     design: state.design,
   };

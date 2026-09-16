@@ -1,6 +1,6 @@
 import type { Activity, AppState, ByLang, Category, LibraryItem } from "../model/types";
 import { parseCsv } from "./parseCsv";
-import { META_KEYWORDS_ROW_ID, META_TITLE_ROW_ID, NODE_ROLE, parseNodeRole } from "./columns";
+import { META_TITLE_ROW_ID, NODE_ROLE, parseNodeRole } from "./columns";
 
 function findColumn(head: string[], names: string[]): number {
   for (const n of names) {
@@ -41,7 +41,6 @@ export interface ImportPlan {
   rowCount: number;
   sectionCount: number;
   metaTitle: ByLang<string> | null;
-  metaKeywords: ByLang<string> | null;
   categories: Record<string, ParsedCategory>;
 }
 
@@ -91,7 +90,6 @@ export function parseImportPlan(text: string, existingCategories: Record<string,
   const order: string[] = [];
   const categories: Record<string, ParsedCategory> = {};
   let metaTitle: ByLang<string> | null = null;
-  let metaKeywords: ByLang<string> | null = null;
 
   let currentKey: string | null = null;
   /** Set only by a legacy "Kategori" row (see NODE_ROLE.category); folded
@@ -107,11 +105,6 @@ export function parseImportPlan(text: string, existingCategories: Record<string,
       metaTitle = { da: String(r[cDa] || ""), en: String(cEn >= 0 ? r[cEn] : "") };
       return;
     }
-    if (rawNode === META_KEYWORDS_ROW_ID) {
-      metaKeywords = { da: String(r[cDa] || ""), en: String(cEn >= 0 ? r[cEn] : "") };
-      return;
-    }
-
     const role = parseNodeRole(rawNode);
     if (!role) return;
 
@@ -195,7 +188,7 @@ export function parseImportPlan(text: string, existingCategories: Record<string,
 
   return {
     ok: true,
-    plan: { order, rowCount, sectionCount: order.length, metaTitle, metaKeywords, categories },
+    plan: { order, rowCount, sectionCount: order.length, metaTitle, categories },
   };
 }
 
@@ -315,6 +308,5 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
     itemOrder,
     selectedActivities,
     appliedTitle: plan.metaTitle ?? state.appliedTitle,
-    keywords: plan.metaKeywords ?? state.keywords,
   };
 }

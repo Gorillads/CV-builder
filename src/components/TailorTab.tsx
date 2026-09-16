@@ -3,7 +3,7 @@ import { useStore, isActivitySelected } from "../state/store";
 import { useShallow } from "zustand/react/shallow";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
-import { defaultVariant, variantsFor } from "../data/designTokens";
+import { defaultVariant, variantsFor, isInSidebar } from "../data/designTokens";
 
 /** An item's own bullet pool, checkable one by one — the counterpart to
  *  the item-level checkbox above it. Content tab owns the text (adding/
@@ -135,14 +135,15 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
   const variant = useStore((s) => s.variant);
+  const sidebarPlacement = useStore((s) => s.sidebarPlacement);
+  const design = useStore((s) => s.design);
   const toggleCategoryOn = useStore((s) => s.toggleCategoryOn);
   const setVariant = useStore((s) => s.setVariant);
+  const setSidebarPlacement = useStore((s) => s.setSidebarPlacement);
   const moveCategory = useStore((s) => s.moveCategory);
   const reorderCategory = useStore((s) => s.reorderCategory);
   const appliedTitle = useStore((s) => s.appliedTitle);
-  const keywords = useStore((s) => s.keywords);
   const setAppliedTitle = useStore((s) => s.setAppliedTitle);
-  const setKeywords = useStore((s) => s.setKeywords);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
@@ -156,15 +157,6 @@ export function TailorTab({ lang }: { lang: Lang }) {
           className="field"
           value={appliedTitle[lang]}
           onChange={(e) => setAppliedTitle(lang, e.target.value)}
-        />
-      </div>
-      <div className="tailor-field">
-        <label>{T.keywords}</label>
-        <textarea
-          className="field"
-          rows={2}
-          value={keywords[lang]}
-          onChange={(e) => setKeywords(lang, e.target.value)}
         />
       </div>
 
@@ -220,6 +212,20 @@ export function TailorTab({ lang }: { lang: Lang }) {
                     </option>
                   ))}
                 </select>
+                {design.struct === "sidebar" &&
+                  (() => {
+                    const inSidebar = isInSidebar(id, sidebarPlacement);
+                    return (
+                      <button
+                        type="button"
+                        className={"pill sidebar-placement-toggle" + (inSidebar ? " active" : "")}
+                        onClick={() => setSidebarPlacement(id, !inSidebar)}
+                        title={inSidebar ? T.moveToMainColumn : T.moveToSidebar}
+                      >
+                        {inSidebar ? T.inSidebar : T.inMainColumn}
+                      </button>
+                    );
+                  })()}
                 <button type="button" className="icon-btn" disabled={i === 0} onClick={() => moveCategory(id, -1)} title={T.moveUp}>
                   ↑
                 </button>

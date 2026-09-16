@@ -528,6 +528,11 @@ textarea.field {
   width: auto;
 }
 
+.sidebar-placement-toggle {
+  flex: none;
+  white-space: nowrap;
+}
+
 .design-group {
   display: flex;
   flex-direction: column;

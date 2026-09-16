@@ -87,8 +87,13 @@ export interface AppState {
    *  (see src/data/designTokens), chosen independently of the page-level
    *  structure. Absent means the standard (simplest, full-detail) variant. */
   variant: Record<string, string>;
+  /** Per category: explicit override of which column it renders in when
+   *  design.struct is "sidebar" — true for the sidebar, false for the main
+   *  column. Absent falls back to SIDE_DEFAULT (see src/data/designTokens'
+   *  isInSidebar), so existing saved documents keep their current look
+   *  without needing every category listed here. */
+  sidebarPlacement: Record<string, boolean>;
   appliedTitle: ByLang<string>;
-  keywords: ByLang<string>;
   header: {
     name: string;
     phone: string;
