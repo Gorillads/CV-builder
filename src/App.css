@@ -444,6 +444,7 @@ textarea.field {
 
 .tailor-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   border: 1px solid var(--border);
@@ -524,8 +525,14 @@ textarea.field {
   opacity: 0.4;
 }
 
+/* flex: none (rather than the default flex-shrink: 1) keeps this sized to
+   its natural content width, so a selected option's full text stays
+   readable — the row's own flex-wrap (see .tailor-row) sends it to a new
+   line instead of squeezing it down and clipping the text when the panel
+   is resized narrower. */
 .placement-select {
   width: auto;
+  flex: none;
 }
 
 .sidebar-placement-toggle {
