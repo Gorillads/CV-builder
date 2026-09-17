@@ -663,7 +663,6 @@ export function CvPreview({
           />
           {isSidebar ? (
             <div className={sidebarClass}>
-              <div className={`cv-sidebar-fill side-${design.sidebarSide}`} />
               <div className="cv-main">
                 <SectionFlow
                   ids={result.page1Main}
@@ -674,6 +673,7 @@ export function CvPreview({
                 />
               </div>
               <aside className="cv-aside">
+                <div className="cv-sidebar-fill" />
                 <SectionFlow
                   ids={result.page1Aside}
                   categories={categories}
