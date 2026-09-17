@@ -7,7 +7,17 @@ export interface Category {
   title: ByLang<string>;
   blurb: ByLang<string>;
   isCustom: boolean;
+  /** Excludes the category from the Tailor tab and the CV entirely — set
+   *  only as a side effect of a CSV import that no longer mentions this
+   *  category (see applyImportPlan), never by a direct user action. A
+   *  category a user collapses by hand stays fully visible/selectable;
+   *  see isCollapsed for that. */
   isHidden: boolean;
+  /** Collapses this category to a single line in the Content tab — the
+   *  same display convenience as LibraryItem.isCollapsed / Activity.isCollapsed,
+   *  unrelated to whether it's included in the CV (see AppState.on) or
+   *  shown in the Tailor tab. */
+  isCollapsed: boolean;
   /** Set the moment a CSV import touches this category, independent of
    *  whether it ended up with any elements — otherwise an emptied
    *  category silently falls back to its built-in default content. */

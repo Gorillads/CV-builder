@@ -226,7 +226,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
     // left untouched. Deleting for good is a separate, explicit,
     // confirmed action in the editor, never a side effect of an import
     // simply not mentioning a category.
-    categories[cat.id] = { ...cat, isHidden: true };
+    categories[cat.id] = { ...cat, isHidden: true, isCollapsed: true };
     on[cat.id] = false;
   });
 
@@ -253,6 +253,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
           blurb: { da: parsed.blurb?.da ?? "", en: parsed.blurb?.en ?? "" },
           isCustom: true,
           isHidden: false,
+          isCollapsed: false,
           isReplacedByImport: true,
         };
 
