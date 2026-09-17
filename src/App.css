@@ -1171,11 +1171,15 @@ textarea.field {
      for the heading (that padding pushed the heading itself down out of
      alignment with .cv-main's first heading — see .cv-aside above). This
      keeps the same 8px breathing room above the heading without moving
-     the heading. Left/right stay narrower (12px) than bottom (16px) so
-     the card reads a touch wider horizontally, closer to the sidebar
-     text's own edge. */
+     the heading.
+     The inner edge (left here — facing .cv-main) stays at 12px, but the
+     outer edge (right here — facing the page's own true edge, since
+     .cv-aside already bleeds flush to it) needs more clearance than that:
+     at 12px the card read as hanging off the actual page edge instead of
+     sitting inside it with a visible margin. 16px restores that margin.
+     .side-left below mirrors which side is "outer" vs "inner". */
   top: -8px;
-  right: 12px;
+  right: 16px;
   bottom: 16px;
   left: 12px;
   border-radius: 10px;
@@ -1187,6 +1191,16 @@ textarea.field {
      untouched and still tracking whichever scheme is picked. */
   background: color-mix(in srgb, var(--cv-accent) 30%, #f3f2f0);
   z-index: -1;
+}
+
+/* Mirrors .cv-sidebar-fill's left/right insets for the left-placed sidebar:
+   .cv-aside itself now bleeds flush to the page's true LEFT edge instead
+   (see .cv-grid-sidebar.side-left .cv-aside above), so left becomes the
+   outer edge needing the bigger 16px clearance, and right becomes the
+   inner edge (facing .cv-main) that stays at 12px. */
+.cv-grid-sidebar.side-left .cv-sidebar-fill {
+  right: 12px;
+  left: 16px;
 }
 
 .struct-marked .cv-section {
