@@ -70,12 +70,21 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
   const items = useStore((s) => s.items);
   const itemOrder = useStore(useShallow((s) => s.itemOrder[categoryId] ?? []));
   const selectedIds = useStore(useShallow((s) => s.selectedItems[categoryId] ?? []));
+  const variant = useStore((s) => s.variant);
+  const activityStyle = useStore((s) => s.activityStyle);
   const toggleItemInCv = useStore((s) => s.toggleItemInCv);
+  const setActivityStyle = useStore((s) => s.setActivityStyle);
   const reorderItem = useStore((s) => s.reorderItem);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   if (!itemOrder.length) return null;
+
+  // Activities only render at all for entry variants that show the full
+  // entry body — "line", "chips" and "inline" never show them, so the
+  // per-item format toggle would have nothing to affect there.
+  const categoryVariant = variant[categoryId] ?? defaultVariant();
+  const showsActivities = categoryVariant !== "line" && categoryVariant !== "chips" && categoryVariant !== "inline";
 
   return (
     <div className="item-checklist">
@@ -114,13 +123,29 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
               setDragOverId(null);
             }}
           >
-            <label className="item-checklist-row">
-              <span className="drag-handle drag-handle--small" aria-hidden="true">
-                ⠿
-              </span>
-              <input type="checkbox" checked={selectedIds.includes(id)} onChange={() => toggleItemInCv(categoryId, id)} />
-              {label}
-            </label>
+            <div className="item-checklist-row">
+              <label className="item-checklist-label">
+                <span className="drag-handle drag-handle--small" aria-hidden="true">
+                  ⠿
+                </span>
+                <input type="checkbox" checked={selectedIds.includes(id)} onChange={() => toggleItemInCv(categoryId, id)} />
+                {label}
+              </label>
+              {showsActivities && item.activities.length > 0 && (
+                <select
+                  className="field placement-select"
+                  value={activityStyle[id] ?? defaultActivityStyle()}
+                  onChange={(e) => setActivityStyle(id, e.target.value)}
+                  title={T.activityFormat}
+                >
+                  {ACTIVITY_STYLES.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name[lang]}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
             <ActivityChecklist itemId={id} lang={lang} />
           </div>
         );
@@ -135,12 +160,10 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const categories = useStore((s) => s.categories);
   const on = useStore((s) => s.on);
   const variant = useStore((s) => s.variant);
-  const activityStyle = useStore((s) => s.activityStyle);
   const sidebarPlacement = useStore((s) => s.sidebarPlacement);
   const design = useStore((s) => s.design);
   const toggleCategoryOn = useStore((s) => s.toggleCategoryOn);
   const setVariant = useStore((s) => s.setVariant);
-  const setActivityStyle = useStore((s) => s.setActivityStyle);
   const setSidebarPlacement = useStore((s) => s.setSidebarPlacement);
   const reorderCategory = useStore((s) => s.reorderCategory);
   const appliedTitle = useStore((s) => s.appliedTitle);
@@ -166,10 +189,6 @@ export function TailorTab({ lang }: { lang: Lang }) {
           const cat = categories[id];
           const options = variantsFor();
           const currentVariant = variant[id] ?? defaultVariant();
-          // Activities only render at all for entry variants that show the
-          // full entry body — "line", "chips" and "inline" never show them,
-          // so the format toggle would have nothing to affect there.
-          const showsActivities = currentVariant !== "line" && currentVariant !== "chips" && currentVariant !== "inline";
           return (
             <div className="tailor-item" key={id}>
               <div
@@ -218,20 +237,6 @@ export function TailorTab({ lang }: { lang: Lang }) {
                     </option>
                   ))}
                 </select>
-                {showsActivities && (
-                  <select
-                    className="field placement-select"
-                    value={activityStyle[id] ?? defaultActivityStyle()}
-                    onChange={(e) => setActivityStyle(id, e.target.value)}
-                    title={T.activityFormat}
-                  >
-                    {ACTIVITY_STYLES.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name[lang]}
-                      </option>
-                    ))}
-                  </select>
-                )}
                 {(design.struct === "sidebar" || design.struct === "two") &&
                   (() => {
                     const inSidebar = isInSidebar(id, sidebarPlacement);
