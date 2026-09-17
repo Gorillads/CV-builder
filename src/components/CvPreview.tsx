@@ -4,7 +4,17 @@ import { useShallow } from "zustand/react/shallow";
 import type { CSSProperties, ReactNode } from "react";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
-import { FONTS, SCHEMES, HEAD_SIZES, HEADING_SIZES, isInSidebar, byId, defaultVariant, defaultActivityStyle } from "../data/designTokens";
+import {
+  FONTS,
+  SCHEMES,
+  HEAD_SIZES,
+  HEADING_SIZES,
+  PHOTO_SIZES,
+  isInSidebar,
+  byId,
+  defaultVariant,
+  defaultActivityStyle,
+} from "../data/designTokens";
 import { usePageOverflow, pxToMm, type PageOverflow } from "../hooks/usePageOverflow";
 
 /** A4 content box (1123px tall, 40px vertical padding) — the fixed
@@ -234,6 +244,9 @@ function HeaderBlock({
   mail,
   location,
   headKind,
+  photoUrl,
+  photoSizePx,
+  photoPosition,
 }: {
   name: string;
   appliedTitle: string;
@@ -241,12 +254,50 @@ function HeaderBlock({
   mail: string;
   location: string;
   headKind: string;
+  photoUrl: string;
+  photoSizePx: number;
+  photoPosition: string;
 }) {
+  const nameEl = <h1>{name || "—"}</h1>;
+  const titleEl = appliedTitle ? <p className="cv-applied-title">{appliedTitle}</p> : null;
+  const contactEl = <p className="cv-contact">{[phone, mail, location].filter(Boolean).join(" · ")}</p>;
+
+  if (!photoUrl) {
+    return (
+      <header className={`cv-header head-${headKind}`}>
+        {nameEl}
+        {titleEl}
+        {contactEl}
+      </header>
+    );
+  }
+
+  const photoEl = (
+    <img
+      className="cv-header-photo"
+      src={photoUrl}
+      alt=""
+      style={{ width: photoSizePx, height: photoSizePx }}
+    />
+  );
+  const headerClass = `cv-header head-${headKind} has-photo photo-position-${photoPosition}`;
+
+  // name/title/contact are always grouped into .cv-header-text so they act
+  // as a single flex item beside (or below) the photo — for head-inline,
+  // which normally lays them out as direct flex children of .cv-header
+  // itself (its own "low line" row, see App.css), that same row layout
+  // moves onto .cv-header-text instead (see the .head-inline.has-photo
+  // rule in App.css), so it keeps working unchanged by whatever direction
+  // .cv-header itself now flexes in for the photo.
   return (
-    <header className={`cv-header head-${headKind}`}>
-      <h1>{name || "—"}</h1>
-      {appliedTitle && <p className="cv-applied-title">{appliedTitle}</p>}
-      <p className="cv-contact">{[phone, mail, location].filter(Boolean).join(" · ")}</p>
+    <header className={headerClass}>
+      {photoPosition !== "right" && photoEl}
+      <div className="cv-header-text">
+        {nameEl}
+        {titleEl}
+        {contactEl}
+      </div>
+      {photoPosition === "right" && photoEl}
     </header>
   );
 }
@@ -582,6 +633,7 @@ export function CvPreview({
   const scheme = byId(SCHEMES, design.scheme);
   const headSize = byId(HEAD_SIZES, design.headSize);
   const headingSize = byId(HEADING_SIZES, design.headingSize);
+  const photoSize = byId(PHOTO_SIZES, design.photoSize);
 
   const themeStyle = {
     "--cv-head": font.head,
@@ -628,6 +680,9 @@ export function CvPreview({
             mail={header.mail}
             location={header.location[lang]}
             headKind={design.headKind}
+            photoUrl={header.photo}
+            photoSizePx={photoSize.px}
+            photoPosition={design.photoPosition}
           />
         </div>
         {activeIds.map((id) => (
@@ -660,6 +715,9 @@ export function CvPreview({
             mail={header.mail}
             location={header.location[lang]}
             headKind={design.headKind}
+            photoUrl={header.photo}
+            photoSizePx={photoSize.px}
+            photoPosition={design.photoPosition}
           />
           {isSidebar ? (
             <div className={sidebarClass}>

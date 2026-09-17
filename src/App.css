@@ -633,6 +633,20 @@ textarea.field {
   gap: 6px;
 }
 
+.photo-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.photo-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
 .pill {
   border: 1px solid var(--border);
   background: var(--panel);
@@ -845,6 +859,57 @@ textarea.field {
 .cv-header.head-inline .cv-applied-title,
 .cv-header.head-inline .cv-contact {
   margin: 0;
+}
+
+/* ---- Optional profile picture (see AppState.header.photo) ------------
+   .has-photo turns .cv-header itself into a flex row/column with the
+   photo as one item and name/title/contact — always grouped into
+   .cv-header-text (see HeaderBlock in CvPreview.tsx) — as the other, so
+   that group acts as a single flex item beside (or below) the photo
+   regardless of head kind. */
+.cv-header.has-photo {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cv-header.has-photo.photo-position-left,
+.cv-header.has-photo.photo-position-right {
+  align-items: center;
+}
+
+.cv-header.has-photo.photo-position-top {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.cv-header-photo {
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.cv-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* head-inline normally lays name/title/contact out as direct flex
+   children of .cv-header itself (its own "low line" row, see above) —
+   with a photo, that same row/wrap behavior moves onto .cv-header-text
+   instead, so it's unaffected by whatever direction .cv-header now
+   flexes in for the photo (in particular photo-position-top's
+   flex-direction: column, which would otherwise interpret the applied
+   title's flex-basis: 100% as 100% of the column's height instead of
+   its width, wrapping it into a whole separate column of its own rather
+   than sitting below the name/contact line). */
+.cv-header.head-inline.has-photo .cv-header-text {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  min-width: 0;
 }
 
 /* ---- Struct "banded": a full-bleed accent-colored field behind the

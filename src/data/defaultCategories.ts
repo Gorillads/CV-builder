@@ -229,6 +229,8 @@ const DEFAULT_DESIGN: AppState["design"] = {
   density: "standard",
   sidebarSide: "right",
   headingSize: "standard",
+  photoSize: "standard",
+  photoPosition: "left",
   footer: { enabled: false, revision: "" },
 };
 
@@ -312,7 +314,7 @@ export function createDefaultState(): AppState {
   return buildStateFromConfig({
     seeds: SEEDS,
     design: DEFAULT_DESIGN,
-    header: { name: "", phone: "", mail: "", location: { da: "", en: "" } },
+    header: { name: "", phone: "", mail: "", location: { da: "", en: "" }, photo: "" },
     appliedTitle: { da: "", en: "" },
   });
 }
