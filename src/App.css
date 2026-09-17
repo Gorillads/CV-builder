@@ -1136,10 +1136,11 @@ textarea.field {
   width: 200px;
   /* --cv-chip-bg (designed as a subtle backdrop for small pill chips) reads
      as almost the same tone as the page's own off-white background, so the
-     sidebar barely stood out — this mixes in more of the scheme's own
-     accent color to make the column clearly its own panel, while still
-     tracking whichever color scheme is picked. */
-  background: color-mix(in srgb, var(--cv-accent) 18%, #f3f2f0);
+     sidebar barely stood out — this mixes in enough of the scheme's own
+     accent color to read as a clearly separate panel at a glance, while
+     leaving every other color on the page (main column, header, text)
+     untouched and still tracking whichever scheme is picked. */
+  background: color-mix(in srgb, var(--cv-accent) 30%, #f3f2f0);
   z-index: -1;
 }
 
