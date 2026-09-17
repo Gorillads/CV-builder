@@ -691,6 +691,16 @@ textarea.field {
   flex: none;
   overflow: visible;
   position: relative;
+  /* Without an explicit z-index, position: relative alone does NOT make
+     this element the root of its own stacking context — its own background
+     above just paints as an ordinary in-flow box, in the same paint step as
+     everything else here, which is AFTER any negative z-index descendant
+     (see .cv-sidebar-fill) rather than before it. That silently painted
+     this background over the sidebar backdrop, hiding it completely even
+     though it was actually being rendered correctly underneath. Giving this
+     element its own explicit (if arbitrary) z-index makes it the stacking
+     root, so its own background is guaranteed to paint first within it. */
+  z-index: 0;
   display: flex;
   flex-direction: column;
   font-family: var(--cv-body), system-ui, sans-serif;
@@ -1120,20 +1130,24 @@ textarea.field {
   padding: 0 20px 0 44px;
 }
 
-/* Full page-height backdrop for the sidebar column, positioned against
-   .cv-page's own padding box (see .cv-page's position: relative) so it
-   bleeds all the way to the page's real top/bottom/side edges — behind
-   the header too — regardless of how tall the header ends up being.
-   .cv-aside itself only carries the column's actual content and inner
-   padding; this is purely the tinted backdrop underneath it. A positioned
-   element paints above static in-flow content by default regardless of
-   DOM order, so without z-index this backdrop would sit on top of (and
-   hide) the sidebar's own text — z-index: -1 puts it back behind it. */
+/* A floating, card-like backdrop for the sidebar column — inset evenly on
+   every side (rather than bled flush to the page's own edges) so it reads
+   as its own distinct panel, positioned against .cv-page's own padding box
+   (see .cv-page's position: relative) and spanning behind the header too,
+   regardless of how tall the header ends up being. .cv-aside itself only
+   carries the column's actual content and inner padding — its text and
+   heading colors are untouched by this, same as the main column's; this is
+   purely the tinted backdrop sitting behind it. A positioned element paints
+   above static in-flow content by default regardless of DOM order, so
+   without z-index this backdrop would sit on top of (and hide) the
+   sidebar's own text — z-index: -1 puts it back behind it. */
 .cv-sidebar-fill {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 200px;
+  top: 16px;
+  bottom: 16px;
+  /* 200px column width minus a 16px gap on each side. */
+  width: 168px;
+  border-radius: 10px;
   /* --cv-chip-bg (designed as a subtle backdrop for small pill chips) reads
      as almost the same tone as the page's own off-white background, so the
      sidebar barely stood out — this mixes in enough of the scheme's own
@@ -1145,13 +1159,11 @@ textarea.field {
 }
 
 .cv-sidebar-fill.side-right {
-  right: 0;
-  border-radius: 0 2px 2px 0;
+  right: 16px;
 }
 
 .cv-sidebar-fill.side-left {
-  left: 0;
-  border-radius: 2px 0 0 2px;
+  left: 16px;
 }
 
 .struct-marked .cv-section {
