@@ -53,13 +53,13 @@ function EntryBlock({
   item,
   lang,
   variant,
-  activityStyle,
+  activityStyles,
   selectedActivities,
 }: {
   item: LibraryItem;
   lang: Lang;
   variant: string;
-  activityStyle: string;
+  activityStyles: Record<string, string>;
   selectedActivities: Record<string, number[]>;
 }) {
   const text = item[lang];
@@ -75,6 +75,7 @@ function EntryBlock({
 
   const acts = selectedActivityTexts(selectedActivities, item, lang);
   const showHead = text.head || (variant !== "rows" && text.meta);
+  const activityStyle = activityStyles[item.id] ?? defaultActivityStyle();
 
   return (
     <div className={"cv-entry" + (variant === "rows" ? " cv-entry--rows" : "")}>
@@ -107,13 +108,13 @@ function EntryList({
   items,
   lang,
   variant,
-  activityStyle,
+  activityStyles,
   selectedActivities,
 }: {
   items: LibraryItem[];
   lang: Lang;
   variant: string;
-  activityStyle: string;
+  activityStyles: Record<string, string>;
   selectedActivities: Record<string, number[]>;
 }) {
   return (
@@ -124,7 +125,7 @@ function EntryList({
           item={it}
           lang={lang}
           variant={variant}
-          activityStyle={activityStyle}
+          activityStyles={activityStyles}
           selectedActivities={selectedActivities}
         />
       ))}
@@ -136,12 +137,12 @@ function SectionBlock({
   category,
   lang,
   variant,
-  activityStyle,
+  activityStyles,
 }: {
   category: Category;
   lang: Lang;
   variant: string;
-  activityStyle: string;
+  activityStyles: Record<string, string>;
 }) {
   const items = useStore(
     useShallow((s) => {
@@ -173,7 +174,7 @@ function SectionBlock({
             items={items}
             lang={lang}
             variant="standard"
-            activityStyle={activityStyle}
+            activityStyles={activityStyles}
             selectedActivities={selectedActivities}
           />
         </div>
@@ -182,7 +183,7 @@ function SectionBlock({
           items={items}
           lang={lang}
           variant={variant}
-          activityStyle={activityStyle}
+          activityStyles={activityStyles}
           selectedActivities={selectedActivities}
         />
       )}
@@ -218,7 +219,7 @@ function SectionFlow({
             category={cat}
             lang={lang}
             variant={variants[id] ?? defaultVariant()}
-            activityStyle={activityStyles[id] ?? defaultActivityStyle()}
+            activityStyles={activityStyles}
           />
         );
       })}
@@ -635,7 +636,7 @@ export function CvPreview({
               category={categories[id]}
               lang={lang}
               variant={variant[id] ?? defaultVariant()}
-              activityStyle={activityStyle[id] ?? defaultActivityStyle()}
+              activityStyles={activityStyle}
             />
           </div>
         ))}

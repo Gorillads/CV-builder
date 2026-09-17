@@ -162,9 +162,9 @@ export interface Store extends AppState {
   deleteCategory(categoryId: string): void;
   toggleCategoryOn(categoryId: string): void;
   setVariant(categoryId: string, variant: string): void;
-  /** How a category's entries display their activity bullets — an id into
+  /** How one item's own activity bullets are displayed — an id into
    *  ACTIVITY_STYLES (see src/data/designTokens). */
-  setActivityStyle(categoryId: string, style: string): void;
+  setActivityStyle(itemId: string, style: string): void;
   /** Explicit per-category override of which column it renders in under the
    *  sidebar structure — see AppState.sidebarPlacement and isInSidebar. */
   setSidebarPlacement(categoryId: string, inSidebar: boolean): void;
@@ -341,8 +341,8 @@ export const useStore = create<Store>()(
       setVariant: (categoryId, variant) =>
         set((s) => ({ variant: { ...s.variant, [categoryId]: variant } })),
 
-      setActivityStyle: (categoryId, style) =>
-        set((s) => ({ activityStyle: { ...s.activityStyle, [categoryId]: style } })),
+      setActivityStyle: (itemId, style) =>
+        set((s) => ({ activityStyle: { ...s.activityStyle, [itemId]: style } })),
 
       setSidebarPlacement: (categoryId, inSidebar) =>
         set((s) => ({ sidebarPlacement: { ...s.sidebarPlacement, [categoryId]: inSidebar } })),
