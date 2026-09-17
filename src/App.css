@@ -1123,11 +1123,17 @@ textarea.field {
    bleed to that same true edge on its own.
    position: relative makes this the containing block .cv-sidebar-fill
    sizes itself against, so the fill hugs exactly this element's own
-   (content-sized, thanks to align-items: start above) box. */
+   (content-sized, thanks to align-items: start above) box.
+   padding-top: 24px, bigger than .cv-sidebar-fill's own 16px inset below,
+   pushes the first heading's text down inside the fill with a bit of
+   breathing room (8px) — without it, the heading (h3 has no margin-top of
+   its own) sits flush with this element's own top edge, i.e. above where
+   the fill even starts, poking out above the card instead of sitting
+   inside it. */
 .cv-aside {
   position: relative;
   margin-right: -44px;
-  padding: 0 44px 0 20px;
+  padding: 24px 44px 0 20px;
 }
 
 .cv-grid-sidebar.side-left {
@@ -1138,7 +1144,7 @@ textarea.field {
   order: -1;
   margin-right: 0;
   margin-left: -44px;
-  padding: 0 20px 0 44px;
+  padding: 24px 20px 0 44px;
 }
 
 /* A floating, card-like backdrop that exactly covers the sidebar's own
