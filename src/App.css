@@ -1175,11 +1175,11 @@ textarea.field {
      The inner edge (left here — facing .cv-main) stays at 12px, but the
      outer edge (right here — facing the page's own true edge, since
      .cv-aside already bleeds flush to it) needs more clearance than that
-     — 16px still read as too close to the true page edge, so this pulls
-     it in further to 24px.
+     — 24px still read as too close to the true page edge, so this pulls
+     it in further to 32px.
      .side-left below mirrors which side is "outer" vs "inner". */
   top: -8px;
-  right: 24px;
+  right: 32px;
   bottom: 16px;
   left: 12px;
   border-radius: 10px;
@@ -1196,11 +1196,11 @@ textarea.field {
 /* Mirrors .cv-sidebar-fill's left/right insets for the left-placed sidebar:
    .cv-aside itself now bleeds flush to the page's true LEFT edge instead
    (see .cv-grid-sidebar.side-left .cv-aside above), so left becomes the
-   outer edge needing the bigger 24px clearance, and right becomes the
+   outer edge needing the bigger 32px clearance, and right becomes the
    inner edge (facing .cv-main) that stays at 12px. */
 .cv-grid-sidebar.side-left .cv-sidebar-fill {
   right: 12px;
-  left: 24px;
+  left: 32px;
 }
 
 .struct-marked .cv-section {
