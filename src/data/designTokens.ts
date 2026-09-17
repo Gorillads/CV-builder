@@ -186,7 +186,7 @@ export interface ActivityStyle {
  *  (not "line", "chips" or "inline"). */
 export const ACTIVITY_STYLES: ActivityStyle[] = [
   { id: "list", name: { da: "Liste", en: "List" } },
-  { id: "inline", name: { da: "Inline (adskilt af punktum)", en: "Inline (dot-separated)" } },
+  { id: "inline", name: { da: "Inline", en: "Inline" } },
 ];
 
 export function defaultActivityStyle(): string {
