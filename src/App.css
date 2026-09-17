@@ -1166,7 +1166,10 @@ textarea.field {
    behind it. */
 .cv-sidebar-fill {
   position: absolute;
-  inset: 16px;
+  /* Slightly narrower side inset than top/bottom (12px vs 16px) so the
+     card reads a touch wider horizontally, closer to the sidebar text's
+     own edge. */
+  inset: 16px 12px;
   border-radius: 10px;
   /* --cv-chip-bg (designed as a subtle backdrop for small pill chips) reads
      as almost the same tone as the page's own off-white background, so the
