@@ -256,6 +256,7 @@ export function buildStateFromConfig(config: StateConfig): AppState {
       blurb: { da: seed.blurb?.[0] ?? "", en: seed.blurb?.[1] ?? "" },
       isCustom: false,
       isHidden: false,
+      isCollapsed: false,
       isReplacedByImport: false,
     };
     on[seed.id] = seed.onByDefault;

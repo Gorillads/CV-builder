@@ -129,7 +129,7 @@ banner suggesting you move a section to the appendix or switch to the
 - ✅ CSV export/import with full-rebuild semantics, an indented outline
   format, dedup, new-category-from-unrecognised-title
 - ✅ In-app editor (Indhold tab): category cards, element/activity editing,
-  hide/delete, add category
+  collapse/delete, add category
 - ✅ Tailor-to-the-job tab: category on/off, reorder, per-item CV
   checklist, applied title, per-category sidebar placement
 - ✅ CV preview styled as an actual sheet, with the design token system

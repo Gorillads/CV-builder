@@ -111,6 +111,32 @@ function migrateToUnifiedCategoryModel(state: unknown): unknown {
   return { ...s, categories: nextCategories, items, selectedItems, itemOrder, order };
 }
 
+/** The old hideCategory action set isHidden:true for a manually-hidden
+ *  category, which also excluded it from the Tailor tab and the CV —
+ *  isHidden is now reserved for a CSV import dropping a category (see
+ *  applyImportPlan), and a manual hide is tracked separately as
+ *  isCollapsed, which only affects the Content tab. Existing saved
+ *  documents predate that split, so any category still marked isHidden
+ *  from that older meaning is restored to isHidden:false (visible again
+ *  in the Tailor tab, selectable for the CV via its own `on` toggle) and
+ *  isCollapsed:true (so it still starts collapsed in the Content tab,
+ *  matching how it looked before this change). */
+function migrateHiddenCategoriesToCollapsed(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const categories = s.categories as Record<string, Record<string, unknown>> | undefined;
+  if (!categories || typeof categories !== "object") return state;
+
+  const nextCategories: Record<string, Record<string, unknown>> = {};
+  Object.entries(categories).forEach(([id, cat]) => {
+    if (!cat) return;
+    const wasHidden = cat.isHidden === true;
+    nextCategories[id] = { ...cat, isHidden: false, isCollapsed: wasHidden || cat.isCollapsed === true };
+  });
+
+  return { ...s, categories: nextCategories };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -147,15 +173,11 @@ export interface Store extends AppState {
   setCategoryTitle(categoryId: string, lang: Lang, value: string): void;
   setCategoryBlurb(categoryId: string, lang: Lang, value: string): void;
   addCategory(name: string): void;
-  /** Hides the category — collapsed to a single line in the Content tab
-   *  and dropped from the Tailor tab, CV output and CSV export, but it
-   *  keeps its place in `order` so it's still draggable and reachable via
-   *  unhideCategory. Same action regardless of whether it's a built-in or
-   *  a custom category. */
-  hideCategory(categoryId: string): void;
-  /** Reverses hideCategory: expands the category back to its full card,
-   *  right where it already sits in the order. */
-  unhideCategory(categoryId: string): void;
+  /** Collapses/expands the category to a single line in the Content tab —
+   *  purely a display convenience, same as toggleItemCollapsed /
+   *  toggleActivityCollapsed. It stays fully selectable in the Tailor tab
+   *  and counted toward the CV via `on`, whichever way this is set. */
+  toggleCategoryCollapsed(categoryId: string): void;
   /** Removes the category for good, along with its items and selections.
    *  Same action regardless of whether it's a built-in or a custom
    *  category — there's no "restore" for this one. */
@@ -281,6 +303,7 @@ export const useStore = create<Store>()(
           blurb: { da: "", en: "" },
           isCustom: true,
           isHidden: false,
+          isCollapsed: false,
           isReplacedByImport: false,
         };
         set((s) => ({
@@ -292,21 +315,11 @@ export const useStore = create<Store>()(
         }));
       },
 
-      hideCategory: (categoryId) =>
+      toggleCategoryCollapsed: (categoryId) =>
         set((s) => {
           const cat = s.categories[categoryId];
           if (!cat) return s;
-          return {
-            categories: { ...s.categories, [categoryId]: { ...cat, isHidden: true } },
-            on: { ...s.on, [categoryId]: false },
-          };
-        }),
-
-      unhideCategory: (categoryId) =>
-        set((s) => {
-          const cat = s.categories[categoryId];
-          if (!cat) return s;
-          return { categories: { ...s.categories, [categoryId]: { ...cat, isHidden: false } } };
+          return { categories: { ...s.categories, [categoryId]: { ...cat, isCollapsed: !cat.isCollapsed } } };
         }),
 
       deleteCategory: (categoryId) =>
@@ -539,8 +552,9 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 6,
-      migrate: (persisted) => migrateToUnifiedCategoryModel(persisted) as Store,
+      version: 7,
+      migrate: (persisted) =>
+        migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)) as Store,
     },
   ),
 );

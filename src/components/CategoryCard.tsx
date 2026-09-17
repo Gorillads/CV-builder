@@ -324,8 +324,7 @@ export function CategoryCard({
   const items = useStore((s) => s.items);
   const setCategoryTitle = useStore((s) => s.setCategoryTitle);
   const setCategoryBlurb = useStore((s) => s.setCategoryBlurb);
-  const hideCategory = useStore((s) => s.hideCategory);
-  const unhideCategory = useStore((s) => s.unhideCategory);
+  const toggleCategoryCollapsed = useStore((s) => s.toggleCategoryCollapsed);
   const deleteCategory = useStore((s) => s.deleteCategory);
   const addItem = useStore((s) => s.addItem);
   const reorderItem = useStore((s) => s.reorderItem);
@@ -343,7 +342,7 @@ export function CategoryCard({
       })
     : itemOrder;
 
-  const showCollapsed = category.isHidden && !searchQuery;
+  const showCollapsed = category.isCollapsed && !searchQuery;
 
   const cardClass =
     "category-card" +
@@ -377,10 +376,10 @@ export function CategoryCard({
             ⠿
           </span>
         )}
-        <span className="collapsed-label">{category.title[lang]}</span>
-        <button type="button" className="link-btn" onClick={() => unhideCategory(category.id)}>
-          {T.showCategory}
+        <button type="button" className="icon-btn" onClick={() => toggleCategoryCollapsed(category.id)} title={T.expand}>
+          ▸
         </button>
+        <span className="collapsed-label">{category.title[lang]}</span>
       </div>
     );
   }
@@ -411,15 +410,15 @@ export function CategoryCard({
             ⠿
           </span>
         )}
+        <button type="button" className="icon-btn" onClick={() => toggleCategoryCollapsed(category.id)} title={T.collapse}>
+          ▾
+        </button>
         <input
           className="field category-title"
           value={category.title[lang]}
           onChange={(e) => setCategoryTitle(category.id, lang, e.target.value)}
         />
         {category.isCustom && <span className="badge">{T.custom}</span>}
-        <button type="button" className="link-btn" onClick={() => hideCategory(category.id)}>
-          {T.hideCategory}
-        </button>
         <button type="button" className="link-btn danger" onClick={handleDelete}>
           {T.deleteCategory}
         </button>
