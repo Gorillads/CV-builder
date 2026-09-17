@@ -304,6 +304,8 @@ const CLASSIC_DESIGN: AppState["design"] = {
   density: "standard",
   sidebarSide: "right",
   headingSize: "standard",
+  photoSize: "standard",
+  photoPosition: "left",
   footer: { enabled: false, revision: "" },
 };
 
@@ -564,6 +566,8 @@ const MODERN_DESIGN: AppState["design"] = {
   density: "standard",
   sidebarSide: "right",
   headingSize: "standard",
+  photoSize: "standard",
+  photoPosition: "left",
   footer: { enabled: false, revision: "" },
 };
 
@@ -822,6 +826,8 @@ const ARTISTIC_DESIGN: AppState["design"] = {
   density: "standard",
   sidebarSide: "right",
   headingSize: "large",
+  photoSize: "standard",
+  photoPosition: "left",
   footer: { enabled: false, revision: "" },
 };
 
@@ -841,6 +847,7 @@ export const PRESETS: Preset[] = [
         phone: "+45 20 12 34 56",
         mail: "anders.jensen@email.dk",
         location: { da: "København", en: "Copenhagen" },
+        photo: "",
       },
       appliedTitle: { da: "Økonomichef", en: "Finance Manager" },
     },
@@ -860,6 +867,7 @@ export const PRESETS: Preset[] = [
         phone: "+45 30 98 76 54",
         mail: "sofie.nielsen@email.dk",
         location: { da: "Aarhus", en: "Aarhus" },
+        photo: "",
       },
       appliedTitle: { da: "Senior Product Manager", en: "Senior Product Manager" },
       variant: { kompetencer: "chips" },
@@ -880,6 +888,7 @@ export const PRESETS: Preset[] = [
         phone: "+45 40 11 22 33",
         mail: "mikkel.lund@email.dk",
         location: { da: "Odense", en: "Odense" },
+        photo: "",
       },
       appliedTitle: { da: "Grafisk designer", en: "Graphic Designer" },
       variant: { kompetencer: "chips" },

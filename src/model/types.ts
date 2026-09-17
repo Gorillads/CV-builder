@@ -116,6 +116,10 @@ export interface AppState {
     phone: string;
     mail: string;
     location: ByLang<string>;
+    /** Optional profile picture, as a data URL — empty string means none.
+     *  Resized/re-encoded client-side on upload (see DesignTab.tsx) to keep
+     *  it reasonably small in localStorage and JSON backups. */
+    photo: string;
   };
 
   /** Design tokens for the CV sheet itself — ids into src/data/designTokens. */
@@ -131,6 +135,13 @@ export interface AppState {
     sidebarSide: string;
     /** Category/section heading (h3) size, independent of headSize. */
     headingSize: string;
+    /** Diameter of the optional profile picture (see header.photo) — an id
+     *  into PHOTO_SIZES (see src/data/designTokens), independent of whether
+     *  a photo is actually set. */
+    photoSize: string;
+    /** Where the profile picture sits relative to the name/title/contact
+     *  block — an id into PHOTO_POSITIONS (see src/data/designTokens). */
+    photoPosition: string;
     footer: {
       enabled: boolean;
       revision: string;

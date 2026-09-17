@@ -225,9 +225,22 @@ export interface Store extends AppState {
   setAppliedTitle(lang: Lang, value: string): void;
   setHeaderField(field: "name" | "phone" | "mail", value: string): void;
   setHeaderLocation(lang: Lang, value: string): void;
+  /** Sets or clears (empty string) the optional profile picture — see
+   *  AppState.header.photo. */
+  setHeaderPhoto(photo: string): void;
 
   setDesign(
-    field: "font" | "scheme" | "headSize" | "struct" | "headKind" | "density" | "sidebarSide" | "headingSize",
+    field:
+      | "font"
+      | "scheme"
+      | "headSize"
+      | "struct"
+      | "headKind"
+      | "density"
+      | "sidebarSide"
+      | "headingSize"
+      | "photoSize"
+      | "photoPosition",
     value: string,
   ): void;
   setFooterEnabled(enabled: boolean): void;
@@ -527,6 +540,7 @@ export const useStore = create<Store>()(
       setHeaderField: (field, value) => set((s) => ({ header: { ...s.header, [field]: value } })),
       setHeaderLocation: (lang, value) =>
         set((s) => ({ header: { ...s.header, location: { ...s.header.location, [lang]: value } } })),
+      setHeaderPhoto: (photo) => set((s) => ({ header: { ...s.header, photo } })),
 
       setDesign: (field, value) => set((s) => ({ design: { ...s.design, [field]: value } })),
       setFooterEnabled: (enabled) =>

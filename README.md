@@ -98,6 +98,10 @@ and Tailor tab (per-category):
 - **Accent color schemes** (5): Steel, Graphite, Marine, Copper, Forest
 - **Header size** (3) and **header alignment** (3): left / centered / a
   low inline line
+- **Profile picture** (optional, off by default): an uploaded photo next to
+  the header — resized/re-encoded client-side on upload, with its own size
+  (3) and position (3: left/right of the name, or above it) controls,
+  independent of whether one's set at all
 - **Density** (2): standard, or compact (tighter spacing/type)
 - **Footer** (optional, off by default): a page label + editable revision
   stamp (e.g. "REV 2026-09") along the bottom of every page, styled like

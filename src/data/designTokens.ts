@@ -149,6 +149,32 @@ export const HEADING_SIZES: HeadingSize[] = [
   { id: "large", name: { da: "Stor", en: "Large" }, px: 14.5 },
 ];
 
+export interface PhotoSize {
+  id: string;
+  name: ByLang<string>;
+  /** Diameter, in px, of the profile picture on the CV. */
+  px: number;
+}
+
+/** Diameter options for the optional profile picture (see AppState.header.photo). */
+export const PHOTO_SIZES: PhotoSize[] = [
+  { id: "small", name: { da: "Lille", en: "Small" }, px: 64 },
+  { id: "standard", name: { da: "Standard", en: "Standard" }, px: 88 },
+  { id: "large", name: { da: "Stor", en: "Large" }, px: 112 },
+];
+
+export interface PhotoPosition {
+  id: string;
+  name: ByLang<string>;
+}
+
+/** Where the profile picture sits relative to the name/title/contact block. */
+export const PHOTO_POSITIONS: PhotoPosition[] = [
+  { id: "left", name: { da: "Venstre for teksten", en: "Left of the text" } },
+  { id: "right", name: { da: "Højre for teksten", en: "Right of the text" } },
+  { id: "top", name: { da: "Over teksten", en: "Above the text" } },
+];
+
 export interface Variant {
   id: string;
   name: ByLang<string>;
