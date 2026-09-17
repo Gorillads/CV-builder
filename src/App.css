@@ -1102,26 +1102,30 @@ textarea.field {
   column-gap: 32px;
 }
 
-/* position: relative so .cv-sidebar-fill (see below) sizes itself against
-   this element's own box — which .cv-page's flex: 1 (see above) already
-   stretches to fill whatever height the header leaves — rather than
-   against .cv-page's box, which would mean measuring down from the true
-   top of the page, behind the header, instead of from where this column's
-   own content actually starts. */
+/* align-items: start overrides grid's default "stretch", which would
+   otherwise force the shorter of .cv-main/.cv-aside to grow and match the
+   taller one's height — .cv-aside's own box needs to stay exactly as tall
+   as its own content so .cv-sidebar-fill (see below), sized against it,
+   hugs the sidebar's real content instead of extending past it to match
+   whichever column happens to be longer. */
 .cv-grid-sidebar {
   display: grid;
   grid-template-columns: 1fr 200px;
   gap: 0;
-  position: relative;
+  align-items: start;
 }
 
 /* Bleeds 44px into .cv-page's own right padding (the same way .cv-page's
    own content never has to account for that padding) so the sidebar's
    actual text column gets the same width it would if the page had no
    padding on that side — this is purely about content width, unrelated
-   to the tinted backdrop (see .cv-sidebar-fill), which handles the
-   full-height bleed on its own. */
+   to the tinted backdrop (see .cv-sidebar-fill), which handles its own
+   bleed to that same true edge on its own.
+   position: relative makes this the containing block .cv-sidebar-fill
+   sizes itself against, so the fill hugs exactly this element's own
+   (content-sized, thanks to align-items: start above) box. */
 .cv-aside {
+  position: relative;
   margin-right: -44px;
   padding: 0 44px 0 20px;
 }
@@ -1137,13 +1141,16 @@ textarea.field {
   padding: 0 20px 0 44px;
 }
 
-/* A floating, card-like backdrop for the sidebar column — inset evenly on
-   every side (rather than bled flush to the page's own edges) so it reads
-   as its own distinct panel. Positioned against .cv-grid-sidebar's own box
-   (see its position: relative above), which starts right below the header
-   and stretches to the page's bottom edge — so this card starts level with
-   the sidebar's own content, not floating behind the header above it, and
-   still reaches all the way down regardless of how much content there is.
+/* A floating, card-like backdrop that exactly covers the sidebar's own
+   content — inset evenly on every side (rather than bled flush to the
+   page's own edges) so it reads as its own distinct panel. Positioned
+   against .cv-aside's own box (see its position: relative above), which
+   align-items: start keeps sized to exactly its own content, and which
+   already bleeds to the page's true left/right edge itself (see .cv-aside's
+   margin), so a plain 16px inset on every side — including left and right —
+   lands this card 16px from the page's true edge without any further
+   compensation, and hugs .cv-aside's real top/bottom instead of extending
+   past it to match however tall the main column happens to be.
    .cv-aside itself only carries the column's actual content and inner
    padding — its text and heading colors are untouched by this, same as the
    main column's; this is purely the tinted backdrop sitting behind it. A
@@ -1153,10 +1160,7 @@ textarea.field {
    behind it. */
 .cv-sidebar-fill {
   position: absolute;
-  top: 16px;
-  bottom: 16px;
-  /* 200px column width minus a 16px gap on each side. */
-  width: 168px;
+  inset: 16px;
   border-radius: 10px;
   /* --cv-chip-bg (designed as a subtle backdrop for small pill chips) reads
      as almost the same tone as the page's own off-white background, so the
@@ -1166,21 +1170,6 @@ textarea.field {
      untouched and still tracking whichever scheme is picked. */
   background: color-mix(in srgb, var(--cv-accent) 30%, #f3f2f0);
   z-index: -1;
-}
-
-/* .cv-grid-sidebar's own box stops 44px short of the page's true edge
-   (that's .cv-page's own right/left padding — see .cv-aside's matching
-   bleed above) instead of reaching it the way .cv-page's padding box does,
-   so a plain 16px inset from this container's edge would leave the card
-   floating oddly far from the page edge. -28px (44 - 16) pushes it back
-   out to the same true 16px-from-the-page-edge gap used on every other
-   side. */
-.cv-sidebar-fill.side-right {
-  right: -28px;
-}
-
-.cv-sidebar-fill.side-left {
-  left: -28px;
 }
 
 .struct-marked .cv-section {
