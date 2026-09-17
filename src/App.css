@@ -1124,16 +1124,16 @@ textarea.field {
    position: relative makes this the containing block .cv-sidebar-fill
    sizes itself against, so the fill hugs exactly this element's own
    (content-sized, thanks to align-items: start above) box.
-   padding-top: 24px, bigger than .cv-sidebar-fill's own 16px inset below,
-   pushes the first heading's text down inside the fill with a bit of
-   breathing room (8px) — without it, the heading (h3 has no margin-top of
-   its own) sits flush with this element's own top edge, i.e. above where
-   the fill even starts, poking out above the card instead of sitting
-   inside it. */
+   No top padding — .cv-main has none either, and align-items: start puts
+   both columns' boxes at the same grid-row top, so the sidebar's first
+   heading needs to start flush with this element's own top edge to line
+   up with .cv-main's first heading at the same height. The card's own
+   breathing room above that heading is handled by .cv-sidebar-fill's
+   negative top offset instead (see below), not by padding here. */
 .cv-aside {
   position: relative;
   margin-right: -44px;
-  padding: 24px 44px 0 20px;
+  padding: 0 44px 0 20px;
 }
 
 .cv-grid-sidebar.side-left {
@@ -1144,7 +1144,7 @@ textarea.field {
   order: -1;
   margin-right: 0;
   margin-left: -44px;
-  padding: 24px 20px 0 44px;
+  padding: 0 20px 0 44px;
 }
 
 /* A floating, card-like backdrop that exactly covers the sidebar's own
@@ -1166,10 +1166,18 @@ textarea.field {
    behind it. */
 .cv-sidebar-fill {
   position: absolute;
-  /* Slightly narrower side inset than top/bottom (12px vs 16px) so the
-     card reads a touch wider horizontally, closer to the sidebar text's
-     own edge. */
-  inset: 16px 12px;
+  /* top: -8px extends the card above .cv-aside's own top edge instead of
+     inside it, since .cv-aside no longer carries top padding to make room
+     for the heading (that padding pushed the heading itself down out of
+     alignment with .cv-main's first heading — see .cv-aside above). This
+     keeps the same 8px breathing room above the heading without moving
+     the heading. Left/right stay narrower (12px) than bottom (16px) so
+     the card reads a touch wider horizontally, closer to the sidebar
+     text's own edge. */
+  top: -8px;
+  right: 12px;
+  bottom: 16px;
+  left: 12px;
   border-radius: 10px;
   /* --cv-chip-bg (designed as a subtle backdrop for small pill chips) reads
      as almost the same tone as the page's own off-white background, so the
