@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useStore } from "../state/store";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
@@ -77,6 +77,8 @@ function DensityGroup({
   lang: Lang;
   T: ReturnType<typeof t>;
 }) {
+  const [advanced, setAdvanced] = useState(false);
+
   return (
     <div className="design-group">
       <div className="design-group-label">{T.density}</div>
@@ -93,34 +95,41 @@ function DensityGroup({
         ))}
       </div>
 
-      <div className="design-subgroup">
-        <SizeGroup
-          label={T.headerSize}
-          sizes={HEAD_SIZES}
-          value={design.headSize}
-          onChange={(id) => setDesign("headSize", id)}
-          lang={lang}
-          followLabel={T.followDensity}
-        />
+      <label className="in-cv advanced-toggle">
+        <input type="checkbox" checked={advanced} onChange={(e) => setAdvanced(e.target.checked)} />
+        {T.advancedSizes}
+      </label>
 
-        <SizeGroup
-          label={T.headingSize}
-          sizes={HEADING_SIZES}
-          value={design.headingSize}
-          onChange={(id) => setDesign("headingSize", id)}
-          lang={lang}
-          followLabel={T.followDensity}
-        />
+      {advanced && (
+        <div className="design-subgroup">
+          <SizeGroup
+            label={T.headerSize}
+            sizes={HEAD_SIZES}
+            value={design.headSize}
+            onChange={(id) => setDesign("headSize", id)}
+            lang={lang}
+            followLabel={T.followDensity}
+          />
 
-        <SizeGroup
-          label={T.textSize}
-          sizes={TEXT_SIZES}
-          value={design.textSize}
-          onChange={(id) => setDesign("textSize", id)}
-          lang={lang}
-          followLabel={T.followDensity}
-        />
-      </div>
+          <SizeGroup
+            label={T.headingSize}
+            sizes={HEADING_SIZES}
+            value={design.headingSize}
+            onChange={(id) => setDesign("headingSize", id)}
+            lang={lang}
+            followLabel={T.followDensity}
+          />
+
+          <SizeGroup
+            label={T.textSize}
+            sizes={TEXT_SIZES}
+            value={design.textSize}
+            onChange={(id) => setDesign("textSize", id)}
+            lang={lang}
+            followLabel={T.followDensity}
+          />
+        </div>
+      )}
     </div>
   );
 }

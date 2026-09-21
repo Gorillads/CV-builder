@@ -633,6 +633,11 @@ textarea.field {
   gap: 6px;
 }
 
+.advanced-toggle {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
 /* Groups the individual heading/heading 2/text size controls visually
    underneath the overall density control they default to — a left border
    (rather than just indentation alone) reads as "these belong to the
