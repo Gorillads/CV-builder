@@ -52,6 +52,18 @@ export interface LibraryItem {
    *  display convenience as Activity.isCollapsed, unrelated to whether
    *  it's picked for the current CV (see AppState.selectedItems). */
   isCollapsed: boolean;
+  /** Optional small picture shown next to the element's own heading (e.g.
+   *  the employer's logo) — a data URL, empty string means none. Resized/
+   *  re-encoded client-side on upload (see CategoryCard.tsx) the same way
+   *  as the profile picture (see AppState.header.photo). */
+  logo: string;
+  /** Whether `logo` actually renders on the current CV — set from the
+   *  Tailor tab, independent of whether the item itself is selected (see
+   *  AppState.selectedItems). Lets a logo be turned off without losing
+   *  the uploaded image, the same "hide, don't delete" relationship
+   *  toggleItemInCv has to the item's own text. Irrelevant while logo is
+   *  empty. */
+  logoVisible: boolean;
 }
 
 export interface ElementText {

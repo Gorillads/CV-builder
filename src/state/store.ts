@@ -146,6 +146,28 @@ function migrateHeaderAddress(state: unknown): unknown {
   return { ...s, header: { ...header, address: "" } };
 }
 
+/** Backfills LibraryItem.logo/logoVisible (added in a later change) for
+ *  every item in an existing document, defaulting to "" (no logo) and
+ *  true (a logo, once added, starts visible) — the same shape addItem
+ *  already gives a brand-new item. */
+function migrateItemLogo(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const items = s.items as Record<string, Record<string, unknown>> | undefined;
+  if (!items || typeof items !== "object") return state;
+
+  const nextItems: Record<string, Record<string, unknown>> = {};
+  Object.entries(items).forEach(([id, item]) => {
+    if (!item) return;
+    nextItems[id] = {
+      ...item,
+      logo: typeof item.logo === "string" ? item.logo : "",
+      logoVisible: typeof item.logoVisible === "boolean" ? item.logoVisible : true,
+    };
+  });
+  return { ...s, items: nextItems };
+}
+
 /** Density's id set changed from {standard, compact} to {small, standard,
  *  large} (see DENSITIES in src/data/designTokens) when it became the
  *  overall/master size lever rather than just a spacing toggle — old
@@ -296,6 +318,12 @@ export interface Store extends AppState {
    *  tab display convenience for scanning/reordering, unrelated to
    *  toggleItemInCv (which is about what's on the current CV). */
   toggleItemCollapsed(itemId: string): void;
+  /** Sets or clears (empty string) the item's optional logo — see
+   *  LibraryItem.logo. */
+  setItemLogo(itemId: string, logo: string): void;
+  /** Shows/hides the item's logo on the current CV without deleting the
+   *  uploaded image — see LibraryItem.logoVisible. */
+  toggleItemLogoVisible(itemId: string): void;
 
   addActivity(itemId: string, da: string, en: string): void;
   removeActivity(itemId: string, index: number): void;
@@ -488,6 +516,8 @@ export const useStore = create<Store>()(
           en: blankElementText(),
           activities: [],
           isCollapsed: false,
+          logo: "",
+          logoVisible: true,
         };
         set((s) => ({
           items: { ...s.items, [id]: item },
@@ -557,6 +587,20 @@ export const useStore = create<Store>()(
           const item = s.items[itemId];
           if (!item) return s;
           return { items: { ...s.items, [itemId]: { ...item, isCollapsed: !item.isCollapsed } } };
+        }),
+
+      setItemLogo: (itemId, logo) =>
+        set((s) => {
+          const item = s.items[itemId];
+          if (!item) return s;
+          return { items: { ...s.items, [itemId]: { ...item, logo } } };
+        }),
+
+      toggleItemLogoVisible: (itemId) =>
+        set((s) => {
+          const item = s.items[itemId];
+          if (!item) return s;
+          return { items: { ...s.items, [itemId]: { ...item, logoVisible: !item.logoVisible } } };
         }),
 
       addActivity: (itemId, da, en) =>
@@ -658,12 +702,14 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 13,
+      version: 14,
       migrate: (persisted) =>
-        migrateSizeSliders(
-          migrateDensityScale(
-            migrateHeaderAddress(
-              migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateItemLogo(
+          migrateSizeSliders(
+            migrateDensityScale(
+              migrateHeaderAddress(
+                migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+              ),
             ),
           ),
         ) as Store,

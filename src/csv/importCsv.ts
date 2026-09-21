@@ -287,6 +287,8 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
         },
         activities: parsedItem.activities,
         isCollapsed: false,
+        logo: "",
+        logoVisible: true,
       };
       if (parsedItem.selectedActivityIndices != null) {
         selectedActivities[id] = parsedItem.selectedActivityIndices;

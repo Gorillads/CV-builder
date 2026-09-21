@@ -677,6 +677,29 @@ textarea.field {
   border: 1px solid var(--border);
 }
 
+/* A company logo isn't circular/portrait-shaped like the profile photo —
+   square with object-fit: contain keeps a wide or tall logo from being
+   cropped, both here in the editor thumb and on the CV itself (see
+   .cv-entry-logo in the CV rendering section below). */
+.logo-thumb {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+}
+
+.logo-thumb--tiny {
+  width: 18px;
+  height: 18px;
+}
+
+.item-logo-toggle {
+  flex: none;
+  white-space: nowrap;
+}
+
 .pill {
   border: 1px solid var(--border);
   background: var(--panel);
@@ -1023,8 +1046,30 @@ textarea.field {
   gap: 12px;
 }
 
+/* Groups the optional logo with the heading text as one flex item, so
+   .cv-entry-head's own space-between still only has two things to split
+   apart (this group vs. .cv-entry-meta) rather than pushing the logo to
+   one end on its own. */
+.cv-entry-head-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .cv-entry-head strong {
   font-weight: 600;
+}
+
+/* Small optional company/institution logo next to an element's own
+   heading (see LibraryItem.logo) — a fixed size regardless of density,
+   since it's a picture, not text, and object-fit: contain keeps a wide
+   or tall logo from being cropped to this square. */
+.cv-entry-logo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex: none;
+  vertical-align: middle;
 }
 
 .cv-entry-meta {
