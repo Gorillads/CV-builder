@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useStore } from "../state/store";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
@@ -57,6 +57,79 @@ function SizeGroup({
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** The overall density control plus the three individual size controls it
+ *  defaults each of them to — grouped into one design-group with the
+ *  individual ones nested visually underneath (see .design-subgroup in
+ *  App.css) so the "this knob adjusts those three" relationship reads at
+ *  a glance instead of five same-looking boxes in a row. */
+function DensityGroup({
+  design,
+  setDesign,
+  lang,
+  T,
+}: {
+  design: { density: string; headSize: string; headingSize: string; textSize: string };
+  setDesign: (field: "density" | "headSize" | "headingSize" | "textSize", value: string) => void;
+  lang: Lang;
+  T: ReturnType<typeof t>;
+}) {
+  const [advanced, setAdvanced] = useState(false);
+
+  return (
+    <div className="design-group">
+      <div className="design-group-label">{T.density}</div>
+      <div className="design-pills">
+        {DENSITIES.map((d) => (
+          <button
+            key={d.id}
+            type="button"
+            className={"pill" + (design.density === d.id ? " active" : "")}
+            onClick={() => setDesign("density", d.id)}
+          >
+            {d.name[lang]}
+          </button>
+        ))}
+      </div>
+
+      <label className="in-cv advanced-toggle">
+        <input type="checkbox" checked={advanced} onChange={(e) => setAdvanced(e.target.checked)} />
+        {T.advancedSizes}
+      </label>
+
+      {advanced && (
+        <div className="design-subgroup">
+          <SizeGroup
+            label={T.headerSize}
+            sizes={HEAD_SIZES}
+            value={design.headSize}
+            onChange={(id) => setDesign("headSize", id)}
+            lang={lang}
+            followLabel={T.followDensity}
+          />
+
+          <SizeGroup
+            label={T.headingSize}
+            sizes={HEADING_SIZES}
+            value={design.headingSize}
+            onChange={(id) => setDesign("headingSize", id)}
+            lang={lang}
+            followLabel={T.followDensity}
+          />
+
+          <SizeGroup
+            label={T.textSize}
+            sizes={TEXT_SIZES}
+            value={design.textSize}
+            onChange={(id) => setDesign("textSize", id)}
+            lang={lang}
+            followLabel={T.followDensity}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -146,48 +219,7 @@ export function DesignTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <div className="design-group">
-        <div className="design-group-label">{T.density}</div>
-        <div className="design-pills">
-          {DENSITIES.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              className={"pill" + (design.density === d.id ? " active" : "")}
-              onClick={() => setDesign("density", d.id)}
-            >
-              {d.name[lang]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <SizeGroup
-        label={T.headerSize}
-        sizes={HEAD_SIZES}
-        value={design.headSize}
-        onChange={(id) => setDesign("headSize", id)}
-        lang={lang}
-        followLabel={T.followDensity}
-      />
-
-      <SizeGroup
-        label={T.headingSize}
-        sizes={HEADING_SIZES}
-        value={design.headingSize}
-        onChange={(id) => setDesign("headingSize", id)}
-        lang={lang}
-        followLabel={T.followDensity}
-      />
-
-      <SizeGroup
-        label={T.textSize}
-        sizes={TEXT_SIZES}
-        value={design.textSize}
-        onChange={(id) => setDesign("textSize", id)}
-        lang={lang}
-        followLabel={T.followDensity}
-      />
+      <DensityGroup design={design} setDesign={setDesign} lang={lang} T={T} />
 
       <div className="design-group">
         <div className="design-group-label">{T.layoutStructure}</div>
