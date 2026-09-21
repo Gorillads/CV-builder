@@ -143,11 +143,10 @@ export interface AppState {
      *  (see SIZE_STEPS/DEFAULT_SIZE_STEP in src/data/designTokens) rather
      *  than a named option. Like a game's single graphics-quality preset,
      *  it's the default every "auto" individual size control (headSize,
-     *  headingSize, textSize, elementTextSize) falls back to, and it also
-     *  tightens/loosens section and entry spacing directly (see
-     *  resolveSpacing). A smaller step is the one-slider way to fit more
-     *  content on the page; any individual control can still be pinned to
-     *  an explicit step instead of following it. */
+     *  headingSize, textSize, elementTextSize, sectionGap, entryGap) falls
+     *  back to. A smaller step is the one-slider way to fit more content
+     *  on the page; any individual control can still be pinned to an
+     *  explicit step instead of following it. */
     density: string;
     /** Which side the sidebar sits on, when struct is "sidebar". */
     sidebarSide: string;
@@ -166,6 +165,14 @@ export interface AppState {
      *  explicit-step-into-ELEMENT_TEXT_SIZES shape as the other size
      *  controls, independent of textSize above. */
     elementTextSize: string;
+    /** "Section spacing" (margin-bottom of a category section) — same
+     *  "auto" vs explicit-step-into-SECTION_GAPS shape as the other size
+     *  controls. */
+    sectionGap: string;
+    /** "Element spacing" (margin-bottom of an entry within a section) —
+     *  same "auto" vs explicit-step-into-ENTRY_GAPS shape as the other
+     *  size controls. */
+    entryGap: string;
     /** Diameter of the optional profile picture (see header.photo) — an id
      *  into PHOTO_SIZES (see src/data/designTokens), independent of whether
      *  a photo is actually set. */

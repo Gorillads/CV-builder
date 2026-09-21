@@ -112,13 +112,12 @@ export const HEADS: HeaderAlignment[] = [
  *  SIZE_STEPS/DEFAULT_SIZE_STEP above) — like a game's single
  *  graphics-quality preset, it's the default every individual size
  *  control below (HEAD_SIZES, HEADING_SIZES, TEXT_SIZES,
- *  ELEMENT_TEXT_SIZES) falls back to, and it also tightens or loosens
- *  section/entry spacing directly (see resolveSpacing below and its use
- *  in CvPreview.tsx). Any individual control can still be pinned to an
- *  explicit step instead of following it — see AppState.design's field
- *  comments. There's no longer a named table for density itself (a slider
- *  position needs no name), just the 0-9 range other controls resolve
- *  their own step against. */
+ *  ELEMENT_TEXT_SIZES, SECTION_GAPS, ENTRY_GAPS) falls back to. Any
+ *  individual control can still be pinned to an explicit step instead of
+ *  following it — see AppState.design's field comments. There's no
+ *  longer a named table for density itself (a slider position needs no
+ *  name), just the 0-9 range other controls resolve their own step
+ *  against. */
 
 export interface SidebarSide {
   id: string;
@@ -149,6 +148,19 @@ export const TEXT_SIZES: number[] = [10, 11, 11.5, 12, 13, 13.5, 14, 14.5, 15, 1
  *  tab, at each of the 10 slider positions. Index 4 (12.5px, the old
  *  "Standard") is the default. */
 export const ELEMENT_TEXT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.5, 15.5, 16.5];
+
+/** Margin-bottom, in px, of a category section (.cv-section) at each of
+ *  the 10 slider positions — "section spacing" in the Design tab's
+ *  advanced controls. Index 4 (18px) is the default, the same margin
+ *  .cv-section always had before density could change it. */
+export const SECTION_GAPS: number[] = [8.4, 10.8, 13.2, 15.6, 18, 20.4, 22.8, 25.2, 27.6, 30];
+
+/** Margin-bottom, in px, of an entry within a section (.cv-entry/
+ *  .cv-entry--line) at each of the 10 slider positions — "element
+ *  spacing" in the Design tab's advanced controls. Index 4 (9px) is the
+ *  default, the same margin .cv-entry always had before density could
+ *  change it. */
+export const ENTRY_GAPS: number[] = [4.2, 5.4, 6.6, 7.8, 9, 10.2, 11.4, 12.6, 13.8, 15];
 
 export interface PhotoSize {
   id: string;
@@ -246,27 +258,14 @@ export function clampStep(step: number): number {
 }
 
 /** Resolves one of the individual size sliders (HEAD_SIZES, HEADING_SIZES,
- *  TEXT_SIZES, ELEMENT_TEXT_SIZES) against its stored value — "auto" (the
- *  default, "follow the overall density") falls back to the density
- *  slider's own step, so dragging density moves every "auto" control
- *  together, the same way a game's overall graphics preset drives every
- *  individual setting left on "auto". An explicit step (a stringified
- *  0-9 number) overrides that for just this one control. */
+ *  TEXT_SIZES, ELEMENT_TEXT_SIZES, SECTION_GAPS, ENTRY_GAPS) against its
+ *  stored value — "auto" (the default, "follow the overall density")
+ *  falls back to the density slider's own step, so dragging density moves
+ *  every "auto" control together, the same way a game's overall graphics
+ *  preset drives every individual setting left on "auto". An explicit
+ *  step (a stringified 0-9 number) overrides that for just this one
+ *  control. */
 export function resolveSizePx(sizes: number[], value: string, densityStep: number): number {
   const step = value === "auto" ? densityStep : clampStep(Number(value));
   return sizes[clampStep(step)];
-}
-
-/** Section/entry spacing (margin-bottom, in px) at a given density step —
- *  a plain linear scale around step 4's old "Standard" values (18px/9px,
- *  the same margins .cv-section/.cv-entry always had before density
- *  could change them), so text sizing (resolveSizePx above) isn't the
- *  only thing a smaller density tightens up. */
-export function resolveSpacing(densityStep: number): { sectionGap: number; entryGap: number } {
-  const step = clampStep(densityStep);
-  const offset = step - DEFAULT_SIZE_STEP;
-  return {
-    sectionGap: 18 + offset * 2.4,
-    entryGap: 9 + offset * 1.2,
-  };
 }
