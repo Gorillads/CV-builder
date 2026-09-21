@@ -14,7 +14,9 @@ import {
   PHOTO_SIZES,
   isInSidebar,
   byId,
-  resolveSize,
+  resolveSizePx,
+  resolveSpacing,
+  clampStep,
   defaultVariant,
   defaultActivityStyle,
 } from "../data/designTokens";
@@ -636,19 +638,23 @@ export function CvPreview({
 
   const font = byId(FONTS, design.font);
   const scheme = byId(SCHEMES, design.scheme);
-  const headSize = resolveSize(HEAD_SIZES, design.headSize, design.density);
-  const headingSize = resolveSize(HEADING_SIZES, design.headingSize, design.density);
-  const textSize = resolveSize(TEXT_SIZES, design.textSize, design.density);
-  const elementTextSize = resolveSize(ELEMENT_TEXT_SIZES, design.elementTextSize, design.density);
+  const densityStep = clampStep(Number(design.density));
+  const headSizePx = resolveSizePx(HEAD_SIZES, design.headSize, densityStep);
+  const headingSizePx = resolveSizePx(HEADING_SIZES, design.headingSize, densityStep);
+  const textSizePx = resolveSizePx(TEXT_SIZES, design.textSize, densityStep);
+  const elementTextSizePx = resolveSizePx(ELEMENT_TEXT_SIZES, design.elementTextSize, densityStep);
+  const { sectionGap, entryGap } = resolveSpacing(densityStep);
   const photoSize = byId(PHOTO_SIZES, design.photoSize);
 
   const themeStyle = {
     "--cv-head": font.head,
     "--cv-body": font.body,
-    "--cv-name-size": `${headSize.namePx}px`,
-    "--cv-heading-size": `${headingSize.px}px`,
-    "--cv-text-size": `${textSize.px}px`,
-    "--cv-element-text-size": `${elementTextSize.px}px`,
+    "--cv-name-size": `${headSizePx}px`,
+    "--cv-heading-size": `${headingSizePx}px`,
+    "--cv-text-size": `${textSizePx}px`,
+    "--cv-element-text-size": `${elementTextSizePx}px`,
+    "--cv-section-gap": `${sectionGap}px`,
+    "--cv-entry-gap": `${entryGap}px`,
     "--cv-accent": scheme.accent,
     "--cv-accent-soft": scheme.soft,
     "--cv-line": scheme.line,
@@ -666,7 +672,7 @@ export function CvPreview({
   const hasColumns = isSidebar || isTwo;
   const sidebarIds = hasColumns ? activeIds.filter((id) => isInSidebar(id, sidebarPlacement)) : [];
   const mainIds = hasColumns ? activeIds.filter((id) => !isInSidebar(id, sidebarPlacement)) : activeIds;
-  const pageClass = `cv-page struct-${design.struct} density-${design.density}`;
+  const pageClass = `cv-page struct-${design.struct}`;
   const sidebarClass = `cv-grid-sidebar side-${design.sidebarSide}`;
 
   const { result, measureRef } = usePagination(

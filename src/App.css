@@ -633,6 +633,14 @@ textarea.field {
   gap: 6px;
 }
 
+/* Every size control (density and its four individual overrides) is this
+   same plain 0-9 slider — unnamed, since 10 steps is too many to label
+   individually the way the old 3-5 named options were. */
+.size-slider {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
 .advanced-toggle {
   color: var(--text-soft);
   font-size: 12px;
@@ -961,7 +969,7 @@ textarea.field {
 /* ---- Sections & entries --------------------------------------------- */
 
 .cv-section {
-  margin-bottom: 18px;
+  margin-bottom: var(--cv-section-gap, 18px);
   break-inside: avoid;
 }
 
@@ -986,7 +994,7 @@ textarea.field {
 .cv-entry {
   display: flex;
   gap: 14px;
-  margin-bottom: 9px;
+  margin-bottom: var(--cv-entry-gap, 9px);
 }
 
 .cv-entry-meta-col {
@@ -1112,11 +1120,13 @@ textarea.field {
 
 /* ---- Entries: "line" variant (title + year, nothing else) ----------- */
 
+/* ~0.44 of --cv-entry-gap (its old fixed 4px vs .cv-entry's 9px) keeps
+   this denser than a full entry while still tightening/loosening with it. */
 .cv-entry--line {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 4px;
+  margin-bottom: calc(var(--cv-entry-gap, 9px) * 0.444);
 }
 
 .cv-entry-line-head {
@@ -1298,47 +1308,13 @@ textarea.field {
 
 /* ---- Density (orthogonal to structure) -------------------------------- */
 
-/* Text sizing itself comes entirely from --cv-text-size/--cv-name-size/
-   --cv-heading-size (see CvPreview.tsx's themeStyle, which resolves each
-   one against this same density when its own control is "auto") — density
-   only tightens or loosens the spacing around that text, so a smaller
-   density still fits more even once every size control is pinned to an
-   explicit value. */
-.density-xsmall .cv-section {
-  margin-bottom: 9px;
-}
-
-.density-xsmall .cv-entry,
-.density-xsmall .cv-entry--line {
-  margin-bottom: 3px;
-}
-
-.density-small .cv-section {
-  margin-bottom: 12px;
-}
-
-.density-small .cv-entry,
-.density-small .cv-entry--line {
-  margin-bottom: 5px;
-}
-
-.density-large .cv-section {
-  margin-bottom: 24px;
-}
-
-.density-large .cv-entry,
-.density-large .cv-entry--line {
-  margin-bottom: 12px;
-}
-
-.density-xlarge .cv-section {
-  margin-bottom: 30px;
-}
-
-.density-xlarge .cv-entry,
-.density-xlarge .cv-entry--line {
-  margin-bottom: 15px;
-}
+/* Density no longer needs its own discrete classes here — it's a
+   continuous 0-9 slider now (see resolveSpacing in src/data/designTokens),
+   so its effect on section/entry spacing comes entirely from the
+   --cv-section-gap/--cv-entry-gap vars .cv-section/.cv-entry/
+   .cv-entry--line read above, same as its effect on text sizing comes
+   from --cv-text-size/--cv-name-size/--cv-heading-size/
+   --cv-element-text-size (see CvPreview.tsx's themeStyle). */
 
 @media (max-width: 900px) {
   /* No room for two side-by-side independently-scrolling panes on a
