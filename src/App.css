@@ -1064,13 +1064,19 @@ textarea.field {
    heading (see LibraryItem.logo) — sized by its own "Logo size" slider
    (--cv-logo-size, see LOGO_SIZES in src/data/designTokens), independent
    of density. object-fit: contain keeps a wide or tall logo from being
-   cropped to this square. */
+   cropped to this square. A logo bigger than the heading's own text line
+   would otherwise stretch the row/line taller and push every element
+   below it down the page — the negative margin-block cancels that extra
+   height back out (never a positive one, so a small logo never adds
+   space) so only the logo itself overflows visually, not the layout
+   around it. */
 .cv-entry-logo {
   width: var(--cv-logo-size, 32px);
   height: var(--cv-logo-size, 32px);
   object-fit: contain;
   flex: none;
   vertical-align: middle;
+  margin-block: min(0px, calc((var(--cv-text-size, 13px) * 1.45 - var(--cv-logo-size, 32px)) / 2));
 }
 
 .cv-entry-meta {
