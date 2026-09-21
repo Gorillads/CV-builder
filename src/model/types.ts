@@ -131,15 +131,32 @@ export interface AppState {
   design: {
     font: string;
     scheme: string;
+    /** "Heading size" (the CV owner's own name) — "auto" follows `density`
+     *  (see below), or an explicit id into HEAD_SIZES overrides it just
+     *  for this one text type. */
     headSize: string;
     /** Macro page layout — single/two/sidebar/marked/banded. */
     struct: string;
     headKind: string;
+    /** The overall/master size lever (an id into DENSITIES) — like a
+     *  game's single graphics-quality preset, it's the default every
+     *  "auto" individual size control (headSize, headingSize, textSize)
+     *  falls back to, and it also tightens/loosens section and entry
+     *  spacing directly (see the .density-* rules in App.css). Picking a
+     *  smaller density is the one-lever way to fit more content on the
+     *  page; any individual control can still be pinned to an explicit
+     *  size instead of following it. */
     density: string;
     /** Which side the sidebar sits on, when struct is "sidebar". */
     sidebarSide: string;
-    /** Category/section heading (h3) size, independent of headSize. */
+    /** "Heading 2 size" (category/section headings) — same "auto" vs
+     *  explicit-id-into-HEADING_SIZES shape as headSize above, independent
+     *  of it. */
     headingSize: string;
+    /** "Text size" (everything else: profile/description text, entry
+     *  meta/comment lines, activity bullets) — same "auto" vs
+     *  explicit-id-into-TEXT_SIZES shape as headSize/headingSize above. */
+    textSize: string;
     /** Diameter of the optional profile picture (see header.photo) — an id
      *  into PHOTO_SIZES (see src/data/designTokens), independent of whether
      *  a photo is actually set. */

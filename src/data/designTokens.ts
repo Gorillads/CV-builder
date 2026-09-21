@@ -72,6 +72,10 @@ export interface HeadSize {
   namePx: number;
 }
 
+/** "Heading size" in the Design tab — the CV owner's own name. Its id set
+ *  (small/standard/large) matches DENSITIES' own, so when
+ *  AppState.design.headSize is "auto" it can look its size up straight
+ *  from whichever density is picked (see resolveSize below). */
 export const HEAD_SIZES: HeadSize[] = [
   { id: "small", name: { da: "Lille", en: "Small" }, namePx: 22 },
   { id: "standard", name: { da: "Standard", en: "Standard" }, namePx: 27 },
@@ -110,9 +114,18 @@ export interface Density {
   name: ByLang<string>;
 }
 
+/** The overall/master size lever — like a game's single graphics-quality
+ *  preset, it sets the default for every individual size control below
+ *  (HEAD_SIZES, HEADING_SIZES, TEXT_SIZES) at once, and also tightens or
+ *  loosens section/entry spacing directly (see the .density-* rules in
+ *  App.css) so picking "small" is the one-lever way to fit more content
+ *  on the page. Any individual control can still be set explicitly
+ *  (overriding this default for just that one text type) via its own
+ *  "auto" vs explicit-size choice — see AppState.design's field comments. */
 export const DENSITIES: Density[] = [
+  { id: "small", name: { da: "Kompakt (mere på siden)", en: "Compact (more on the page)" } },
   { id: "standard", name: { da: "Standard", en: "Standard" } },
-  { id: "compact", name: { da: "Kompakt (mere på siden)", en: "Compact (more on the page)" } },
+  { id: "large", name: { da: "Rummelig", en: "Spacious" } },
 ];
 
 export interface SidebarSide {
@@ -131,12 +144,33 @@ export interface HeadingSize {
   px: number;
 }
 
-/** Font size of a category/section heading (h3) — independent of the
- *  overall header/name size control. */
+/** Font size of a category/section heading (h3) — "heading 2" in the
+ *  Design tab, independent of the name's own "heading" size control
+ *  above. Its id set (small/standard/large) matches DENSITIES' own, so
+ *  when AppState.design.headingSize is "auto" it can look its size up
+ *  straight from whichever density is picked (see CvPreview.tsx). */
 export const HEADING_SIZES: HeadingSize[] = [
   { id: "small", name: { da: "Lille", en: "Small" }, px: 11 },
   { id: "standard", name: { da: "Standard", en: "Standard" }, px: 12.5 },
   { id: "large", name: { da: "Stor", en: "Large" }, px: 14.5 },
+];
+
+export interface TextSize {
+  id: string;
+  name: ByLang<string>;
+  /** Font size, in px, of the CV's body text — profile/description text,
+   *  entry meta/comment lines and activity bullets alike; everything that
+   *  isn't the name or a section/entry heading. */
+  px: number;
+}
+
+/** Same role as HEAD_SIZES/HEADING_SIZES but for body text — "text size"
+ *  in the Design tab. Its id set matches DENSITIES' own for the same
+ *  "auto" lookup (see HEADING_SIZES above). */
+export const TEXT_SIZES: TextSize[] = [
+  { id: "small", name: { da: "Lille", en: "Small" }, px: 12 },
+  { id: "standard", name: { da: "Standard", en: "Standard" }, px: 13 },
+  { id: "large", name: { da: "Stor", en: "Large" }, px: 14 },
 ];
 
 export interface PhotoSize {
@@ -224,4 +258,15 @@ export function isInSidebar(categoryId: string, sidebarPlacement: Record<string,
 
 export function byId<T extends { id: string }>(list: T[], id: string): T {
   return list.find((x) => x.id === id) ?? list[0];
+}
+
+/** Resolves one of the individual size controls (HEAD_SIZES, HEADING_SIZES,
+ *  TEXT_SIZES) against its stored id — "auto" (the default, "follow the
+ *  overall density") falls back to whichever entry shares the current
+ *  density's own id, so picking "small"/"standard"/"large" density moves
+ *  every "auto" control together, the same way a game's overall graphics
+ *  preset drives every individual setting left on "auto". An explicit
+ *  size id overrides that for just this one control. */
+export function resolveSize<T extends { id: string }>(list: T[], id: string, densityId: string): T {
+  return byId(list, id === "auto" ? densityId : id);
 }

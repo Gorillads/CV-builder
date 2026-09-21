@@ -11,9 +11,55 @@ import {
   DENSITIES,
   SIDEBAR_SIDES,
   HEADING_SIZES,
+  TEXT_SIZES,
   PHOTO_SIZES,
   PHOTO_POSITIONS,
 } from "../data/designTokens";
+
+/** Renders one of the individual size controls (heading/heading 2/text) as
+ *  an "auto" pill (follows the overall density) followed by the size
+ *  table's own explicit options — the same "overall preset, then per-item
+ *  override" pattern a game's graphics settings use. */
+function SizeGroup({
+  label,
+  sizes,
+  value,
+  onChange,
+  lang,
+  followLabel,
+}: {
+  label: string;
+  sizes: { id: string; name: { da: string; en: string } }[];
+  value: string;
+  onChange: (id: string) => void;
+  lang: Lang;
+  followLabel: string;
+}) {
+  return (
+    <div className="design-group">
+      <div className="design-group-label">{label}</div>
+      <div className="design-pills">
+        <button
+          type="button"
+          className={"pill" + (value === "auto" ? " active" : "")}
+          onClick={() => onChange("auto")}
+        >
+          {followLabel}
+        </button>
+        {sizes.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={"pill" + (value === s.id ? " active" : "")}
+            onClick={() => onChange(s.id)}
+          >
+            {s.name[lang]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /** Downscales/re-encodes an uploaded photo client-side (longest side capped
  *  at maxDim, re-encoded as JPEG) before it ever reaches the store — an
@@ -101,20 +147,47 @@ export function DesignTab({ lang }: { lang: Lang }) {
       </div>
 
       <div className="design-group">
-        <div className="design-group-label">{T.headerSize}</div>
+        <div className="design-group-label">{T.density}</div>
         <div className="design-pills">
-          {HEAD_SIZES.map((h) => (
+          {DENSITIES.map((d) => (
             <button
-              key={h.id}
+              key={d.id}
               type="button"
-              className={"pill" + (design.headSize === h.id ? " active" : "")}
-              onClick={() => setDesign("headSize", h.id)}
+              className={"pill" + (design.density === d.id ? " active" : "")}
+              onClick={() => setDesign("density", d.id)}
             >
-              {h.name[lang]}
+              {d.name[lang]}
             </button>
           ))}
         </div>
       </div>
+
+      <SizeGroup
+        label={T.headerSize}
+        sizes={HEAD_SIZES}
+        value={design.headSize}
+        onChange={(id) => setDesign("headSize", id)}
+        lang={lang}
+        followLabel={T.followDensity}
+      />
+
+      <SizeGroup
+        label={T.headingSize}
+        sizes={HEADING_SIZES}
+        value={design.headingSize}
+        onChange={(id) => setDesign("headingSize", id)}
+        lang={lang}
+        followLabel={T.followDensity}
+      />
+
+      <SizeGroup
+        label={T.textSize}
+        sizes={TEXT_SIZES}
+        value={design.textSize}
+        onChange={(id) => setDesign("textSize", id)}
+        lang={lang}
+        followLabel={T.followDensity}
+      />
 
       <div className="design-group">
         <div className="design-group-label">{T.layoutStructure}</div>
@@ -217,38 +290,6 @@ export function DesignTab({ lang }: { lang: Lang }) {
           </div>
         </div>
       )}
-
-      <div className="design-group">
-        <div className="design-group-label">{T.headingSize}</div>
-        <div className="design-pills">
-          {HEADING_SIZES.map((h) => (
-            <button
-              key={h.id}
-              type="button"
-              className={"pill" + (design.headingSize === h.id ? " active" : "")}
-              onClick={() => setDesign("headingSize", h.id)}
-            >
-              {h.name[lang]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="design-group">
-        <div className="design-group-label">{T.density}</div>
-        <div className="design-pills">
-          {DENSITIES.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              className={"pill" + (design.density === d.id ? " active" : "")}
-              onClick={() => setDesign("density", d.id)}
-            >
-              {d.name[lang]}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className="design-group">
         <div className="design-group-label">{T.footer}</div>

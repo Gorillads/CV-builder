@@ -718,7 +718,7 @@ textarea.field {
   display: flex;
   flex-direction: column;
   font-family: var(--cv-body), system-ui, sans-serif;
-  font-size: 13px;
+  font-size: var(--cv-text-size, 13px);
   line-height: 1.45;
 }
 
@@ -990,7 +990,6 @@ textarea.field {
 
 .cv-entry-head strong {
   font-weight: 600;
-  font-size: 13px;
 }
 
 .cv-entry-meta {
@@ -1068,12 +1067,10 @@ textarea.field {
 
 .cv-taglist li {
   font-weight: 600;
-  font-size: 13px;
 }
 
 .cv-tags-inline {
   margin: 0;
-  font-size: 13px;
 }
 
 /* ---- Entries: "two-col" variant (a 2-column grid within the section,
@@ -1100,7 +1097,6 @@ textarea.field {
 
 .cv-entry-line-head {
   font-weight: 600;
-  font-size: 13px;
 }
 
 .cv-entry-line-meta {
@@ -1132,7 +1128,6 @@ textarea.field {
   font-family: var(--cv-head), system-ui, sans-serif;
   color: var(--cv-accent-soft);
   text-transform: uppercase;
-  font-size: 13px;
   letter-spacing: 0.08em;
 }
 
@@ -1279,23 +1274,28 @@ textarea.field {
 
 /* ---- Density (orthogonal to structure) -------------------------------- */
 
-.density-compact {
-  font-size: 12px;
-}
-
-.density-compact .cv-section {
+/* Text sizing itself comes entirely from --cv-text-size/--cv-name-size/
+   --cv-heading-size (see CvPreview.tsx's themeStyle, which resolves each
+   one against this same density when its own control is "auto") — density
+   only tightens or loosens the spacing around that text, so a smaller
+   density still fits more even once every size control is pinned to an
+   explicit value. */
+.density-small .cv-section {
   margin-bottom: 12px;
 }
 
-.density-compact .cv-entry,
-.density-compact .cv-entry--line {
+.density-small .cv-entry,
+.density-small .cv-entry--line {
   margin-bottom: 5px;
 }
 
-.density-compact .cv-entry-acts,
-.density-compact .cv-entry-acts-inline,
-.density-compact .cv-entry-desc {
-  font-size: 11.5px;
+.density-large .cv-section {
+  margin-bottom: 24px;
+}
+
+.density-large .cv-entry,
+.density-large .cv-entry--line {
+  margin-bottom: 12px;
 }
 
 @media (max-width: 900px) {
