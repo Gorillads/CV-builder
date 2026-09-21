@@ -166,9 +166,11 @@ export interface AppState {
      *  explicit-step-into-ELEMENT_TEXT_SIZES shape as the other size
      *  controls, independent of textSize above. */
     elementTextSize: string;
-    /** "Contact line size" (address · phone · mail · location, under the
-     *  name/title) — same "auto" vs explicit-step-into-CONTACT_SIZES shape
-     *  as the other size controls, independent of textSize above. */
+    /** "Contact line size" (address · phone · mail · location, plus the
+     *  applied-title line right above it — see CONTACT_SIZES in
+     *  src/data/designTokens) — same "auto" vs explicit-step-into-
+     *  CONTACT_SIZES shape as the other size controls, independent of
+     *  textSize above. */
     contactSize: string;
     /** "Section spacing" (margin-bottom of a category section) — same
      *  "auto" vs explicit-step-into-SECTION_GAPS shape as the other size

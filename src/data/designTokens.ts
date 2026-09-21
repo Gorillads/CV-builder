@@ -153,7 +153,10 @@ export const ELEMENT_TEXT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5
 /** Font size, in px, of the header's own contact line (address · phone ·
  *  mail · location) — "contact line size" in the Design tab, at each of
  *  the 10 slider positions. Index 4 (12.5px, the old fixed value) is the
- *  default. */
+ *  default. The applied-title line (see .cv-applied-title in App.css)
+ *  scales off this same control too, at a fixed 1.12 ratio to its own old
+ *  14px vs. this table's old 12.5px, rather than getting its own slider —
+ *  they're both part of the same "line under the name" grouping. */
 export const CONTACT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.5, 15.5, 16.5];
 
 /** Margin-bottom, in px, of a category section (.cv-section) at each of
