@@ -1330,30 +1330,54 @@ textarea.field {
 /* ---- Print / Save as PDF -------------------------------------------
    Only #cv-print-area survives; each .cv-page becomes exactly one sheet
    (size set via @page) with no screen-only chrome (shadow, warning
-   banner, horizontal scroll wrapper). */
+   banner, horizontal scroll wrapper).
+   This hides the rest of the app chrome with display: none (removing it
+   from layout entirely) and lets #cv-print-area render in normal
+   document flow, rather than the earlier approach of hiding everything
+   via visibility (which still reserves layout space) and then pulling
+   #cv-print-area out of flow with position: fixed/absolute to reset it
+   to the page's top-left. Content taller than one page doesn't paginate
+   correctly when the printed root is out-of-flow like that — Chromium's
+   print engine has long-standing bugs here (position: fixed content
+   reprinting on every page instead of flowing past the first; position:
+   absolute avoiding that but still miscounting extra blank pages once
+   anything actually overflows past one page, exactly the case with an
+   appendix). Normal in-flow content with page-break-after: always on
+   each .cv-page (see below) is what page breaks are actually designed
+   for, and doesn't hit either bug. */
 @media print {
   @page {
     size: A4;
     margin: 0;
   }
 
-  body * {
-    visibility: hidden;
+  .app-header,
+  .editor-panel,
+  .panel-resizer,
+  .preview-toolbar {
+    display: none;
   }
 
-  #cv-print-area,
-  #cv-print-area * {
-    visibility: visible;
+  .app {
+    height: auto;
+    overflow: visible;
+  }
+
+  .app-body {
+    height: auto;
+    padding: 0;
+  }
+
+  .preview-panel {
+    height: auto;
+    overflow-y: visible;
   }
 
   #cv-print-area {
-    /* fixed (not absolute) so this pins to the actual page regardless of
-       any positioned ancestor becoming its containing block instead. */
-    position: fixed;
-    inset: 0;
     display: block;
     overflow: visible;
     gap: 0;
+    padding-bottom: 0;
   }
 
   /* Printing always happens at true size — the on-screen zoom level is a
@@ -1390,9 +1414,17 @@ textarea.field {
     display: none;
   }
 
-  #cv-print-area .cv-measure-hidden,
-  #cv-print-area .cv-measure-hidden * {
-    visibility: hidden;
+  /* display: none (not just visibility: hidden) — this clone exists only
+     for CvPreview's own JS to measure page-1 section heights against, and
+     its own base rule already sets position: fixed (needed on screen so
+     it never affects layout there). Left merely invisible, Chromium's
+     print engine still has to lay it out to compute its height, and (like
+     any position: fixed content, see #cv-print-area above) still budgets
+     it a repeating slot on every printed page — inflating the page count
+     with extra blank pages even once nothing from it is actually visible.
+     display: none removes it from that layout/pagination pass entirely. */
+  #cv-print-area .cv-measure-hidden {
+    display: none;
   }
 
   .cv-section {
