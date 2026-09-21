@@ -1175,7 +1175,7 @@ textarea.field {
    whichever column happens to be longer. */
 .cv-grid-sidebar {
   display: grid;
-  grid-template-columns: 1fr 200px;
+  grid-template-columns: 1fr 260px;
   gap: 0;
   align-items: start;
 }
@@ -1202,7 +1202,7 @@ textarea.field {
 }
 
 .cv-grid-sidebar.side-left {
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 260px 1fr;
 }
 
 .cv-grid-sidebar.side-left .cv-aside {
