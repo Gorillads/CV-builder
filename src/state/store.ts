@@ -137,6 +137,15 @@ function migrateHiddenCategoriesToCollapsed(state: unknown): unknown {
   return { ...s, categories: nextCategories };
 }
 
+function migrateHeaderAddress(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const header = s.header as Record<string, unknown> | undefined;
+  if (!header || typeof header !== "object" || typeof header.address === "string") return state;
+
+  return { ...s, header: { ...header, address: "" } };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -223,7 +232,7 @@ export interface Store extends AppState {
   reorderActivity(itemId: string, from: number, to: number): void;
 
   setAppliedTitle(lang: Lang, value: string): void;
-  setHeaderField(field: "name" | "phone" | "mail", value: string): void;
+  setHeaderField(field: "name" | "address" | "phone" | "mail", value: string): void;
   setHeaderLocation(lang: Lang, value: string): void;
   /** Sets or clears (empty string) the optional profile picture — see
    *  AppState.header.photo. */
@@ -566,9 +575,11 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 7,
+      version: 8,
       migrate: (persisted) =>
-        migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)) as Store,
+        migrateHeaderAddress(
+          migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        ) as Store,
     },
   ),
 );

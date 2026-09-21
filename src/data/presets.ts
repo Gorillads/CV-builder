@@ -844,6 +844,7 @@ export const PRESETS: Preset[] = [
       design: CLASSIC_DESIGN,
       header: {
         name: "Anders Jensen",
+        address: "Vesterbrogade 12, 1620 København V",
         phone: "+45 20 12 34 56",
         mail: "anders.jensen@email.dk",
         location: { da: "København", en: "Copenhagen" },
@@ -864,6 +865,7 @@ export const PRESETS: Preset[] = [
       design: MODERN_DESIGN,
       header: {
         name: "Sofie Nielsen",
+        address: "Nørrebrogade 45, 8000 Aarhus C",
         phone: "+45 30 98 76 54",
         mail: "sofie.nielsen@email.dk",
         location: { da: "Aarhus", en: "Aarhus" },
@@ -885,6 +887,7 @@ export const PRESETS: Preset[] = [
       design: ARTISTIC_DESIGN,
       header: {
         name: "Mikkel Lund",
+        address: "Vestergade 8, 5000 Odense C",
         phone: "+45 40 11 22 33",
         mail: "mikkel.lund@email.dk",
         location: { da: "Odense", en: "Odense" },
