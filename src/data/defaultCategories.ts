@@ -231,6 +231,7 @@ const DEFAULT_DESIGN: AppState["design"] = {
   headingSize: "auto",
   textSize: "auto",
   elementTextSize: "auto",
+  contactSize: "auto",
   sectionGap: "auto",
   entryGap: "auto",
   photoSize: "standard",

@@ -829,7 +829,7 @@ textarea.field {
 .cv-contact {
   margin: 0;
   color: #5c6672;
-  font-size: 12.5px;
+  font-size: var(--cv-contact-size, 12.5px);
   font-variant-numeric: tabular-nums;
 }
 

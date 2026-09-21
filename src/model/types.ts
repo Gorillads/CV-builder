@@ -154,17 +154,22 @@ export interface AppState {
      *  explicit-step-into-HEADING_SIZES shape as headSize above,
      *  independent of it. */
     headingSize: string;
-    /** "Text size" (general body text: the contact line, a category's own
-     *  blurb, tag/chip labels, an entry's own heading/meta line) — same
-     *  "auto" vs explicit-step-into-TEXT_SIZES shape as headSize/
-     *  headingSize above. Does not cover an element's own description/
-     *  comment/activities — see elementTextSize below for that. */
+    /** "Text size" (general body text: a category's own blurb, tag/chip
+     *  labels, an entry's own heading/meta line) — same "auto" vs
+     *  explicit-step-into-TEXT_SIZES shape as headSize/headingSize above.
+     *  Does not cover the contact line (see contactSize below) or an
+     *  element's own description/comment/activities (see elementTextSize
+     *  below). */
     textSize: string;
     /** "Text in elements" (an element's own description, its short italic
      *  comment line, and its activity bullets) — same "auto" vs
      *  explicit-step-into-ELEMENT_TEXT_SIZES shape as the other size
      *  controls, independent of textSize above. */
     elementTextSize: string;
+    /** "Contact line size" (address · phone · mail · location, under the
+     *  name/title) — same "auto" vs explicit-step-into-CONTACT_SIZES shape
+     *  as the other size controls, independent of textSize above. */
+    contactSize: string;
     /** "Section spacing" (margin-bottom of a category section) — same
      *  "auto" vs explicit-step-into-SECTION_GAPS shape as the other size
      *  controls. */
