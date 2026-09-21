@@ -1052,7 +1052,7 @@ textarea.field {
    one end on its own. */
 .cv-entry-head-title {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 6px;
 }
 
@@ -1066,18 +1066,17 @@ textarea.field {
    of density. object-fit: contain keeps a wide or tall logo from being
    cropped to this square. A logo bigger than the heading's own text line
    would otherwise stretch the row/line taller and push every element
-   below it down the page — the negative margin-bottom cancels that extra
+   below it down the page — the negative margin-block cancels that extra
    height back out (never a positive one, so a small logo never adds
-   space), growing only downward from the text's own top edge (vs.
-   growing both ways from its center) so a large logo can't creep up past
-   the section divider above it. */
+   space) so only the logo itself overflows visually, not the layout
+   around it. */
 .cv-entry-logo {
   width: var(--cv-logo-size, 32px);
   height: var(--cv-logo-size, 32px);
   object-fit: contain;
   flex: none;
-  vertical-align: text-top;
-  margin-bottom: min(0px, calc(var(--cv-text-size, 13px) * 1.45 - var(--cv-logo-size, 32px)));
+  vertical-align: middle;
+  margin-block: min(0px, calc((var(--cv-text-size, 13px) * 1.45 - var(--cv-logo-size, 32px)) / 2));
 }
 
 .cv-entry-meta {
