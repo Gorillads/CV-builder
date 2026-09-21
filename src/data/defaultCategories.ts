@@ -226,7 +226,7 @@ const DEFAULT_DESIGN: AppState["design"] = {
   headSize: "auto",
   struct: "single",
   headKind: "left",
-  density: "standard",
+  density: "4",
   sidebarSide: "right",
   headingSize: "auto",
   textSize: "auto",

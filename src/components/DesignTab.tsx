@@ -5,59 +5,63 @@ import { t } from "../i18n";
 import {
   FONTS,
   SCHEMES,
-  HEAD_SIZES,
   STRUCTS,
   HEADS,
-  DENSITIES,
   SIDEBAR_SIDES,
-  HEADING_SIZES,
-  TEXT_SIZES,
-  ELEMENT_TEXT_SIZES,
   PHOTO_SIZES,
   PHOTO_POSITIONS,
+  SIZE_STEPS,
+  clampStep,
 } from "../data/designTokens";
 
-/** Renders one of the individual size controls (heading/heading 2/text) as
- *  an "auto" pill (follows the overall density) followed by the size
- *  table's own explicit options — the same "overall preset, then per-item
- *  override" pattern a game's graphics settings use. */
-function SizeGroup({
+/** A plain 0-9 slider, unnamed — every size step (density, and the four
+ *  individual controls it defaults to) is a position on this same range,
+ *  not a handful of named categories a person has to pick a label for. */
+function StepSlider({ value, onChange, disabled }: { value: number; onChange: (step: number) => void; disabled?: boolean }) {
+  return (
+    <input
+      type="range"
+      className="size-slider"
+      min={0}
+      max={SIZE_STEPS - 1}
+      step={1}
+      value={value}
+      disabled={disabled}
+      onChange={(e) => onChange(Number(e.target.value))}
+    />
+  );
+}
+
+/** One individual size control (heading/heading 2/text/text-in-elements):
+ *  a "follow density" checkbox plus a slider that's only interactive once
+ *  that checkbox is off — pinning an explicit step overrides whatever the
+ *  overall density slider is doing, for just this one text type. */
+function SizeSlider({
   label,
-  sizes,
   value,
   onChange,
-  lang,
   followLabel,
 }: {
   label: string;
-  sizes: { id: string; name: { da: string; en: string } }[];
   value: string;
-  onChange: (id: string) => void;
-  lang: Lang;
+  onChange: (value: string) => void;
   followLabel: string;
 }) {
+  const following = value === "auto";
+  const step = following ? undefined : clampStep(Number(value));
+
   return (
     <div className="design-group">
       <div className="design-group-label">{label}</div>
-      <div className="design-pills">
-        <button
-          type="button"
-          className={"pill" + (value === "auto" ? " active" : "")}
-          onClick={() => onChange("auto")}
-        >
-          {followLabel}
-        </button>
-        {sizes.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            className={"pill" + (value === s.id ? " active" : "")}
-            onClick={() => onChange(s.id)}
-          >
-            {s.name[lang]}
-          </button>
-        ))}
-      </div>
+      <label className="in-cv">
+        <input
+          type="checkbox"
+          checked={following}
+          onChange={(e) => onChange(e.target.checked ? "auto" : String(clampStep(Number(value))))}
+        />
+        {followLabel}
+      </label>
+      {!following && <StepSlider value={step ?? 4} onChange={(s) => onChange(String(s))} />}
     </div>
   );
 }
@@ -70,7 +74,6 @@ function SizeGroup({
 function DensityGroup({
   design,
   setDesign,
-  lang,
   T,
 }: {
   design: { density: string; headSize: string; headingSize: string; textSize: string; elementTextSize: string };
@@ -78,7 +81,6 @@ function DensityGroup({
     field: "density" | "headSize" | "headingSize" | "textSize" | "elementTextSize",
     value: string,
   ) => void;
-  lang: Lang;
   T: ReturnType<typeof t>;
 }) {
   const [advanced, setAdvanced] = useState(false);
@@ -86,18 +88,7 @@ function DensityGroup({
   return (
     <div className="design-group">
       <div className="design-group-label">{T.density}</div>
-      <div className="design-pills">
-        {DENSITIES.map((d) => (
-          <button
-            key={d.id}
-            type="button"
-            className={"pill" + (design.density === d.id ? " active" : "")}
-            onClick={() => setDesign("density", d.id)}
-          >
-            {d.name[lang]}
-          </button>
-        ))}
-      </div>
+      <StepSlider value={clampStep(Number(design.density))} onChange={(s) => setDesign("density", String(s))} />
 
       <label className="in-cv advanced-toggle">
         <input type="checkbox" checked={advanced} onChange={(e) => setAdvanced(e.target.checked)} />
@@ -106,39 +97,31 @@ function DensityGroup({
 
       {advanced && (
         <div className="design-subgroup">
-          <SizeGroup
+          <SizeSlider
             label={T.headerSize}
-            sizes={HEAD_SIZES}
             value={design.headSize}
-            onChange={(id) => setDesign("headSize", id)}
-            lang={lang}
+            onChange={(v) => setDesign("headSize", v)}
             followLabel={T.followDensity}
           />
 
-          <SizeGroup
+          <SizeSlider
             label={T.headingSize}
-            sizes={HEADING_SIZES}
             value={design.headingSize}
-            onChange={(id) => setDesign("headingSize", id)}
-            lang={lang}
+            onChange={(v) => setDesign("headingSize", v)}
             followLabel={T.followDensity}
           />
 
-          <SizeGroup
+          <SizeSlider
             label={T.textSize}
-            sizes={TEXT_SIZES}
             value={design.textSize}
-            onChange={(id) => setDesign("textSize", id)}
-            lang={lang}
+            onChange={(v) => setDesign("textSize", v)}
             followLabel={T.followDensity}
           />
 
-          <SizeGroup
+          <SizeSlider
             label={T.elementTextSize}
-            sizes={ELEMENT_TEXT_SIZES}
             value={design.elementTextSize}
-            onChange={(id) => setDesign("elementTextSize", id)}
-            lang={lang}
+            onChange={(v) => setDesign("elementTextSize", v)}
             followLabel={T.followDensity}
           />
         </div>
@@ -232,7 +215,7 @@ export function DesignTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <DensityGroup design={design} setDesign={setDesign} lang={lang} T={T} />
+      <DensityGroup design={design} setDesign={setDesign} T={T} />
 
       <div className="design-group">
         <div className="design-group-label">{T.layoutStructure}</div>

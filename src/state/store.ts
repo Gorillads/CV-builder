@@ -166,6 +166,51 @@ function migrateDensityScale(state: unknown): unknown {
   return { ...s, design: { ...design, density, textSize, elementTextSize } };
 }
 
+/** Every size control (density, headSize, headingSize, textSize,
+ *  elementTextSize) switched from a handful of named options
+ *  (xsmall/small/standard/large/xlarge) to a plain 0-9 slider step (see
+ *  SIZE_STEPS/DEFAULT_SIZE_STEP in src/data/designTokens) — this maps the
+ *  old named ids onto their nearest step, spread evenly across the wider
+ *  0-9 range, so a document saved before sliders existed keeps rendering
+ *  at the same size. "auto" and an already-numeric step both pass through
+ *  unchanged, so this is safe to run again on an already-migrated
+ *  document. */
+const OLD_SIZE_ID_TO_STEP: Record<string, string> = {
+  xsmall: "0",
+  small: "2",
+  standard: "4",
+  large: "6",
+  xlarge: "8",
+};
+
+function migrateSizeSliders(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const design = s.design as Record<string, unknown> | undefined;
+  if (!design || typeof design !== "object") return state;
+
+  const toStep = (value: unknown): string => {
+    if (typeof value !== "string") return "4";
+    return OLD_SIZE_ID_TO_STEP[value] ?? value;
+  };
+  const toStepOrAuto = (value: unknown): string => {
+    if (value === "auto") return "auto";
+    return toStep(value);
+  };
+
+  return {
+    ...s,
+    design: {
+      ...design,
+      density: toStep(design.density),
+      headSize: toStepOrAuto(design.headSize),
+      headingSize: toStepOrAuto(design.headingSize),
+      textSize: toStepOrAuto(design.textSize),
+      elementTextSize: toStepOrAuto(design.elementTextSize),
+    },
+  };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -597,11 +642,13 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 10,
+      version: 11,
       migrate: (persisted) =>
-        migrateDensityScale(
-          migrateHeaderAddress(
-            migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateSizeSliders(
+          migrateDensityScale(
+            migrateHeaderAddress(
+              migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+            ),
           ),
         ) as Store,
     },

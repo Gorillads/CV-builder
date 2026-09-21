@@ -65,24 +65,21 @@ export const SCHEMES: ColorScheme[] = [
   { id: "skov", name: { da: "Skov", en: "Forest" }, accent: "#2f5546", soft: "#487262", line: "#8bab98", chipBorder: "#b8cfc5", chipBg: "#eaf2ee", chipFg: "#224034" },
 ];
 
-export interface HeadSize {
-  id: string;
-  name: ByLang<string>;
-  /** Font size, in px, of the name in the CV header. */
-  namePx: number;
-}
+/** Number of steps every size slider (density, and the four individual
+ *  controls below) offers — a plain 0-9 position, unnamed, rather than a
+ *  handful of named categories (Small/Standard/Large, ...). */
+export const SIZE_STEPS = 10;
+/** The step every slider defaults to — chosen so its px value below (index
+ *  4 in each table) matches what used to be the "Standard" named option,
+ *  so a document saved before sliders existed keeps rendering at the same
+ *  size once migrated (see migrateDensityScale/migrateSizeSliders in
+ *  state/store.ts). */
+export const DEFAULT_SIZE_STEP = 4;
 
-/** "Heading size" in the Design tab — the CV owner's own name. Its id set
- *  (xsmall/small/standard/large/xlarge) matches DENSITIES' own, so when
- *  AppState.design.headSize is "auto" it can look its size up straight
- *  from whichever density is picked (see resolveSize below). */
-export const HEAD_SIZES: HeadSize[] = [
-  { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, namePx: 19 },
-  { id: "small", name: { da: "Lille", en: "Small" }, namePx: 23 },
-  { id: "standard", name: { da: "Standard", en: "Standard" }, namePx: 27 },
-  { id: "large", name: { da: "Stor", en: "Large" }, namePx: 31 },
-  { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, namePx: 36 },
-];
+/** Font size, in px, of the name in the CV header ("Heading size" in the
+ *  Design tab) at each of the 10 slider positions — index 4 (27px, the old
+ *  "Standard") is the default. */
+export const HEAD_SIZES: number[] = [18, 20, 22, 24, 27, 29, 31, 33, 35, 38];
 
 export interface LayoutStructure {
   id: string;
@@ -111,26 +108,17 @@ export const HEADS: HeaderAlignment[] = [
   { id: "inline", name: { da: "Lav linje", en: "Low line" } },
 ];
 
-export interface Density {
-  id: string;
-  name: ByLang<string>;
-}
-
-/** The overall/master size lever — like a game's single graphics-quality
- *  preset, it sets the default for every individual size control below
- *  (HEAD_SIZES, HEADING_SIZES, TEXT_SIZES) at once, and also tightens or
- *  loosens section/entry spacing directly (see the .density-* rules in
- *  App.css) so picking a smaller density is the one-lever way to fit more
- *  content on the page. Any individual control can still be set explicitly
- *  (overriding this default for just that one text type) via its own
- *  "auto" vs explicit-size choice — see AppState.design's field comments. */
-export const DENSITIES: Density[] = [
-  { id: "xsmall", name: { da: "Meget kompakt (mest på siden)", en: "Very compact (fits the most)" } },
-  { id: "small", name: { da: "Kompakt", en: "Compact" } },
-  { id: "standard", name: { da: "Standard", en: "Standard" } },
-  { id: "large", name: { da: "Rummelig", en: "Spacious" } },
-  { id: "xlarge", name: { da: "Meget rummelig", en: "Very spacious" } },
-];
+/** The overall/master size lever, a plain 0-9 slider position (see
+ *  SIZE_STEPS/DEFAULT_SIZE_STEP above) — like a game's single
+ *  graphics-quality preset, it's the default every individual size
+ *  control below (HEAD_SIZES, HEADING_SIZES, TEXT_SIZES,
+ *  ELEMENT_TEXT_SIZES) falls back to, and it also tightens or loosens
+ *  section/entry spacing directly (see resolveSpacing below and its use
+ *  in CvPreview.tsx). Any individual control can still be pinned to an
+ *  explicit step instead of following it — see AppState.design's field
+ *  comments. There's no longer a named table for density itself (a slider
+ *  position needs no name), just the 0-9 range other controls resolve
+ *  their own step against. */
 
 export interface SidebarSide {
   id: string;
@@ -142,68 +130,25 @@ export const SIDEBAR_SIDES: SidebarSide[] = [
   { id: "left", name: { da: "Venstre", en: "Left" } },
 ];
 
-export interface HeadingSize {
-  id: string;
-  name: ByLang<string>;
-  px: number;
-}
+/** Font size of a category/section heading (h3) — "heading 2 size" in the
+ *  Design tab, independent of the name's own "heading size" control
+ *  above — at each of the 10 slider positions. Index 4 (12.5px, the old
+ *  "Standard") is the default. */
+export const HEADING_SIZES: number[] = [9, 10, 11.25, 12, 12.5, 13, 13.75, 14.5, 15.5, 17];
 
-/** Font size of a category/section heading (h3) — "heading 2" in the
- *  Design tab, independent of the name's own "heading" size control
- *  above. Its id set (xsmall/small/standard/large/xlarge) matches
- *  DENSITIES' own, so when AppState.design.headingSize is "auto" it can
- *  look its size up straight from whichever density is picked (see
- *  CvPreview.tsx). */
-export const HEADING_SIZES: HeadingSize[] = [
-  { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, px: 10 },
-  { id: "small", name: { da: "Lille", en: "Small" }, px: 11.25 },
-  { id: "standard", name: { da: "Standard", en: "Standard" }, px: 12.5 },
-  { id: "large", name: { da: "Stor", en: "Large" }, px: 13.75 },
-  { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, px: 15.5 },
-];
-
-export interface TextSize {
-  id: string;
-  name: ByLang<string>;
-  /** Font size, in px, of the CV's general body text — the contact line,
-   *  a category's own blurb, tag/chip labels, an entry's own heading/meta
-   *  line; everything that isn't the name, a section/entry heading, or
-   *  text inside an element (see ELEMENT_TEXT_SIZES below for that). */
-  px: number;
-}
-
-/** Same role as HEAD_SIZES/HEADING_SIZES but for general body text —
- *  "text size" in the Design tab. Its id set matches DENSITIES' own for
- *  the same "auto" lookup (see HEADING_SIZES above). */
-export const TEXT_SIZES: TextSize[] = [
-  { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, px: 11 },
-  { id: "small", name: { da: "Lille", en: "Small" }, px: 12 },
-  { id: "standard", name: { da: "Standard", en: "Standard" }, px: 13 },
-  { id: "large", name: { da: "Stor", en: "Large" }, px: 14 },
-  { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, px: 15 },
-];
-
-export interface ElementTextSize {
-  id: string;
-  name: ByLang<string>;
-  /** Font size, in px, of the text inside an element itself — its
-   *  description, its short italic comment line and its activity
-   *  bullets — independent of TEXT_SIZES above, which covers everything
-   *  else that isn't the name or a heading. */
-  px: number;
-}
+/** Font size, in px, of the CV's general body text — the contact line, a
+ *  category's own blurb, tag/chip labels, an entry's own heading/meta
+ *  line; everything that isn't the name, a section/entry heading, or text
+ *  inside an element (see ELEMENT_TEXT_SIZES below for that) — "text
+ *  size" in the Design tab, at each of the 10 slider positions. Index 4
+ *  (13px, the old "Standard") is the default. */
+export const TEXT_SIZES: number[] = [10, 11, 11.5, 12, 13, 13.5, 14, 14.5, 15, 16];
 
 /** Same role as TEXT_SIZES but scoped to an element's own body content
  *  (description/comment/activities) — "text in elements" in the Design
- *  tab. Its id set matches DENSITIES' own for the same "auto" lookup (see
- *  HEADING_SIZES above). */
-export const ELEMENT_TEXT_SIZES: ElementTextSize[] = [
-  { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, px: 10.5 },
-  { id: "small", name: { da: "Lille", en: "Small" }, px: 11.5 },
-  { id: "standard", name: { da: "Standard", en: "Standard" }, px: 12.5 },
-  { id: "large", name: { da: "Stor", en: "Large" }, px: 13.5 },
-  { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, px: 14.5 },
-];
+ *  tab, at each of the 10 slider positions. Index 4 (12.5px, the old
+ *  "Standard") is the default. */
+export const ELEMENT_TEXT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.5, 15.5, 16.5];
 
 export interface PhotoSize {
   id: string;
@@ -292,13 +237,36 @@ export function byId<T extends { id: string }>(list: T[], id: string): T {
   return list.find((x) => x.id === id) ?? list[0];
 }
 
-/** Resolves one of the individual size controls (HEAD_SIZES, HEADING_SIZES,
- *  TEXT_SIZES) against its stored id — "auto" (the default, "follow the
- *  overall density") falls back to whichever entry shares the current
- *  density's own id, so picking "small"/"standard"/"large" density moves
- *  every "auto" control together, the same way a game's overall graphics
- *  preset drives every individual setting left on "auto". An explicit
- *  size id overrides that for just this one control. */
-export function resolveSize<T extends { id: string }>(list: T[], id: string, densityId: string): T {
-  return byId(list, id === "auto" ? densityId : id);
+/** Clamps a slider step to a valid index into a 10-entry size table
+ *  (falls back to DEFAULT_SIZE_STEP for anything that doesn't parse, e.g.
+ *  a stray "auto" that reached here by mistake). */
+export function clampStep(step: number): number {
+  if (!Number.isFinite(step)) return DEFAULT_SIZE_STEP;
+  return Math.min(SIZE_STEPS - 1, Math.max(0, Math.round(step)));
+}
+
+/** Resolves one of the individual size sliders (HEAD_SIZES, HEADING_SIZES,
+ *  TEXT_SIZES, ELEMENT_TEXT_SIZES) against its stored value — "auto" (the
+ *  default, "follow the overall density") falls back to the density
+ *  slider's own step, so dragging density moves every "auto" control
+ *  together, the same way a game's overall graphics preset drives every
+ *  individual setting left on "auto". An explicit step (a stringified
+ *  0-9 number) overrides that for just this one control. */
+export function resolveSizePx(sizes: number[], value: string, densityStep: number): number {
+  const step = value === "auto" ? densityStep : clampStep(Number(value));
+  return sizes[clampStep(step)];
+}
+
+/** Section/entry spacing (margin-bottom, in px) at a given density step —
+ *  a plain linear scale around step 4's old "Standard" values (18px/9px,
+ *  the same margins .cv-section/.cv-entry always had before density
+ *  could change them), so text sizing (resolveSizePx above) isn't the
+ *  only thing a smaller density tightens up. */
+export function resolveSpacing(densityStep: number): { sectionGap: number; entryGap: number } {
+  const step = clampStep(densityStep);
+  const offset = step - DEFAULT_SIZE_STEP;
+  return {
+    sectionGap: 18 + offset * 2.4,
+    entryGap: 9 + offset * 1.2,
+  };
 }
