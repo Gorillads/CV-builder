@@ -153,10 +153,17 @@ export interface AppState {
      *  explicit-id-into-HEADING_SIZES shape as headSize above, independent
      *  of it. */
     headingSize: string;
-    /** "Text size" (everything else: profile/description text, entry
-     *  meta/comment lines, activity bullets) — same "auto" vs
-     *  explicit-id-into-TEXT_SIZES shape as headSize/headingSize above. */
+    /** "Text size" (general body text: the contact line, a category's own
+     *  blurb, tag/chip labels, an entry's own heading/meta line) — same
+     *  "auto" vs explicit-id-into-TEXT_SIZES shape as headSize/headingSize
+     *  above. Does not cover an element's own description/comment/
+     *  activities — see elementTextSize below for that. */
     textSize: string;
+    /** "Text in elements" (an element's own description, its short italic
+     *  comment line, and its activity bullets) — same "auto" vs
+     *  explicit-id-into-ELEMENT_TEXT_SIZES shape as the other size
+     *  controls, independent of textSize above. */
+    elementTextSize: string;
     /** Diameter of the optional profile picture (see header.photo) — an id
      *  into PHOTO_SIZES (see src/data/designTokens), independent of whether
      *  a photo is actually set. */

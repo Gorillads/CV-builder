@@ -10,6 +10,7 @@ import {
   HEAD_SIZES,
   HEADING_SIZES,
   TEXT_SIZES,
+  ELEMENT_TEXT_SIZES,
   PHOTO_SIZES,
   isInSidebar,
   byId,
@@ -638,6 +639,7 @@ export function CvPreview({
   const headSize = resolveSize(HEAD_SIZES, design.headSize, design.density);
   const headingSize = resolveSize(HEADING_SIZES, design.headingSize, design.density);
   const textSize = resolveSize(TEXT_SIZES, design.textSize, design.density);
+  const elementTextSize = resolveSize(ELEMENT_TEXT_SIZES, design.elementTextSize, design.density);
   const photoSize = byId(PHOTO_SIZES, design.photoSize);
 
   const themeStyle = {
@@ -646,6 +648,7 @@ export function CvPreview({
     "--cv-name-size": `${headSize.namePx}px`,
     "--cv-heading-size": `${headingSize.px}px`,
     "--cv-text-size": `${textSize.px}px`,
+    "--cv-element-text-size": `${elementTextSize.px}px`,
     "--cv-accent": scheme.accent,
     "--cv-accent-soft": scheme.soft,
     "--cv-line": scheme.line,

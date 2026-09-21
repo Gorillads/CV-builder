@@ -230,6 +230,7 @@ const DEFAULT_DESIGN: AppState["design"] = {
   sidebarSide: "right",
   headingSize: "auto",
   textSize: "auto",
+  elementTextSize: "auto",
   photoSize: "standard",
   photoPosition: "left",
   footer: { enabled: false, revision: "" },
