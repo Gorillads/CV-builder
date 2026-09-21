@@ -159,6 +159,11 @@ export const ELEMENT_TEXT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5
  *  they're both part of the same "line under the name" grouping. */
 export const CONTACT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.5, 15.5, 16.5];
 
+/** Diameter, in px, of an element's own optional logo (see
+ *  LibraryItem.logo) — "logo size" in the Design tab, at each of the 10
+ *  slider positions. Index 4 (16px, the old fixed value) is the default. */
+export const LOGO_SIZES: number[] = [10, 12, 14, 15, 16, 18, 20, 22, 24, 28];
+
 /** Margin-bottom, in px, of a category section (.cv-section) at each of
  *  the 10 slider positions — "section spacing" in the Design tab's
  *  advanced controls. Index 4 (18px) is the default, the same margin

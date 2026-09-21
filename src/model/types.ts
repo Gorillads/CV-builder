@@ -184,6 +184,10 @@ export interface AppState {
      *  CONTACT_SIZES shape as the other size controls, independent of
      *  textSize above. */
     contactSize: string;
+    /** "Logo size" (an element's own optional logo, see LibraryItem.logo)
+     *  — same "auto" vs explicit-step-into-LOGO_SIZES shape as the other
+     *  size controls. */
+    logoSize: string;
     /** "Section spacing" (margin-bottom of a category section) — same
      *  "auto" vs explicit-step-into-SECTION_GAPS shape as the other size
      *  controls. */
