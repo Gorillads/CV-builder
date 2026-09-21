@@ -36,10 +36,11 @@ const FOOTER_HEIGHT = 46;
  *  page's own padding. */
 const APPENDIX_TITLE_HEIGHT = 46;
 /** offsetHeight doesn't include an element's own trailing margin (it
- *  collapses out of the measured box), so these approximate the CSS
- *  margin-bottom of `.cv-header` / `.cv-section` for budgeting purposes. */
+ *  collapses out of the measured box), so this approximates the CSS
+ *  margin-bottom of `.cv-header` for budgeting purposes — a fixed value,
+ *  since (unlike .cv-section's own margin, see SECTION_GAPS/sectionGap
+ *  below) nothing makes the header's own bottom margin configurable. */
 const HEADER_GAP = 24;
-const SECTION_GAP = 18;
 
 function selectedActivityTexts(
   selectedActivities: Record<string, number[]>,
@@ -331,13 +332,22 @@ function samePagination(a: PaginationResult, b: PaginationResult): boolean {
 
 /** Greedily takes as many leading ids as fit within `budget` (always at
  *  least one, even if it alone overflows) and returns the rest — a
- *  reading-order-preserving prefix split, not general bin-packing. */
-function splitPrefix(ids: string[], heights: Map<string, number>, budget: number): { fit: string[]; overflow: string[] } {
+ *  reading-order-preserving prefix split, not general bin-packing.
+ *  `sectionGap` is the real, currently-resolved .cv-section margin-bottom
+ *  (see sectionGap in CvPreview below) — using a stale/fixed value here
+ *  would over- or under-budget every category by the difference, throwing
+ *  off exactly how much actually fits on page 1. */
+function splitPrefix(
+  ids: string[],
+  heights: Map<string, number>,
+  budget: number,
+  sectionGap: number,
+): { fit: string[]; overflow: string[] } {
   const fit: string[] = [];
   const overflow: string[] = [];
   let used = 0;
   ids.forEach((id) => {
-    const h = (heights.get(id) ?? 0) + SECTION_GAP;
+    const h = (heights.get(id) ?? 0) + sectionGap;
     if (fit.length === 0 || used + h <= budget) {
       fit.push(id);
       used += h;
@@ -349,13 +359,14 @@ function splitPrefix(ids: string[], heights: Map<string, number>, budget: number
 }
 
 /** Packs a list of ids into page-sized chunks by greedily filling pages in
- *  order, same algorithm as the old fixed appendix packer. */
-function chunkByBudget(ids: string[], heights: Map<string, number>, budget: number): string[][] {
+ *  order, same algorithm as the old fixed appendix packer. See splitPrefix
+ *  above for why sectionGap is passed in rather than a fixed constant. */
+function chunkByBudget(ids: string[], heights: Map<string, number>, budget: number, sectionGap: number): string[][] {
   const result: string[][] = [];
   let current: string[] = [];
   let used = 0;
   ids.forEach((id) => {
-    const h = (heights.get(id) ?? 0) + SECTION_GAP;
+    const h = (heights.get(id) ?? 0) + sectionGap;
     if (current.length && used + h > budget) {
       result.push(current);
       current = [];
@@ -387,6 +398,7 @@ function usePagination(
   variants: Record<string, string>,
   lang: Lang,
   footerEnabled: boolean,
+  sectionGap: number,
 ): { result: PaginationResult; measureRef: RefObject<HTMLDivElement | null> } {
   const measureRef = useRef<HTMLDivElement>(null);
   const [result, setResult] = useState<PaginationResult>(() => ({
@@ -422,20 +434,20 @@ function usePagination(
       let overflowSet: Set<string>;
 
       if (splitColumns) {
-        const mainSplit = splitPrefix(mainIds, heights, page1Budget);
-        const asideSplit = splitPrefix(asideIds, heights, page1Budget);
+        const mainSplit = splitPrefix(mainIds, heights, page1Budget, sectionGap);
+        const asideSplit = splitPrefix(asideIds, heights, page1Budget, sectionGap);
         page1Main = mainSplit.fit;
         page1Aside = asideSplit.fit;
         overflowSet = new Set([...mainSplit.overflow, ...asideSplit.overflow]);
       } else {
-        const split = splitPrefix(mainIds, heights, page1Budget);
+        const split = splitPrefix(mainIds, heights, page1Budget, sectionGap);
         page1Main = split.fit;
         page1Aside = [];
         overflowSet = new Set(split.overflow);
       }
 
       const overflow = activeIds.filter((id) => overflowSet.has(id));
-      const overflowChunks = overflow.length ? chunkByBudget(overflow, heights, appendixBudget) : [];
+      const overflowChunks = overflow.length ? chunkByBudget(overflow, heights, appendixBudget, sectionGap) : [];
       const next: PaginationResult = { page1Main, page1Aside, overflowChunks };
       setResult((prev) => (samePagination(prev, next) ? prev : next));
     };
@@ -455,10 +467,11 @@ function usePagination(
       mo.disconnect();
     };
     // Re-attach observers whenever the visible set, columns, its formats,
-    // language, or the page budget (footer) changes; the observers alone
-    // handle content edits within an already-observed category.
+    // language, the page budget (footer), or the section gap changes; the
+    // observers alone handle content edits within an already-observed
+    // category.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIds.join("|"), mainIds.join("|"), asideIds.join("|"), splitColumns, JSON.stringify(variants), lang, footerEnabled]);
+  }, [activeIds.join("|"), mainIds.join("|"), asideIds.join("|"), splitColumns, JSON.stringify(variants), lang, footerEnabled, sectionGap]);
 
   return { result, measureRef };
 }
@@ -685,6 +698,7 @@ export function CvPreview({
     variant,
     lang,
     design.footer.enabled,
+    sectionGap,
   );
   return (
     <div className="cv-preview" style={themeStyle} id="cv-print-area">
