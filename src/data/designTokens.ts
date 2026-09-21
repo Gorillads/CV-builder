@@ -161,8 +161,10 @@ export const CONTACT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.
 
 /** Diameter, in px, of an element's own optional logo (see
  *  LibraryItem.logo) — "logo size" in the Design tab, at each of the 10
- *  slider positions. Index 4 (16px, the old fixed value) is the default. */
-export const LOGO_SIZES: number[] = [10, 12, 14, 15, 16, 18, 20, 22, 24, 28];
+ *  slider positions. The old scale (10-28px, default 16px) rendered too
+ *  small; index 4 (10px, the old scale's smallest value) is now the
+ *  default, and the largest step (20px) is double that. */
+export const LOGO_SIZES: number[] = [6, 7, 8, 9, 10, 12, 14, 16, 18, 20];
 
 /** Margin-bottom, in px, of a category section (.cv-section) at each of
  *  the 10 slider positions — "section spacing" in the Design tab's
