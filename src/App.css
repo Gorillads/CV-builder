@@ -1066,8 +1066,8 @@ textarea.field {
    of density. object-fit: contain keeps a wide or tall logo from being
    cropped to this square. */
 .cv-entry-logo {
-  width: var(--cv-logo-size, 10px);
-  height: var(--cv-logo-size, 10px);
+  width: var(--cv-logo-size, 32px);
+  height: var(--cv-logo-size, 32px);
   object-fit: contain;
   flex: none;
   vertical-align: middle;
