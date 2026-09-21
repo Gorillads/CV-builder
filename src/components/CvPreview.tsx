@@ -12,6 +12,7 @@ import {
   TEXT_SIZES,
   ELEMENT_TEXT_SIZES,
   CONTACT_SIZES,
+  LOGO_SIZES,
   SECTION_GAPS,
   ENTRY_GAPS,
   PHOTO_SIZES,
@@ -88,8 +89,8 @@ function EntryBlock({
     return (
       <div className="cv-entry cv-entry--line">
         <span className="cv-entry-line-head">
-          {logoEl}
           {text.head}
+          {logoEl}
         </span>
         {text.meta && <span className="cv-entry-line-meta">{text.meta}</span>}
       </div>
@@ -107,8 +108,8 @@ function EntryBlock({
         {showHead && (
           <div className="cv-entry-head">
             <span className="cv-entry-head-title">
-              {logoEl}
               <strong>{text.head}</strong>
+              {logoEl}
             </span>
             {variant !== "rows" && text.meta && <span className="cv-entry-meta">{text.meta}</span>}
           </div>
@@ -667,6 +668,7 @@ export function CvPreview({
   const textSizePx = resolveSizePx(TEXT_SIZES, design.textSize, densityStep);
   const elementTextSizePx = resolveSizePx(ELEMENT_TEXT_SIZES, design.elementTextSize, densityStep);
   const contactSizePx = resolveSizePx(CONTACT_SIZES, design.contactSize, densityStep);
+  const logoSizePx = resolveSizePx(LOGO_SIZES, design.logoSize, densityStep);
   const sectionGap = resolveSizePx(SECTION_GAPS, design.sectionGap, densityStep);
   const entryGap = resolveSizePx(ENTRY_GAPS, design.entryGap, densityStep);
   const photoSize = byId(PHOTO_SIZES, design.photoSize);
@@ -679,6 +681,7 @@ export function CvPreview({
     "--cv-text-size": `${textSizePx}px`,
     "--cv-element-text-size": `${elementTextSizePx}px`,
     "--cv-contact-size": `${contactSizePx}px`,
+    "--cv-logo-size": `${logoSizePx}px`,
     "--cv-section-gap": `${sectionGap}px`,
     "--cv-entry-gap": `${entryGap}px`,
     "--cv-accent": scheme.accent,

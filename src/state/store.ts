@@ -242,6 +242,9 @@ function migrateSizeSliders(state: unknown): unknown {
       // size out of the general textSize control — undefined defaults to
       // "auto", same reasoning as sectionGap/entryGap above.
       contactSize: toStepOrAuto(design.contactSize),
+      // New alongside the element logo feature itself — undefined
+      // defaults to "auto", same reasoning as the others above.
+      logoSize: toStepOrAuto(design.logoSize),
     },
   };
 }
@@ -357,6 +360,7 @@ export interface Store extends AppState {
       | "textSize"
       | "elementTextSize"
       | "contactSize"
+      | "logoSize"
       | "sectionGap"
       | "entryGap"
       | "photoSize"
@@ -702,7 +706,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 14,
+      version: 15,
       migrate: (persisted) =>
         migrateItemLogo(
           migrateSizeSliders(

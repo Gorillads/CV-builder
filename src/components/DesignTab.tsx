@@ -85,6 +85,7 @@ function DensityGroup({
     textSize: string;
     elementTextSize: string;
     contactSize: string;
+    logoSize: string;
     sectionGap: string;
     entryGap: string;
   };
@@ -96,6 +97,7 @@ function DensityGroup({
       | "textSize"
       | "elementTextSize"
       | "contactSize"
+      | "logoSize"
       | "sectionGap"
       | "entryGap",
     value: string,
@@ -148,6 +150,13 @@ function DensityGroup({
             label={T.contactSize}
             value={design.contactSize}
             onChange={(v) => setDesign("contactSize", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
+            label={T.logoSize}
+            value={design.logoSize}
+            onChange={(v) => setDesign("logoSize", v)}
             followLabel={T.followDensity}
           />
 
