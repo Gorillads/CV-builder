@@ -6,7 +6,7 @@ import { TailorTab } from "./components/TailorTab";
 import { DesignTab } from "./components/DesignTab";
 import { CvPreview } from "./components/CvPreview";
 import { ImportExportBar } from "./components/ImportExportBar";
-import { useGoogleFont } from "./hooks/useGoogleFont";
+import { useLocalFonts } from "./hooks/useLocalFonts";
 import { pxToMm, type PageOverflow } from "./hooks/usePageOverflow";
 import "./App.css";
 
@@ -58,14 +58,13 @@ function App() {
   const setLang = useStore((s) => s.setLang);
   const header = useStore((s) => s.header);
   const setHeaderField = useStore((s) => s.setHeaderField);
-  const font = useStore((s) => s.design.font);
   const [tab, setTab] = useState<Tab>("content");
   const [mainPageStatus, setMainPageStatus] = useState<PageOverflow | null>(null);
   const [zoomPct, setZoomPct] = useState(100);
   const [editorWidth, setEditorWidth] = useState(loadEditorWidth);
   const editorWidthRef = useRef(editorWidth);
   const T = t(lang);
-  useGoogleFont(font);
+  useLocalFonts();
 
   useEffect(() => {
     const onResize = () => {
@@ -99,6 +98,18 @@ function App() {
     editorWidthRef.current = EDITOR_WIDTH_DEFAULT;
     setEditorWidth(EDITOR_WIDTH_DEFAULT);
     saveEditorWidth(EDITOR_WIDTH_DEFAULT);
+  };
+
+  /** Waits for every @font-face requested so far (the CV's own, injected
+   *  by useLocalFonts as soon as the app mounts) to actually finish loading
+   *  before opening the print dialog — printing mid-load risks the print
+   *  engine snapshotting the page before its real font has swapped in. The
+   *  bigger fix for print output embedding fonts as real, selectable text
+   *  rather than outlined vector shapes is self-hosting them as WOFF (see
+   *  src/data/localFonts.ts); this is a smaller, complementary guard against
+   *  a timing race on top of that. */
+  const handlePrint = () => {
+    document.fonts.ready.then(() => window.print());
   };
 
   return (
@@ -202,7 +213,7 @@ function App() {
                 </button>
               </div>
             </div>
-            <button type="button" className="btn" onClick={() => window.print()}>
+            <button type="button" className="btn" onClick={handlePrint}>
               {T.print}
             </button>
           </div>

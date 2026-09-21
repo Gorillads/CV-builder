@@ -5,10 +5,6 @@ export interface FontPairing {
   name: ByLang<string>;
   head: string;
   body: string;
-  /** Google Fonts family name(s) to load for this pairing, if any — Aptos
-   *  is the one pairing with no web font (it's Microsoft's own), so it
-   *  falls through to its Google Fonts stand-in at display time. */
-  googleFamilies: string[];
 }
 
 export const FONTS: FontPairing[] = [
@@ -17,42 +13,36 @@ export const FONTS: FontPairing[] = [
     name: { da: "Industry (kondenseret)", en: "Industry (condensed)" },
     head: '"Barlow Condensed", sans-serif',
     body: '"Barlow", sans-serif',
-    googleFamilies: ["Barlow Condensed:wght@500;600;700", "Barlow:wght@400;500;600"],
   },
   {
     id: "plex",
     name: { da: "Teknisk (IBM Plex)", en: "Technical (IBM Plex)" },
     head: '"IBM Plex Sans", sans-serif',
     body: '"IBM Plex Sans", sans-serif',
-    googleFamilies: ["IBM Plex Sans:wght@400;500;600;700"],
   },
   {
     id: "aptos",
     name: { da: "Aptos (Office)", en: "Aptos (Office)" },
     head: 'Aptos, "Source Sans 3", sans-serif',
     body: 'Aptos, "Source Sans 3", sans-serif',
-    googleFamilies: ["Source Sans 3:wght@400;500;600;700"],
   },
   {
     id: "roboto",
     name: { da: "Roboto", en: "Roboto" },
     head: '"Roboto", sans-serif',
     body: '"Roboto", sans-serif',
-    googleFamilies: ["Roboto:wght@400;500;600;700"],
   },
   {
     id: "lato",
     name: { da: "Lato", en: "Lato" },
     head: '"Lato", sans-serif',
     body: '"Lato", sans-serif',
-    googleFamilies: ["Lato:wght@400;700;900"],
   },
   {
     id: "public",
     name: { da: "Public Sans", en: "Public Sans" },
     head: '"Public Sans", sans-serif',
     body: '"Public Sans", sans-serif',
-    googleFamilies: ["Public Sans:wght@400;500;600;700"],
   },
 ];
 
