@@ -135,12 +135,13 @@ export const SIDEBAR_SIDES: SidebarSide[] = [
  *  "Standard") is the default. */
 export const HEADING_SIZES: number[] = [9, 10, 11.25, 12, 12.5, 13, 13.75, 14.5, 15.5, 17];
 
-/** Font size, in px, of the CV's general body text — the contact line, a
- *  category's own blurb, tag/chip labels, an entry's own heading/meta
- *  line; everything that isn't the name, a section/entry heading, or text
- *  inside an element (see ELEMENT_TEXT_SIZES below for that) — "text
- *  size" in the Design tab, at each of the 10 slider positions. Index 4
- *  (13px, the old "Standard") is the default. */
+/** Font size, in px, of the CV's general body text — a category's own
+ *  blurb, tag/chip labels, an entry's own heading/meta line; everything
+ *  that isn't the name, a section/entry heading, the contact line (see
+ *  CONTACT_SIZES below for that), or text inside an element (see
+ *  ELEMENT_TEXT_SIZES below for that) — "text size" in the Design tab, at
+ *  each of the 10 slider positions. Index 4 (13px, the old "Standard") is
+ *  the default. */
 export const TEXT_SIZES: number[] = [10, 11, 11.5, 12, 13, 13.5, 14, 14.5, 15, 16];
 
 /** Same role as TEXT_SIZES but scoped to an element's own body content
@@ -148,6 +149,12 @@ export const TEXT_SIZES: number[] = [10, 11, 11.5, 12, 13, 13.5, 14, 14.5, 15, 1
  *  tab, at each of the 10 slider positions. Index 4 (12.5px, the old
  *  "Standard") is the default. */
 export const ELEMENT_TEXT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.5, 15.5, 16.5];
+
+/** Font size, in px, of the header's own contact line (address · phone ·
+ *  mail · location) — "contact line size" in the Design tab, at each of
+ *  the 10 slider positions. Index 4 (12.5px, the old fixed value) is the
+ *  default. */
+export const CONTACT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.5, 15.5, 16.5];
 
 /** Margin-bottom, in px, of a category section (.cv-section) at each of
  *  the 10 slider positions — "section spacing" in the Design tab's

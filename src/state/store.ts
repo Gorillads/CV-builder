@@ -174,8 +174,9 @@ function migrateDensityScale(state: unknown): unknown {
  *  0-9 range, so a document saved before sliders existed keeps rendering
  *  at the same size. "auto" and an already-numeric step both pass through
  *  unchanged, so this is safe to run again on an already-migrated
- *  document. Also backfills the newer sectionGap/entryGap fields (see
- *  their handling below) for the same "safe to re-run" reason. */
+ *  document. Also backfills the newer sectionGap/entryGap/contactSize
+ *  fields (see their handling below) for the same "safe to re-run"
+ *  reason. */
 const OLD_SIZE_ID_TO_STEP: Record<string, string> = {
   xsmall: "0",
   small: "2",
@@ -215,6 +216,10 @@ function migrateSizeSliders(state: unknown): unknown {
       // "auto", same as textSize/elementTextSize did when each was added.
       sectionGap: toStepOrAuto(design.sectionGap),
       entryGap: toStepOrAuto(design.entryGap),
+      // New in the same change that split the contact line's own font
+      // size out of the general textSize control — undefined defaults to
+      // "auto", same reasoning as sectionGap/entryGap above.
+      contactSize: toStepOrAuto(design.contactSize),
     },
   };
 }
@@ -323,6 +328,7 @@ export interface Store extends AppState {
       | "headingSize"
       | "textSize"
       | "elementTextSize"
+      | "contactSize"
       | "sectionGap"
       | "entryGap"
       | "photoSize"
@@ -652,7 +658,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 12,
+      version: 13,
       migrate: (persisted) =>
         migrateSizeSliders(
           migrateDensityScale(

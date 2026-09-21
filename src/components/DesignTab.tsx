@@ -66,12 +66,12 @@ function SizeSlider({
   );
 }
 
-/** The overall density control plus the six individual controls it
- *  defaults each of them to (four text sizes, plus section/element
+/** The overall density control plus the seven individual controls it
+ *  defaults each of them to (five text sizes, plus section/element
  *  spacing) — grouped into one design-group with the individual ones
  *  nested visually underneath (see .design-subgroup in App.css) so the
- *  "this knob adjusts those six" relationship reads at a glance instead
- *  of seven same-looking boxes in a row. */
+ *  "this knob adjusts those seven" relationship reads at a glance instead
+ *  of eight same-looking boxes in a row. */
 function DensityGroup({
   design,
   setDesign,
@@ -83,6 +83,7 @@ function DensityGroup({
     headingSize: string;
     textSize: string;
     elementTextSize: string;
+    contactSize: string;
     sectionGap: string;
     entryGap: string;
   };
@@ -93,6 +94,7 @@ function DensityGroup({
       | "headingSize"
       | "textSize"
       | "elementTextSize"
+      | "contactSize"
       | "sectionGap"
       | "entryGap",
     value: string,
@@ -138,6 +140,13 @@ function DensityGroup({
             label={T.elementTextSize}
             value={design.elementTextSize}
             onChange={(v) => setDesign("elementTextSize", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
+            label={T.contactSize}
+            value={design.contactSize}
+            onChange={(v) => setDesign("contactSize", v)}
             followLabel={T.followDensity}
           />
 

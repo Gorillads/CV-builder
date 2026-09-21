@@ -11,6 +11,7 @@ import {
   HEADING_SIZES,
   TEXT_SIZES,
   ELEMENT_TEXT_SIZES,
+  CONTACT_SIZES,
   SECTION_GAPS,
   ENTRY_GAPS,
   PHOTO_SIZES,
@@ -657,6 +658,7 @@ export function CvPreview({
   const headingSizePx = resolveSizePx(HEADING_SIZES, design.headingSize, densityStep);
   const textSizePx = resolveSizePx(TEXT_SIZES, design.textSize, densityStep);
   const elementTextSizePx = resolveSizePx(ELEMENT_TEXT_SIZES, design.elementTextSize, densityStep);
+  const contactSizePx = resolveSizePx(CONTACT_SIZES, design.contactSize, densityStep);
   const sectionGap = resolveSizePx(SECTION_GAPS, design.sectionGap, densityStep);
   const entryGap = resolveSizePx(ENTRY_GAPS, design.entryGap, densityStep);
   const photoSize = byId(PHOTO_SIZES, design.photoSize);
@@ -668,6 +670,7 @@ export function CvPreview({
     "--cv-heading-size": `${headingSizePx}px`,
     "--cv-text-size": `${textSizePx}px`,
     "--cv-element-text-size": `${elementTextSizePx}px`,
+    "--cv-contact-size": `${contactSizePx}px`,
     "--cv-section-gap": `${sectionGap}px`,
     "--cv-entry-gap": `${entryGap}px`,
     "--cv-accent": scheme.accent,
