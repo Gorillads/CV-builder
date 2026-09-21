@@ -113,6 +113,11 @@ export interface AppState {
   appliedTitle: ByLang<string>;
   header: {
     name: string;
+    /** Street address (or however granular the user wants) — shown on the
+     *  contact line before phone, same as phone/mail not translated per
+     *  language (unlike location, which is a city name that often does
+     *  need its own translation). */
+    address: string;
     phone: string;
     mail: string;
     location: ByLang<string>;

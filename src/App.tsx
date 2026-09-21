@@ -140,6 +140,12 @@ function App() {
             />
             <input
               className="field"
+              placeholder={T.address}
+              value={header.address}
+              onChange={(e) => setHeaderField("address", e.target.value)}
+            />
+            <input
+              className="field"
               placeholder={T.phone}
               value={header.phone}
               onChange={(e) => setHeaderField("phone", e.target.value)}

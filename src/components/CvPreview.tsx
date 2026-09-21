@@ -240,6 +240,7 @@ function SectionFlow({
 function HeaderBlock({
   name,
   appliedTitle,
+  address,
   phone,
   mail,
   location,
@@ -250,6 +251,7 @@ function HeaderBlock({
 }: {
   name: string;
   appliedTitle: string;
+  address: string;
   phone: string;
   mail: string;
   location: string;
@@ -260,7 +262,7 @@ function HeaderBlock({
 }) {
   const nameEl = <h1>{name || "—"}</h1>;
   const titleEl = appliedTitle ? <p className="cv-applied-title">{appliedTitle}</p> : null;
-  const contactEl = <p className="cv-contact">{[phone, mail, location].filter(Boolean).join(" · ")}</p>;
+  const contactEl = <p className="cv-contact">{[address, phone, mail, location].filter(Boolean).join(" · ")}</p>;
 
   if (!photoUrl) {
     return (
@@ -676,6 +678,7 @@ export function CvPreview({
           <HeaderBlock
             name={header.name}
             appliedTitle={appliedTitle[lang]}
+            address={header.address}
             phone={header.phone}
             mail={header.mail}
             location={header.location[lang]}
@@ -711,6 +714,7 @@ export function CvPreview({
           <HeaderBlock
             name={header.name}
             appliedTitle={appliedTitle[lang]}
+            address={header.address}
             phone={header.phone}
             mail={header.mail}
             location={header.location[lang]}
