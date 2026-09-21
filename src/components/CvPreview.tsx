@@ -9,9 +9,11 @@ import {
   SCHEMES,
   HEAD_SIZES,
   HEADING_SIZES,
+  TEXT_SIZES,
   PHOTO_SIZES,
   isInSidebar,
   byId,
+  resolveSize,
   defaultVariant,
   defaultActivityStyle,
 } from "../data/designTokens";
@@ -633,8 +635,9 @@ export function CvPreview({
 
   const font = byId(FONTS, design.font);
   const scheme = byId(SCHEMES, design.scheme);
-  const headSize = byId(HEAD_SIZES, design.headSize);
-  const headingSize = byId(HEADING_SIZES, design.headingSize);
+  const headSize = resolveSize(HEAD_SIZES, design.headSize, design.density);
+  const headingSize = resolveSize(HEADING_SIZES, design.headingSize, design.density);
+  const textSize = resolveSize(TEXT_SIZES, design.textSize, design.density);
   const photoSize = byId(PHOTO_SIZES, design.photoSize);
 
   const themeStyle = {
@@ -642,6 +645,7 @@ export function CvPreview({
     "--cv-body": font.body,
     "--cv-name-size": `${headSize.namePx}px`,
     "--cv-heading-size": `${headingSize.px}px`,
+    "--cv-text-size": `${textSize.px}px`,
     "--cv-accent": scheme.accent,
     "--cv-accent-soft": scheme.soft,
     "--cv-line": scheme.line,

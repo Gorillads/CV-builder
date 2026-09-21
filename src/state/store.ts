@@ -146,6 +146,24 @@ function migrateHeaderAddress(state: unknown): unknown {
   return { ...s, header: { ...header, address: "" } };
 }
 
+/** Density's id set changed from {standard, compact} to {small, standard,
+ *  large} (see DENSITIES in src/data/designTokens) when it became the
+ *  overall/master size lever rather than just a spacing toggle — old
+ *  "compact" documents map onto the new "small" density. Also adds
+ *  design.textSize (new in the same change), defaulting to "auto" so
+ *  existing documents keep rendering at their current body text size
+ *  (density "standard" resolves "auto" to the same 13px as before). */
+function migrateDensityScale(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const design = s.design as Record<string, unknown> | undefined;
+  if (!design || typeof design !== "object") return state;
+
+  const density = design.density === "compact" ? "small" : design.density;
+  const textSize = typeof design.textSize === "string" ? design.textSize : "auto";
+  return { ...s, design: { ...design, density, textSize } };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -248,6 +266,7 @@ export interface Store extends AppState {
       | "density"
       | "sidebarSide"
       | "headingSize"
+      | "textSize"
       | "photoSize"
       | "photoPosition",
     value: string,
@@ -575,10 +594,12 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 8,
+      version: 9,
       migrate: (persisted) =>
-        migrateHeaderAddress(
-          migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateDensityScale(
+          migrateHeaderAddress(
+            migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+          ),
         ) as Store,
     },
   ),
