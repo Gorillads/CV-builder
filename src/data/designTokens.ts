@@ -73,13 +73,15 @@ export interface HeadSize {
 }
 
 /** "Heading size" in the Design tab — the CV owner's own name. Its id set
- *  (small/standard/large) matches DENSITIES' own, so when
+ *  (xsmall/small/standard/large/xlarge) matches DENSITIES' own, so when
  *  AppState.design.headSize is "auto" it can look its size up straight
  *  from whichever density is picked (see resolveSize below). */
 export const HEAD_SIZES: HeadSize[] = [
-  { id: "small", name: { da: "Lille", en: "Small" }, namePx: 22 },
+  { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, namePx: 19 },
+  { id: "small", name: { da: "Lille", en: "Small" }, namePx: 23 },
   { id: "standard", name: { da: "Standard", en: "Standard" }, namePx: 27 },
-  { id: "large", name: { da: "Stor", en: "Large" }, namePx: 32 },
+  { id: "large", name: { da: "Stor", en: "Large" }, namePx: 31 },
+  { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, namePx: 36 },
 ];
 
 export interface LayoutStructure {
@@ -118,14 +120,16 @@ export interface Density {
  *  preset, it sets the default for every individual size control below
  *  (HEAD_SIZES, HEADING_SIZES, TEXT_SIZES) at once, and also tightens or
  *  loosens section/entry spacing directly (see the .density-* rules in
- *  App.css) so picking "small" is the one-lever way to fit more content
- *  on the page. Any individual control can still be set explicitly
+ *  App.css) so picking a smaller density is the one-lever way to fit more
+ *  content on the page. Any individual control can still be set explicitly
  *  (overriding this default for just that one text type) via its own
  *  "auto" vs explicit-size choice — see AppState.design's field comments. */
 export const DENSITIES: Density[] = [
-  { id: "small", name: { da: "Kompakt (mere på siden)", en: "Compact (more on the page)" } },
+  { id: "xsmall", name: { da: "Meget kompakt (mest på siden)", en: "Very compact (fits the most)" } },
+  { id: "small", name: { da: "Kompakt", en: "Compact" } },
   { id: "standard", name: { da: "Standard", en: "Standard" } },
   { id: "large", name: { da: "Rummelig", en: "Spacious" } },
+  { id: "xlarge", name: { da: "Meget rummelig", en: "Very spacious" } },
 ];
 
 export interface SidebarSide {
@@ -146,13 +150,16 @@ export interface HeadingSize {
 
 /** Font size of a category/section heading (h3) — "heading 2" in the
  *  Design tab, independent of the name's own "heading" size control
- *  above. Its id set (small/standard/large) matches DENSITIES' own, so
- *  when AppState.design.headingSize is "auto" it can look its size up
- *  straight from whichever density is picked (see CvPreview.tsx). */
+ *  above. Its id set (xsmall/small/standard/large/xlarge) matches
+ *  DENSITIES' own, so when AppState.design.headingSize is "auto" it can
+ *  look its size up straight from whichever density is picked (see
+ *  CvPreview.tsx). */
 export const HEADING_SIZES: HeadingSize[] = [
-  { id: "small", name: { da: "Lille", en: "Small" }, px: 11 },
+  { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, px: 10 },
+  { id: "small", name: { da: "Lille", en: "Small" }, px: 11.25 },
   { id: "standard", name: { da: "Standard", en: "Standard" }, px: 12.5 },
-  { id: "large", name: { da: "Stor", en: "Large" }, px: 14.5 },
+  { id: "large", name: { da: "Stor", en: "Large" }, px: 13.75 },
+  { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, px: 15.5 },
 ];
 
 export interface TextSize {
@@ -168,9 +175,11 @@ export interface TextSize {
  *  in the Design tab. Its id set matches DENSITIES' own for the same
  *  "auto" lookup (see HEADING_SIZES above). */
 export const TEXT_SIZES: TextSize[] = [
+  { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, px: 11 },
   { id: "small", name: { da: "Lille", en: "Small" }, px: 12 },
   { id: "standard", name: { da: "Standard", en: "Standard" }, px: 13 },
   { id: "large", name: { da: "Stor", en: "Large" }, px: 14 },
+  { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, px: 15 },
 ];
 
 export interface PhotoSize {
