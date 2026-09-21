@@ -93,8 +93,12 @@ and Tailor tab (per-category):
   versa — e.g. a sidebar layout with chips for competencies and the full
   standard format for tools.
 - **Font pairings** (6): Industry (Barlow Condensed/Barlow), Technical (IBM
-  Plex Sans), Aptos, Roboto, Lato, Public Sans — loaded from Google Fonts
-  (Aptos falls back to Source Sans 3, since it's a Microsoft-only face)
+  Plex Sans), Aptos, Roboto, Lato, Public Sans — self-hosted from Google
+  Fonts as WOFF files under `public/fonts/` (Aptos falls back to Source Sans
+  3, since it's a Microsoft-only face; see `src/data/localFonts.ts` for why
+  these are WOFF rather than the WOFF2 Google's CDN would otherwise serve —
+  Chromium's print-to-PDF embeds WOFF2 text as non-selectable outlined
+  shapes, but embeds WOFF correctly as real, selectable text)
 - **Accent color schemes** (5): Steel, Graphite, Marine, Copper, Forest
 - **Header size** (3) and **header alignment** (3): left / centered / a
   low inline line
