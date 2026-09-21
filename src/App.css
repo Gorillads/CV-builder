@@ -1022,24 +1022,26 @@ textarea.field {
 }
 
 /* Short optional note right under the heading, distinct from (and above)
-   the full .cv-entry-desc paragraph. */
+   the full .cv-entry-desc paragraph — stays a bit smaller than the other
+   element text (the same ~0.92 ratio as its old fixed 11.5px/12.5px
+   values) rather than tracking --cv-element-text-size 1:1. */
 .cv-entry-comment {
   margin: 1px 0 0;
-  font-size: 11.5px;
+  font-size: calc(var(--cv-element-text-size, 12.5px) * 0.92);
   font-style: italic;
   color: var(--cv-accent-soft);
 }
 
 .cv-entry-desc {
   margin: 2px 0;
-  font-size: 12.5px;
+  font-size: var(--cv-element-text-size, 12.5px);
   color: #5c6672;
 }
 
 .cv-entry-acts {
   margin: 3px 0 0;
   padding-left: 16px;
-  font-size: 12.5px;
+  font-size: var(--cv-element-text-size, 12.5px);
 }
 
 .cv-entry-acts li {
@@ -1050,7 +1052,7 @@ textarea.field {
    one dot-separated line, for a denser look (see AppState.activityStyle). */
 .cv-entry-acts-inline {
   margin: 3px 0 0;
-  font-size: 12.5px;
+  font-size: var(--cv-element-text-size, 12.5px);
 }
 
 /* ---- Tags: "chips" variant (rounded pills) -------------------------- */

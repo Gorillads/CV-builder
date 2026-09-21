@@ -165,21 +165,44 @@ export const HEADING_SIZES: HeadingSize[] = [
 export interface TextSize {
   id: string;
   name: ByLang<string>;
-  /** Font size, in px, of the CV's body text — profile/description text,
-   *  entry meta/comment lines and activity bullets alike; everything that
-   *  isn't the name or a section/entry heading. */
+  /** Font size, in px, of the CV's general body text — the contact line,
+   *  a category's own blurb, tag/chip labels, an entry's own heading/meta
+   *  line; everything that isn't the name, a section/entry heading, or
+   *  text inside an element (see ELEMENT_TEXT_SIZES below for that). */
   px: number;
 }
 
-/** Same role as HEAD_SIZES/HEADING_SIZES but for body text — "text size"
- *  in the Design tab. Its id set matches DENSITIES' own for the same
- *  "auto" lookup (see HEADING_SIZES above). */
+/** Same role as HEAD_SIZES/HEADING_SIZES but for general body text —
+ *  "text size" in the Design tab. Its id set matches DENSITIES' own for
+ *  the same "auto" lookup (see HEADING_SIZES above). */
 export const TEXT_SIZES: TextSize[] = [
   { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, px: 11 },
   { id: "small", name: { da: "Lille", en: "Small" }, px: 12 },
   { id: "standard", name: { da: "Standard", en: "Standard" }, px: 13 },
   { id: "large", name: { da: "Stor", en: "Large" }, px: 14 },
   { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, px: 15 },
+];
+
+export interface ElementTextSize {
+  id: string;
+  name: ByLang<string>;
+  /** Font size, in px, of the text inside an element itself — its
+   *  description, its short italic comment line and its activity
+   *  bullets — independent of TEXT_SIZES above, which covers everything
+   *  else that isn't the name or a heading. */
+  px: number;
+}
+
+/** Same role as TEXT_SIZES but scoped to an element's own body content
+ *  (description/comment/activities) — "text in elements" in the Design
+ *  tab. Its id set matches DENSITIES' own for the same "auto" lookup (see
+ *  HEADING_SIZES above). */
+export const ELEMENT_TEXT_SIZES: ElementTextSize[] = [
+  { id: "xsmall", name: { da: "Meget lille", en: "Very small" }, px: 10.5 },
+  { id: "small", name: { da: "Lille", en: "Small" }, px: 11.5 },
+  { id: "standard", name: { da: "Standard", en: "Standard" }, px: 12.5 },
+  { id: "large", name: { da: "Stor", en: "Large" }, px: 13.5 },
+  { id: "xlarge", name: { da: "Meget stor", en: "Very large" }, px: 14.5 },
 ];
 
 export interface PhotoSize {

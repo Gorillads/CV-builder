@@ -12,6 +12,7 @@ import {
   SIDEBAR_SIDES,
   HEADING_SIZES,
   TEXT_SIZES,
+  ELEMENT_TEXT_SIZES,
   PHOTO_SIZES,
   PHOTO_POSITIONS,
 } from "../data/designTokens";
@@ -61,10 +62,10 @@ function SizeGroup({
   );
 }
 
-/** The overall density control plus the three individual size controls it
+/** The overall density control plus the four individual size controls it
  *  defaults each of them to — grouped into one design-group with the
  *  individual ones nested visually underneath (see .design-subgroup in
- *  App.css) so the "this knob adjusts those three" relationship reads at
+ *  App.css) so the "this knob adjusts those four" relationship reads at
  *  a glance instead of five same-looking boxes in a row. */
 function DensityGroup({
   design,
@@ -72,8 +73,11 @@ function DensityGroup({
   lang,
   T,
 }: {
-  design: { density: string; headSize: string; headingSize: string; textSize: string };
-  setDesign: (field: "density" | "headSize" | "headingSize" | "textSize", value: string) => void;
+  design: { density: string; headSize: string; headingSize: string; textSize: string; elementTextSize: string };
+  setDesign: (
+    field: "density" | "headSize" | "headingSize" | "textSize" | "elementTextSize",
+    value: string,
+  ) => void;
   lang: Lang;
   T: ReturnType<typeof t>;
 }) {
@@ -125,6 +129,15 @@ function DensityGroup({
             sizes={TEXT_SIZES}
             value={design.textSize}
             onChange={(id) => setDesign("textSize", id)}
+            lang={lang}
+            followLabel={T.followDensity}
+          />
+
+          <SizeGroup
+            label={T.elementTextSize}
+            sizes={ELEMENT_TEXT_SIZES}
+            value={design.elementTextSize}
+            onChange={(id) => setDesign("elementTextSize", id)}
             lang={lang}
             followLabel={T.followDensity}
           />

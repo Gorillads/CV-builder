@@ -149,10 +149,11 @@ function migrateHeaderAddress(state: unknown): unknown {
 /** Density's id set changed from {standard, compact} to {small, standard,
  *  large} (see DENSITIES in src/data/designTokens) when it became the
  *  overall/master size lever rather than just a spacing toggle — old
- *  "compact" documents map onto the new "small" density. Also adds
- *  design.textSize (new in the same change), defaulting to "auto" so
- *  existing documents keep rendering at their current body text size
- *  (density "standard" resolves "auto" to the same 13px as before). */
+ *  "compact" documents map onto the new "small" density. Also backfills
+ *  design.textSize and design.elementTextSize (each added in a later
+ *  change), defaulting both to "auto" so existing documents keep
+ *  rendering at their current sizes (density "standard" resolves "auto"
+ *  to the same sizes as before either field existed). */
 function migrateDensityScale(state: unknown): unknown {
   if (!state || typeof state !== "object") return state;
   const s = state as Record<string, unknown>;
@@ -161,7 +162,8 @@ function migrateDensityScale(state: unknown): unknown {
 
   const density = design.density === "compact" ? "small" : design.density;
   const textSize = typeof design.textSize === "string" ? design.textSize : "auto";
-  return { ...s, design: { ...design, density, textSize } };
+  const elementTextSize = typeof design.elementTextSize === "string" ? design.elementTextSize : "auto";
+  return { ...s, design: { ...design, density, textSize, elementTextSize } };
 }
 
 /** Falls back to an in-memory map when localStorage isn't reachable (a
@@ -267,6 +269,7 @@ export interface Store extends AppState {
       | "sidebarSide"
       | "headingSize"
       | "textSize"
+      | "elementTextSize"
       | "photoSize"
       | "photoPosition",
     value: string,
@@ -594,7 +597,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 9,
+      version: 10,
       migrate: (persisted) =>
         migrateDensityScale(
           migrateHeaderAddress(
