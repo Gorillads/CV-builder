@@ -174,7 +174,8 @@ function migrateDensityScale(state: unknown): unknown {
  *  0-9 range, so a document saved before sliders existed keeps rendering
  *  at the same size. "auto" and an already-numeric step both pass through
  *  unchanged, so this is safe to run again on an already-migrated
- *  document. */
+ *  document. Also backfills the newer sectionGap/entryGap fields (see
+ *  their handling below) for the same "safe to re-run" reason. */
 const OLD_SIZE_ID_TO_STEP: Record<string, string> = {
   xsmall: "0",
   small: "2",
@@ -194,7 +195,7 @@ function migrateSizeSliders(state: unknown): unknown {
     return OLD_SIZE_ID_TO_STEP[value] ?? value;
   };
   const toStepOrAuto = (value: unknown): string => {
-    if (value === "auto") return "auto";
+    if (value === "auto" || value === undefined) return "auto";
     return toStep(value);
   };
 
@@ -207,6 +208,13 @@ function migrateSizeSliders(state: unknown): unknown {
       headingSize: toStepOrAuto(design.headingSize),
       textSize: toStepOrAuto(design.textSize),
       elementTextSize: toStepOrAuto(design.elementTextSize),
+      // Both new in the same change that let section/entry spacing be
+      // pinned individually (previously density's effect on them, via
+      // the old resolveSpacing formula, couldn't be overridden at all) —
+      // undefined (any document saved before they existed) defaults to
+      // "auto", same as textSize/elementTextSize did when each was added.
+      sectionGap: toStepOrAuto(design.sectionGap),
+      entryGap: toStepOrAuto(design.entryGap),
     },
   };
 }
@@ -315,6 +323,8 @@ export interface Store extends AppState {
       | "headingSize"
       | "textSize"
       | "elementTextSize"
+      | "sectionGap"
+      | "entryGap"
       | "photoSize"
       | "photoPosition",
     value: string,
@@ -642,7 +652,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 11,
+      version: 12,
       migrate: (persisted) =>
         migrateSizeSliders(
           migrateDensityScale(

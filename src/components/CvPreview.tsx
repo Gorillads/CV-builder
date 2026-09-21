@@ -11,11 +11,12 @@ import {
   HEADING_SIZES,
   TEXT_SIZES,
   ELEMENT_TEXT_SIZES,
+  SECTION_GAPS,
+  ENTRY_GAPS,
   PHOTO_SIZES,
   isInSidebar,
   byId,
   resolveSizePx,
-  resolveSpacing,
   clampStep,
   defaultVariant,
   defaultActivityStyle,
@@ -643,7 +644,8 @@ export function CvPreview({
   const headingSizePx = resolveSizePx(HEADING_SIZES, design.headingSize, densityStep);
   const textSizePx = resolveSizePx(TEXT_SIZES, design.textSize, densityStep);
   const elementTextSizePx = resolveSizePx(ELEMENT_TEXT_SIZES, design.elementTextSize, densityStep);
-  const { sectionGap, entryGap } = resolveSpacing(densityStep);
+  const sectionGap = resolveSizePx(SECTION_GAPS, design.sectionGap, densityStep);
+  const entryGap = resolveSizePx(ENTRY_GAPS, design.entryGap, densityStep);
   const photoSize = byId(PHOTO_SIZES, design.photoSize);
 
   const themeStyle = {

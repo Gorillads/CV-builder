@@ -66,19 +66,35 @@ function SizeSlider({
   );
 }
 
-/** The overall density control plus the four individual size controls it
- *  defaults each of them to — grouped into one design-group with the
- *  individual ones nested visually underneath (see .design-subgroup in
- *  App.css) so the "this knob adjusts those four" relationship reads at
- *  a glance instead of five same-looking boxes in a row. */
+/** The overall density control plus the six individual controls it
+ *  defaults each of them to (four text sizes, plus section/element
+ *  spacing) — grouped into one design-group with the individual ones
+ *  nested visually underneath (see .design-subgroup in App.css) so the
+ *  "this knob adjusts those six" relationship reads at a glance instead
+ *  of seven same-looking boxes in a row. */
 function DensityGroup({
   design,
   setDesign,
   T,
 }: {
-  design: { density: string; headSize: string; headingSize: string; textSize: string; elementTextSize: string };
+  design: {
+    density: string;
+    headSize: string;
+    headingSize: string;
+    textSize: string;
+    elementTextSize: string;
+    sectionGap: string;
+    entryGap: string;
+  };
   setDesign: (
-    field: "density" | "headSize" | "headingSize" | "textSize" | "elementTextSize",
+    field:
+      | "density"
+      | "headSize"
+      | "headingSize"
+      | "textSize"
+      | "elementTextSize"
+      | "sectionGap"
+      | "entryGap",
     value: string,
   ) => void;
   T: ReturnType<typeof t>;
@@ -122,6 +138,20 @@ function DensityGroup({
             label={T.elementTextSize}
             value={design.elementTextSize}
             onChange={(v) => setDesign("elementTextSize", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
+            label={T.sectionGap}
+            value={design.sectionGap}
+            onChange={(v) => setDesign("sectionGap", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
+            label={T.entryGap}
+            value={design.entryGap}
+            onChange={(v) => setDesign("entryGap", v)}
             followLabel={T.followDensity}
           />
         </div>

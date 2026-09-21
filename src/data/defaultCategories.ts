@@ -231,6 +231,8 @@ const DEFAULT_DESIGN: AppState["design"] = {
   headingSize: "auto",
   textSize: "auto",
   elementTextSize: "auto",
+  sectionGap: "auto",
+  entryGap: "auto",
   photoSize: "standard",
   photoPosition: "left",
   footer: { enabled: false, revision: "" },
