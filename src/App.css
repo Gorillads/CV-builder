@@ -633,6 +633,23 @@ textarea.field {
   gap: 6px;
 }
 
+/* Groups the individual heading/heading 2/text size controls visually
+   underneath the overall density control they default to — a left border
+   (rather than just indentation alone) reads as "these belong to the
+   control above" at a glance. */
+.design-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: 4px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+
+.design-subgroup .design-group {
+  gap: 6px;
+}
+
 .photo-upload-row {
   display: flex;
   align-items: center;
