@@ -819,11 +819,16 @@ textarea.field {
   text-wrap: balance;
 }
 
+/* Scales with --cv-contact-size (see .cv-contact below) rather than its
+   own control — it's part of the same "header line" grouping as address/
+   phone/mail in the Design tab's "Kontaktlinje" slider. The *1.12 factor
+   keeps this element's old fixed 14px (vs. .cv-contact's old 12.5px) the
+   same relative size that gap always had. */
 .cv-applied-title {
   margin: 0 0 6px;
   color: var(--cv-accent);
   font-weight: 600;
-  font-size: 14px;
+  font-size: calc(var(--cv-contact-size, 12.5px) * 1.12);
 }
 
 .cv-contact {
