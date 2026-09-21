@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useStore } from "../state/store";
 import { useShallow } from "zustand/react/shallow";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
 import { activityMatchesQuery, itemMatchesQuery } from "../search/contentSearch";
+import { resizeImage } from "../utils/resizeImage";
 
 /** Category-level drag handling is owned by ContentTab (it sees every
  *  card, not just one), so CategoryCard only renders the handle and
@@ -155,12 +156,14 @@ function ItemEditor({
 }) {
   const item = useStore((s) => s.items[itemId]);
   const setItemField = useStore((s) => s.setItemField);
+  const setItemLogo = useStore((s) => s.setItemLogo);
   const deleteItem = useStore((s) => s.deleteItem);
   const addActivity = useStore((s) => s.addActivity);
   const reorderActivity = useStore((s) => s.reorderActivity);
   const toggleItemCollapsed = useStore((s) => s.toggleItemCollapsed);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const logoFileInput = useRef<HTMLInputElement>(null);
   const T = t(lang);
 
   if (!item) return null;
@@ -168,6 +171,13 @@ function ItemEditor({
 
   const handleDelete = () => {
     if (window.confirm(T.confirmDeleteItem(text.head || "?"))) deleteItem(itemId);
+  };
+
+  const handleLogoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    resizeImage(file, 200).then((logo) => setItemLogo(itemId, logo)).catch(() => window.alert(T.jsonImportError));
   };
 
   const showCollapsed = item.isCollapsed && !searchQuery;
@@ -254,6 +264,18 @@ function ItemEditor({
           onChange={(e) => setItemField(itemId, lang, "meta", e.target.value)}
         />
       </div>
+      <div className="photo-upload-row">
+        {item.logo && <img src={item.logo} alt="" className="logo-thumb" />}
+        <button type="button" className="btn" onClick={() => logoFileInput.current?.click()}>
+          {item.logo ? T.changeLogo : T.chooseLogo}
+        </button>
+        {item.logo && (
+          <button type="button" className="link-btn danger" onClick={() => setItemLogo(itemId, "")}>
+            {T.removeLogo}
+          </button>
+        )}
+      </div>
+      <input ref={logoFileInput} type="file" accept="image/*" hidden onChange={handleLogoFile} />
       <input
         className="field item-comment"
         placeholder={T.commentPlaceholder}

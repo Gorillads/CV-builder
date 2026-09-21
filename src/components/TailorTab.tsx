@@ -73,6 +73,7 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
   const variant = useStore((s) => s.variant);
   const activityStyle = useStore((s) => s.activityStyle);
   const toggleItemInCv = useStore((s) => s.toggleItemInCv);
+  const toggleItemLogoVisible = useStore((s) => s.toggleItemLogoVisible);
   const setActivityStyle = useStore((s) => s.setActivityStyle);
   const reorderItem = useStore((s) => s.reorderItem);
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -131,6 +132,17 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
                 <input type="checkbox" checked={selectedIds.includes(id)} onChange={() => toggleItemInCv(categoryId, id)} />
                 {label}
               </label>
+              {item.logo && (
+                <label className="in-cv item-logo-toggle">
+                  <input
+                    type="checkbox"
+                    checked={item.logoVisible}
+                    onChange={() => toggleItemLogoVisible(id)}
+                  />
+                  <img src={item.logo} alt="" className="logo-thumb logo-thumb--tiny" />
+                  {T.showLogo}
+                </label>
+              )}
               {showsActivities && item.activities.length > 0 && (
                 <select
                   className="field placement-select"

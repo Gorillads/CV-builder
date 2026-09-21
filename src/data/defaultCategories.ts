@@ -290,6 +290,8 @@ export function buildStateFromConfig(config: StateConfig): AppState {
         },
         activities: (it.activities ?? []).map(([da, en]) => ({ da, en, isCollapsed: false })),
         isCollapsed: false,
+        logo: "",
+        logoVisible: true,
       };
       ids.push(id);
     });

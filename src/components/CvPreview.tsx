@@ -81,11 +81,16 @@ function EntryBlock({
   selectedActivities: Record<string, number[]>;
 }) {
   const text = item[lang];
+  const showLogo = !!item.logo && item.logoVisible;
+  const logoEl = showLogo && <img className="cv-entry-logo" src={item.logo} alt="" />;
 
   if (variant === "line") {
     return (
       <div className="cv-entry cv-entry--line">
-        <span className="cv-entry-line-head">{text.head}</span>
+        <span className="cv-entry-line-head">
+          {logoEl}
+          {text.head}
+        </span>
         {text.meta && <span className="cv-entry-line-meta">{text.meta}</span>}
       </div>
     );
@@ -101,7 +106,10 @@ function EntryBlock({
       <div className="cv-entry-body">
         {showHead && (
           <div className="cv-entry-head">
-            <strong>{text.head}</strong>
+            <span className="cv-entry-head-title">
+              {logoEl}
+              <strong>{text.head}</strong>
+            </span>
             {variant !== "rows" && text.meta && <span className="cv-entry-meta">{text.meta}</span>}
           </div>
         )}
