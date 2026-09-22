@@ -714,6 +714,27 @@ export function CvPreview({
     design.footer.enabled,
     sectionGap,
   );
+
+  // Wraps each id's SectionBlock with the data-measure-id the pagination
+  // hook reads offsetHeight from. Pulled out so the hidden measurement
+  // twin below can nest these in the same .cv-main/.cv-aside/.cv-col
+  // column wrappers the real Page uses (see JSX below) — a category
+  // bound for the narrow sidebar/two-column width needs to be measured
+  // at that width, not the full single-column width, or text that would
+  // wrap to more lines in the narrower column silently overflows the
+  // page once it's actually rendered there.
+  const renderMeasureItems = (ids: string[]) =>
+    ids.map((id) => (
+      <div key={id} data-measure-id={id}>
+        <SectionBlock
+          category={categories[id]}
+          lang={lang}
+          variant={variant[id] ?? defaultVariant()}
+          activityStyles={activityStyle}
+        />
+      </div>
+    ));
+
   return (
     <div className="cv-preview" style={themeStyle} id="cv-print-area">
       <div ref={measureRef} className={`${pageClass} cv-measure-hidden`} aria-hidden="true">
@@ -731,16 +752,21 @@ export function CvPreview({
             photoPosition={design.photoPosition}
           />
         </div>
-        {activeIds.map((id) => (
-          <div key={id} data-measure-id={id}>
-            <SectionBlock
-              category={categories[id]}
-              lang={lang}
-              variant={variant[id] ?? defaultVariant()}
-              activityStyles={activityStyle}
-            />
-          </div>
-        ))}
+        {hasColumns ? (
+          isSidebar ? (
+            <div className={sidebarClass}>
+              <div className="cv-main">{renderMeasureItems(mainIds)}</div>
+              <aside className="cv-aside">{renderMeasureItems(sidebarIds)}</aside>
+            </div>
+          ) : (
+            <div className="cv-grid-two">
+              <div className="cv-col">{renderMeasureItems(mainIds)}</div>
+              <div className="cv-col">{renderMeasureItems(sidebarIds)}</div>
+            </div>
+          )
+        ) : (
+          renderMeasureItems(activeIds)
+        )}
       </div>
       <ZoomViewport zoom={zoom}>
         <Page
