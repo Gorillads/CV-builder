@@ -1317,22 +1317,27 @@ textarea.field {
    behind it. */
 .cv-sidebar-fill {
   position: absolute;
-  /* top: -8px extends the card above .cv-aside's own top edge instead of
-     inside it, since .cv-aside no longer carries top padding to make room
-     for the heading (that padding pushed the heading itself down out of
-     alignment with .cv-main's first heading — see .cv-aside above). This
-     keeps the same 8px breathing room above the heading without moving
-     the heading.
-     The inner edge (left here — facing .cv-main) stays at 12px, but the
-     outer edge (right here — facing the page's own true edge, since
-     .cv-aside already bleeds flush to it) needs more clearance than that
-     — 24px still read as too close to the true page edge, so this pulls
-     it in further to 32px.
+  /* With both top and bottom set on an absolutely positioned element,
+     height is computed as containerHeight - top - bottom — so, just like
+     top: -14px pushes the top edge 14px above .cv-aside's own top (adding
+     headroom above the heading instead of just reaching it), bottom also
+     needs to be negative (-20px) to push the bottom edge 20px below
+     .cv-aside's own bottom instead of *inside* it. A positive bottom here
+     was a bug: it pulled the card's bottom edge back up into the content,
+     undershooting the last line by that many px instead of clearing it —
+     which is exactly why the card only just barely covered the text.
+     The inner edge (left here — facing .cv-main) sits at 6px, giving the
+     sidebar's own text more left padding inside the card while still
+     leaving a few px of true page background before hitting .cv-main's
+     text. The outer edge (right here — facing the page's own true edge,
+     since .cv-aside already bleeds flush to it) needs more clearance than
+     that — 24px still read as too close to the true page edge, so this
+     pulls it in further to 32px.
      .side-left below mirrors which side is "outer" vs "inner". */
-  top: -8px;
+  top: -14px;
   right: 32px;
-  bottom: 16px;
-  left: 12px;
+  bottom: -20px;
+  left: 6px;
   border-radius: 10px;
   /* --cv-chip-bg (designed as a subtle backdrop for small pill chips) reads
      as almost the same tone as the page's own off-white background, so the
@@ -1348,9 +1353,9 @@ textarea.field {
    .cv-aside itself now bleeds flush to the page's true LEFT edge instead
    (see .cv-grid-sidebar.side-left .cv-aside above), so left becomes the
    outer edge needing the bigger 32px clearance, and right becomes the
-   inner edge (facing .cv-main) that stays at 12px. */
+   inner edge (facing .cv-main) that stays at 6px. */
 .cv-grid-sidebar.side-left .cv-sidebar-fill {
-  right: 12px;
+  right: 6px;
   left: 32px;
 }
 
