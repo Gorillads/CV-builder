@@ -1,9 +1,15 @@
 /** Downscales/re-encodes an uploaded image client-side (longest side
- *  capped at maxDim, re-encoded as JPEG) before it ever reaches the
- *  store — an unmodified phone photo can be several MB, which would
- *  bloat both localStorage and JSON backups for what only ever renders
- *  at a few dozen/hundred px on the CV. Shared by the profile picture
- *  (DesignTab.tsx) and per-element logo (CategoryCard.tsx) uploads. */
+ *  capped at maxDim) before it ever reaches the store — an unmodified
+ *  phone photo can be several MB, which would bloat both localStorage
+ *  and JSON backups for what only ever renders at a few dozen/hundred px
+ *  on the CV. Shared by the profile picture (DesignTab.tsx) and
+ *  per-element logo (CategoryCard.tsx) uploads.
+ *  Re-encoded as JPEG only when the source already was one (a photo,
+ *  which has no transparency to lose anyway) — anything else (PNG, WebP,
+ *  GIF, SVG, ...) is re-encoded as PNG instead, since JPEG has no alpha
+ *  channel: canvas flattens a transparent background to solid black when
+ *  asked for "image/jpeg", which silently ruined every logo uploaded
+ *  with a transparent background. */
 export function resizeImage(file: File, maxDim = 480): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -24,7 +30,8 @@ export function resizeImage(file: File, maxDim = 480): Promise<string> {
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.85));
+        const isJpeg = file.type === "image/jpeg" || file.type === "image/jpg";
+        resolve(isJpeg ? canvas.toDataURL("image/jpeg", 0.85) : canvas.toDataURL("image/png"));
       };
       img.src = String(reader.result);
     };
