@@ -4,6 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
 import { defaultVariant, variantsFor, defaultActivityStyle, ACTIVITY_STYLES, isInSidebar } from "../data/designTokens";
+import { SizeSlider } from "./DesignTab";
 
 /** An item's own bullet pool, checkable one by one — the counterpart to
  *  the item-level checkbox above it. Content tab owns the text (adding/
@@ -74,6 +75,7 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
   const activityStyle = useStore((s) => s.activityStyle);
   const toggleItemInCv = useStore((s) => s.toggleItemInCv);
   const toggleItemLogoVisible = useStore((s) => s.toggleItemLogoVisible);
+  const setItemLogoSize = useStore((s) => s.setItemLogoSize);
   const setActivityStyle = useStore((s) => s.setActivityStyle);
   const reorderItem = useStore((s) => s.reorderItem);
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -158,6 +160,16 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
                 </select>
               )}
             </div>
+            {item.logo && item.logoVisible && (
+              <div className="item-logo-size-row">
+                <SizeSlider
+                  label={T.itemLogoSize}
+                  value={item.logoSize}
+                  onChange={(v) => setItemLogoSize(id, v)}
+                  followLabel={T.followGlobalLogoSize}
+                />
+              </div>
+            )}
             <ActivityChecklist itemId={id} lang={lang} />
           </div>
         );

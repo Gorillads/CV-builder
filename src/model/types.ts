@@ -64,6 +64,12 @@ export interface LibraryItem {
    *  toggleItemInCv has to the item's own text. Irrelevant while logo is
    *  empty. */
   logoVisible: boolean;
+  /** Per-item override of the global "Logo size" control (design.logoSize)
+   *  — same "auto" vs explicit-step-into-LOGO_SIZES shape as design.logoSize
+   *  itself (see src/data/designTokens), set from the Tailor tab. "auto"
+   *  (the default) just follows whatever design.logoSize resolves to;
+   *  irrelevant while logo is empty. */
+  logoSize: string;
 }
 
 export interface ElementText {

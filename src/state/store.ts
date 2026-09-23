@@ -146,10 +146,11 @@ function migrateHeaderAddress(state: unknown): unknown {
   return { ...s, header: { ...header, address: "" } };
 }
 
-/** Backfills LibraryItem.logo/logoVisible (added in a later change) for
- *  every item in an existing document, defaulting to "" (no logo) and
- *  true (a logo, once added, starts visible) — the same shape addItem
- *  already gives a brand-new item. */
+/** Backfills LibraryItem.logo/logoVisible/logoSize (logoSize added in a
+ *  later change than logo/logoVisible themselves) for every item in an
+ *  existing document, defaulting to "" (no logo), true (a logo, once
+ *  added, starts visible) and "auto" (follows design.logoSize) — the same
+ *  shape addItem already gives a brand-new item. */
 function migrateItemLogo(state: unknown): unknown {
   if (!state || typeof state !== "object") return state;
   const s = state as Record<string, unknown>;
@@ -163,6 +164,7 @@ function migrateItemLogo(state: unknown): unknown {
       ...item,
       logo: typeof item.logo === "string" ? item.logo : "",
       logoVisible: typeof item.logoVisible === "boolean" ? item.logoVisible : true,
+      logoSize: typeof item.logoSize === "string" ? item.logoSize : "auto",
     };
   });
   return { ...s, items: nextItems };
@@ -327,6 +329,8 @@ export interface Store extends AppState {
   /** Shows/hides the item's logo on the current CV without deleting the
    *  uploaded image — see LibraryItem.logoVisible. */
   toggleItemLogoVisible(itemId: string): void;
+  /** Sets the item's own logo-size override — see LibraryItem.logoSize. */
+  setItemLogoSize(itemId: string, value: string): void;
 
   addActivity(itemId: string, da: string, en: string): void;
   removeActivity(itemId: string, index: number): void;
@@ -522,6 +526,7 @@ export const useStore = create<Store>()(
           isCollapsed: false,
           logo: "",
           logoVisible: true,
+          logoSize: "auto",
         };
         set((s) => ({
           items: { ...s.items, [id]: item },
@@ -605,6 +610,13 @@ export const useStore = create<Store>()(
           const item = s.items[itemId];
           if (!item) return s;
           return { items: { ...s.items, [itemId]: { ...item, logoVisible: !item.logoVisible } } };
+        }),
+
+      setItemLogoSize: (itemId, value) =>
+        set((s) => {
+          const item = s.items[itemId];
+          if (!item) return s;
+          return { items: { ...s.items, [itemId]: { ...item, logoSize: value } } };
         }),
 
       addActivity: (itemId, da, en) =>
@@ -706,7 +718,7 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 15,
+      version: 16,
       migrate: (persisted) =>
         migrateItemLogo(
           migrateSizeSliders(

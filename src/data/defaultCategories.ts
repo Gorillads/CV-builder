@@ -293,6 +293,7 @@ export function buildStateFromConfig(config: StateConfig): AppState {
         isCollapsed: false,
         logo: "",
         logoVisible: true,
+        logoSize: "auto",
       };
       ids.push(id);
     });

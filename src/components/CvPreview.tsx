@@ -83,7 +83,19 @@ function EntryBlock({
 }) {
   const text = item[lang];
   const showLogo = !!item.logo && item.logoVisible;
-  const logoEl = showLogo && <img className="cv-entry-logo" src={item.logo} alt="" />;
+  // "auto" (the default) just inherits --cv-logo-size from the global
+  // control via App.css — only an explicit per-item override needs an
+  // inline style, which takes precedence over that CSS var.
+  const logoOverridePx =
+    item.logoSize && item.logoSize !== "auto" ? LOGO_SIZES[clampStep(Number(item.logoSize))] : undefined;
+  const logoEl = showLogo && (
+    <img
+      className="cv-entry-logo"
+      src={item.logo}
+      alt=""
+      style={logoOverridePx ? { width: logoOverridePx, height: logoOverridePx } : undefined}
+    />
+  );
 
   if (variant === "line") {
     return (

@@ -37,7 +37,7 @@ function StepSlider({ value, onChange, disabled }: { value: number; onChange: (s
  *  a "follow density" checkbox plus a slider that's only interactive once
  *  that checkbox is off — pinning an explicit step overrides whatever the
  *  overall density slider is doing, for just this one text type. */
-function SizeSlider({
+export function SizeSlider({
   label,
   value,
   onChange,
