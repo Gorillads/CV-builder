@@ -545,6 +545,15 @@ textarea.field {
   margin: 2px 0 4px 26px;
 }
 
+/* Per-item logo-size override (see LibraryItem.logoSize) — sits right
+   below .item-checklist-row, only rendered while the item's own "Vis
+   logo" checkbox (in that row) is checked, indented to read as belonging
+   to that checkbox rather than a new top-level row. */
+.item-logo-size-row {
+  margin: 2px 0 4px 30px;
+  max-width: 220px;
+}
+
 .activity-checklist-row {
   display: flex;
   align-items: center;

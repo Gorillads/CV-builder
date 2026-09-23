@@ -289,6 +289,7 @@ export function applyImportPlan(state: AppState, plan: ImportPlan): AppState {
         isCollapsed: false,
         logo: "",
         logoVisible: true,
+        logoSize: "auto",
       };
       if (parsedItem.selectedActivityIndices != null) {
         selectedActivities[id] = parsedItem.selectedActivityIndices;
