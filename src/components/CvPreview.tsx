@@ -353,9 +353,26 @@ function samePagination(a: PaginationResult, b: PaginationResult): boolean {
   );
 }
 
-/** Greedily takes as many leading ids as fit within `budget` (always at
- *  least one, even if it alone overflows) and returns the rest — a
- *  reading-order-preserving prefix split, not general bin-packing.
+/** A category whose SectionBlock renders null (no items and no blurb —
+ *  see SectionBlock in CvPreview) never produces a real .cv-section box at
+ *  all, so it has no height and no margin-bottom in the live page either
+ *  — it should cost nothing here. Charging it sectionGap anyway (as if it
+ *  were about to render) silently ate budget that real content further
+ *  down could have used instead, the same way an unpaid toll booth still
+ *  backs up traffic if everyone stops to check for one. */
+function itemCost(id: string, heights: Map<string, number>, sectionGap: number): number {
+  const h = heights.get(id) ?? 0;
+  return h === 0 ? 0 : h + sectionGap;
+}
+
+/** Takes the leading ids that fit within `budget` (always at least one,
+ *  even if it alone overflows) and returns the rest, stopping at the
+ *  first id that doesn't fit — a true reading-order-preserving prefix
+ *  split, not general bin-packing: an id can never end up in `fit` after
+ *  an earlier one has already overflowed, even if it happens to be cheap
+ *  (this used to keep scanning past an overflowing id instead of
+ *  stopping, so a later, empty category — see itemCost above — could
+ *  slip into `fit` while a real one right before it sat in `overflow`).
  *  `sectionGap` is the real, currently-resolved .cv-section margin-bottom
  *  (see sectionGap in CvPreview below) — using a stale/fixed value here
  *  would over- or under-budget every category by the difference, throwing
@@ -369,13 +386,19 @@ function splitPrefix(
   const fit: string[] = [];
   const overflow: string[] = [];
   let used = 0;
+  let stopped = false;
   ids.forEach((id) => {
-    const h = (heights.get(id) ?? 0) + sectionGap;
-    if (fit.length === 0 || used + h <= budget) {
+    if (stopped) {
+      overflow.push(id);
+      return;
+    }
+    const cost = itemCost(id, heights, sectionGap);
+    if (fit.length === 0 || used + cost <= budget) {
       fit.push(id);
-      used += h;
+      used += cost;
     } else {
       overflow.push(id);
+      stopped = true;
     }
   });
   return { fit, overflow };
@@ -383,13 +406,14 @@ function splitPrefix(
 
 /** Packs a list of ids into page-sized chunks by greedily filling pages in
  *  order, same algorithm as the old fixed appendix packer. See splitPrefix
- *  above for why sectionGap is passed in rather than a fixed constant. */
+ *  above for why sectionGap is passed in rather than a fixed constant, and
+ *  itemCost above for why an empty category costs nothing. */
 function chunkByBudget(ids: string[], heights: Map<string, number>, budget: number, sectionGap: number): string[][] {
   const result: string[][] = [];
   let current: string[] = [];
   let used = 0;
   ids.forEach((id) => {
-    const h = (heights.get(id) ?? 0) + sectionGap;
+    const h = itemCost(id, heights, sectionGap);
     if (current.length && used + h > budget) {
       result.push(current);
       current = [];
