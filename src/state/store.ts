@@ -170,6 +170,19 @@ function migrateItemLogo(state: unknown): unknown {
   return { ...s, items: nextItems };
 }
 
+/** Backfills design.sidebarWidth (added in a later change than the rest of
+ *  design's sidebar fields) with "33" — the id closest to the 260px fixed
+ *  width every sidebar document used before this control existed, so a
+ *  migrated document keeps its current look. */
+function migrateSidebarWidth(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const design = s.design as Record<string, unknown> | undefined;
+  if (!design || typeof design !== "object" || typeof design.sidebarWidth === "string") return state;
+
+  return { ...s, design: { ...design, sidebarWidth: "33" } };
+}
+
 /** Density's id set changed from {standard, compact} to {small, standard,
  *  large} (see DENSITIES in src/data/designTokens) when it became the
  *  overall/master size lever rather than just a spacing toggle — old
@@ -368,6 +381,7 @@ export interface Store extends AppState {
       | "headKind"
       | "density"
       | "sidebarSide"
+      | "sidebarWidth"
       | "headingSize"
       | "textSize"
       | "elementTextSize"
@@ -799,13 +813,15 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 16,
+      version: 17,
       migrate: (persisted) =>
-        migrateItemLogo(
-          migrateSizeSliders(
-            migrateDensityScale(
-              migrateHeaderAddress(
-                migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateSidebarWidth(
+          migrateItemLogo(
+            migrateSizeSliders(
+              migrateDensityScale(
+                migrateHeaderAddress(
+                  migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+                ),
               ),
             ),
           ),

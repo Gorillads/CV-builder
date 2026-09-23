@@ -168,6 +168,10 @@ export interface AppState {
     density: string;
     /** Which side the sidebar sits on, when struct is "sidebar". */
     sidebarSide: string;
+    /** The sidebar column's width, as an id into SIDEBAR_WIDTHS (see
+     *  src/data/designTokens) — a percent of the page's content width,
+     *  only relevant when struct is "sidebar". */
+    sidebarWidth: string;
     /** "Heading 2 size" (category/section headings) — same "auto" vs
      *  explicit-step-into-HEADING_SIZES shape as headSize above,
      *  independent of it. */

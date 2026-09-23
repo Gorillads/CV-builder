@@ -16,6 +16,7 @@ import {
   SECTION_GAPS,
   ENTRY_GAPS,
   PHOTO_SIZES,
+  SIDEBAR_WIDTHS,
   isInSidebar,
   byId,
   resolveSizePx,
@@ -684,6 +685,7 @@ export function CvPreview({
   const sectionGap = resolveSizePx(SECTION_GAPS, design.sectionGap, densityStep);
   const entryGap = resolveSizePx(ENTRY_GAPS, design.entryGap, densityStep);
   const photoSize = byId(PHOTO_SIZES, design.photoSize);
+  const sidebarWidthPct = SIDEBAR_WIDTHS.find((w) => w.id === design.sidebarWidth)?.pct ?? 33;
 
   const themeStyle = {
     "--cv-head": font.head,
@@ -694,6 +696,7 @@ export function CvPreview({
     "--cv-element-text-size": `${elementTextSizePx}px`,
     "--cv-contact-size": `${contactSizePx}px`,
     "--cv-logo-size": `${logoSizePx}px`,
+    "--cv-sidebar-width": `${sidebarWidthPct}%`,
     "--cv-section-gap": `${sectionGap}px`,
     "--cv-entry-gap": `${entryGap}px`,
     "--cv-accent": scheme.accent,
