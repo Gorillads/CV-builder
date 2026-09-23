@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Regression suite's latest run — only the baselines/ folder is committed
+regression/current
