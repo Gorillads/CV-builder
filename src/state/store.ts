@@ -296,6 +296,14 @@ export interface Store extends AppState {
    *  Same action regardless of whether it's a built-in or a custom
    *  category — there's no "restore" for this one. */
   deleteCategory(categoryId: string): void;
+  /** Duplicates the category and every one of its items (preserving
+   *  per-item CV selection, activity selection, and activity-style
+   *  state), inserting the copy directly after the original in display
+   *  order. The copy is always a plain custom category, whether or not
+   *  the original was built-in — a built-in category is identified by
+   *  its id, not a flag the copy could inherit, and the copy is a new,
+   *  freely-deletable id either way. */
+  duplicateCategory(categoryId: string): void;
   toggleCategoryOn(categoryId: string): void;
   setVariant(categoryId: string, variant: string): void;
   /** How one item's own activity bullets are displayed — an id into
@@ -486,6 +494,79 @@ export const useStore = create<Store>()(
             itemOrder,
             on,
             order: s.order.filter((id) => id !== categoryId),
+          };
+        }),
+
+      duplicateCategory: (categoryId) =>
+        set((s) => {
+          const cat = s.categories[categoryId];
+          if (!cat) return s;
+
+          const newCatId = newId("custom");
+          const newCategory: Category = {
+            id: newCatId,
+            title: { da: `${cat.title.da} (kopi)`, en: `${cat.title.en} (copy)` },
+            blurb: { ...cat.blurb },
+            isCustom: true,
+            isHidden: false,
+            isCollapsed: false,
+            isReplacedByImport: false,
+          };
+
+          const oldItemIds = s.itemOrder[categoryId] ?? [];
+          const idMap = new Map<string, string>();
+          const items = { ...s.items };
+          const selectedActivities = { ...s.selectedActivities };
+          const activityStyle = { ...s.activityStyle };
+
+          oldItemIds.forEach((oldId) => {
+            const item = s.items[oldId];
+            if (!item) return;
+            const newItemId = newId("item");
+            idMap.set(oldId, newItemId);
+            items[newItemId] = {
+              ...item,
+              id: newItemId,
+              categoryId: newCatId,
+              da: { ...item.da },
+              en: { ...item.en },
+              activities: item.activities.map((a) => ({ ...a })),
+            };
+            if (s.selectedActivities[oldId] != null) {
+              selectedActivities[newItemId] = [...s.selectedActivities[oldId]];
+            }
+            if (s.activityStyle[oldId] != null) {
+              activityStyle[newItemId] = s.activityStyle[oldId];
+            }
+          });
+
+          const newItemOrder = oldItemIds.map((id) => idMap.get(id)).filter((id): id is string => !!id);
+          const newSelectedItems = (s.selectedItems[categoryId] ?? [])
+            .map((id) => idMap.get(id))
+            .filter((id): id is string => !!id);
+
+          const insertAt = s.order.indexOf(categoryId);
+          const order = [...s.order];
+          order.splice(insertAt === -1 ? order.length : insertAt + 1, 0, newCatId);
+
+          const variant =
+            s.variant[categoryId] != null ? { ...s.variant, [newCatId]: s.variant[categoryId] } : s.variant;
+          const sidebarPlacement =
+            s.sidebarPlacement[categoryId] != null
+              ? { ...s.sidebarPlacement, [newCatId]: s.sidebarPlacement[categoryId] }
+              : s.sidebarPlacement;
+
+          return {
+            categories: { ...s.categories, [newCatId]: newCategory },
+            order,
+            on: { ...s.on, [newCatId]: s.on[categoryId] ?? true },
+            items,
+            selectedItems: { ...s.selectedItems, [newCatId]: newSelectedItems },
+            itemOrder: { ...s.itemOrder, [newCatId]: newItemOrder },
+            selectedActivities,
+            variant,
+            activityStyle,
+            sidebarPlacement,
           };
         }),
 

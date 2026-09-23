@@ -48,6 +48,7 @@ export const UI = {
     confirmApplyPreset: (name: string) =>
       `Indlæs skabelonen "${name}"? Dette erstatter alt indhold og alle indstillinger i editoren.`,
     blurb: "Introtekst",
+    duplicateCategory: "Dupliker kategori",
     deleteCategory: "Slet kategori",
     addElement: "Tilføj element",
     deleteItem: "Slet",
@@ -155,6 +156,7 @@ export const UI = {
     confirmApplyPreset: (name: string) =>
       `Load the "${name}" template? This replaces all content and settings in the editor.`,
     blurb: "Intro text",
+    duplicateCategory: "Duplicate category",
     deleteCategory: "Delete category",
     addElement: "Add element",
     deleteItem: "Delete",
