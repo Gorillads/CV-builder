@@ -129,6 +129,29 @@ export const SIDEBAR_SIDES: SidebarSide[] = [
   { id: "left", name: { da: "Venstre", en: "Left" } },
 ];
 
+export interface SidebarWidth {
+  id: string;
+  name: ByLang<string>;
+  /** The sidebar column's share of the page's own content width, as a
+   *  percent — the main column takes the rest via CSS Grid's 1fr (see
+   *  .cv-grid-sidebar in App.css). */
+  pct: number;
+}
+
+/** Sidebar-width options, in percent of the page's content width — only
+ *  relevant when design.struct is "sidebar". 33% (the id closest to the
+ *  260px fixed width every sidebar document used before this control
+ *  existed) is the default, so migrated documents keep their look. */
+export const SIDEBAR_WIDTHS: SidebarWidth[] = [
+  { id: "20", name: { da: "20%", en: "20%" }, pct: 20 },
+  { id: "23", name: { da: "23%", en: "23%" }, pct: 23 },
+  { id: "27", name: { da: "27%", en: "27%" }, pct: 27 },
+  { id: "30", name: { da: "30%", en: "30%" }, pct: 30 },
+  { id: "33", name: { da: "33% (standard)", en: "33% (default)" }, pct: 33 },
+  { id: "37", name: { da: "37%", en: "37%" }, pct: 37 },
+  { id: "40", name: { da: "40%", en: "40%" }, pct: 40 },
+];
+
 /** Font size of a category/section heading (h3) — "heading 2 size" in the
  *  Design tab, independent of the name's own "heading size" control
  *  above — at each of the 10 slider positions. Index 4 (12.5px, the old

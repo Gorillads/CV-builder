@@ -8,6 +8,7 @@ import {
   STRUCTS,
   HEADS,
   SIDEBAR_SIDES,
+  SIDEBAR_WIDTHS,
   PHOTO_SIZES,
   PHOTO_POSITIONS,
   SIZE_STEPS,
@@ -329,6 +330,24 @@ export function DesignTab({ lang }: { lang: Lang }) {
                 onClick={() => setDesign("sidebarSide", s.id)}
               >
                 {s.name[lang]}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {design.struct === "sidebar" && (
+        <div className="design-group">
+          <div className="design-group-label">{T.sidebarWidth}</div>
+          <div className="design-pills">
+            {SIDEBAR_WIDTHS.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                className={"pill" + (design.sidebarWidth === w.id ? " active" : "")}
+                onClick={() => setDesign("sidebarWidth", w.id)}
+              >
+                {w.name[lang]}
               </button>
             ))}
           </div>
