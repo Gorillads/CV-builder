@@ -863,11 +863,16 @@ textarea.field {
   font-size: calc(var(--cv-contact-size, 12.5px) * 1.12);
 }
 
+/* No font-variant-numeric: tabular-nums on any printed CV text (here and
+   below) — Chromium's print-to-PDF pipeline embeds tabular-nums digit runs
+   as a separate CID font subset, and that subset's ToUnicode table can come
+   out wrong for some digits (confirmed for "6": it maps to the U+FFFD
+   placeholder). The glyph still renders correctly on the page, but copying
+   the text, or an ATS parsing the PDF, gets a broken character instead. */
 .cv-contact {
   margin: 0;
   color: #5c6672;
   font-size: var(--cv-contact-size, 12.5px);
-  font-variant-numeric: tabular-nums;
 }
 
 /* A double rule under the header — a thick accent bar plus a thin line a
@@ -1039,7 +1044,6 @@ textarea.field {
   flex: 0 0 72px;
   color: var(--cv-accent-soft);
   font-size: 11.5px;
-  font-variant-numeric: tabular-nums;
   padding-top: 1px;
 }
 
@@ -1092,7 +1096,6 @@ textarea.field {
   color: var(--cv-accent-soft);
   font-size: 11.5px;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Short optional note right under the heading, distinct from (and above)
@@ -1203,7 +1206,6 @@ textarea.field {
   color: var(--cv-accent-soft);
   font-size: 11.5px;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 /* ---- Entries: "rows" variant (year in its own column) — and the same
@@ -1244,7 +1246,6 @@ textarea.field {
   border-top: 1px solid var(--cv-line);
   color: #7c8590;
   font-size: 10px;
-  font-variant-numeric: tabular-nums;
 }
 
 /* ---- Page structure (macro layout only) -------------------------------
