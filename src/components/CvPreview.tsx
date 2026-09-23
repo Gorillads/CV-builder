@@ -34,7 +34,14 @@ const PAGE_HEIGHT = 1123;
  *  size guess, before its first real measurement lands (see ZoomViewport). */
 const PAGE_WIDTH = 794;
 const PAGE_VERTICAL_PADDING = 80;
-const FOOTER_HEIGHT = 46;
+/** The footer is positioned absolutely (see .cv-footer in App.css) and sits
+ *  near the page's bottom edge, mostly inside the page's own 40px bottom
+ *  padding — it does not occupy normal document flow. So content only needs
+ *  to yield the small gap between the footer's top edge and where content
+ *  would naturally end anyway (measured ~10.5px), not the footer's full
+ *  ~46px distance from the true page bottom. A small safety margin is added
+ *  on top of the measured value. */
+const FOOTER_HEIGHT = 16;
 /** A continuation ("Bilag") page's title costs extra height on top of the
  *  page's own padding. */
 const APPENDIX_TITLE_HEIGHT = 46;
