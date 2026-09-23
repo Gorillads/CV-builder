@@ -348,6 +348,7 @@ export function CategoryCard({
   const setCategoryBlurb = useStore((s) => s.setCategoryBlurb);
   const toggleCategoryCollapsed = useStore((s) => s.toggleCategoryCollapsed);
   const deleteCategory = useStore((s) => s.deleteCategory);
+  const duplicateCategory = useStore((s) => s.duplicateCategory);
   const addItem = useStore((s) => s.addItem);
   const reorderItem = useStore((s) => s.reorderItem);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -441,6 +442,9 @@ export function CategoryCard({
           onChange={(e) => setCategoryTitle(category.id, lang, e.target.value)}
         />
         {category.isCustom && <span className="badge">{T.custom}</span>}
+        <button type="button" className="link-btn" onClick={() => duplicateCategory(category.id)}>
+          {T.duplicateCategory}
+        </button>
         <button type="button" className="link-btn danger" onClick={handleDelete}>
           {T.deleteCategory}
         </button>
