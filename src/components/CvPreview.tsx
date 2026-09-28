@@ -479,6 +479,28 @@ function usePagination(
         const el = container.querySelector<HTMLElement>(`[data-measure-id="${CSS.escape(id)}"]`);
         if (el) heights.set(id, el.offsetHeight);
       });
+      // A category bound for the narrow sidebar/two-column width on page 1
+      // (see renderMeasureItems above) renders at the FULL page width once
+      // it overflows to a continuation page — OverflowPages always uses a
+      // single flowing .cv-flow column, regardless of the main struct. Text
+      // wraps to fewer lines at that wider width, so reusing the
+      // column-width heights above to budget the appendix overestimates
+      // how tall an overflowing category will actually be there, splitting
+      // it onto its own page even when the true (wider) rendering would
+      // have left room to share one with its neighbor. flowHeights
+      // measures every category at that same full width instead, purely
+      // for the appendix chunker below.
+      // Structs without columns (single/marked/banded) already measure
+      // page-1 content at the full flow width above, so there's no
+      // separate data-measure-flow-id twin for them (see renderMeasureFlowItems
+      // below) — heights doubles as flowHeights there.
+      const flowHeights = splitColumns ? new Map<string, number>() : heights;
+      if (splitColumns) {
+        activeIds.forEach((id) => {
+          const el = container.querySelector<HTMLElement>(`[data-measure-flow-id="${CSS.escape(id)}"]`);
+          if (el) flowHeights.set(id, el.offsetHeight);
+        });
+      }
       const headerEl = container.querySelector<HTMLElement>('[data-measure-id="__header__"]');
       const headerHeight = (headerEl?.offsetHeight ?? 0) + HEADER_GAP;
       const page1Budget = PAGE_HEIGHT - PAGE_VERTICAL_PADDING - (footerEnabled ? FOOTER_HEIGHT : 0) - headerHeight;
@@ -501,7 +523,7 @@ function usePagination(
       }
 
       const overflow = activeIds.filter((id) => overflowSet.has(id));
-      const overflowChunks = overflow.length ? chunkByBudget(overflow, heights, appendixBudget, sectionGap) : [];
+      const overflowChunks = overflow.length ? chunkByBudget(overflow, flowHeights, appendixBudget, sectionGap) : [];
       const next: PaginationResult = { page1Main, page1Aside, overflowChunks };
       setResult((prev) => (samePagination(prev, next) ? prev : next));
     };
@@ -781,6 +803,26 @@ export function CvPreview({
       </div>
     ));
 
+  // Same as renderMeasureItems, but always at the full single-column width
+  // — a continuation ("Bilag") page always renders every category in one
+  // plain .cv-flow column (see OverflowPages), even one that would sit in
+  // the narrower sidebar/two-column width on page 1. Measuring every
+  // category at that eventual appendix width too (in addition to its
+  // page-1 column width above) lets usePagination budget the appendix
+  // against how tall it will actually be there, not how tall it would be
+  // in a column it may never end up in.
+  const renderMeasureFlowItems = (ids: string[]) =>
+    ids.map((id) => (
+      <div key={id} data-measure-flow-id={id}>
+        <SectionBlock
+          category={categories[id]}
+          lang={lang}
+          variant={variant[id] ?? defaultVariant()}
+          activityStyles={activityStyle}
+        />
+      </div>
+    ));
+
   return (
     <div className="cv-preview" style={themeStyle} id="cv-print-area">
       <div ref={measureRef} className={`${pageClass} cv-measure-hidden`} aria-hidden="true">
@@ -813,6 +855,7 @@ export function CvPreview({
         ) : (
           renderMeasureItems(activeIds)
         )}
+        {hasColumns && renderMeasureFlowItems(activeIds)}
       </div>
       <ZoomViewport zoom={zoom}>
         <Page
