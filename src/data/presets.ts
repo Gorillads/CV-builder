@@ -1,6 +1,6 @@
 import type { AppState, ByLang } from "../model/types";
 import type { CategorySeed, StateConfig } from "./defaultCategories";
-import { buildStateFromConfig } from "./defaultCategories";
+import { buildStateFromConfig, MODERN_DESIGN } from "./defaultCategories";
 
 export interface Preset {
   id: string;
@@ -563,27 +563,6 @@ const MODERN_SEEDS: CategorySeed[] = [
     ],
   },
 ];
-
-const MODERN_DESIGN: AppState["design"] = {
-  font: "plex",
-  scheme: "staal",
-  headSize: "4",
-  struct: "sidebar",
-  headKind: "left",
-  density: "4",
-  sidebarSide: "right",
-  sidebarWidth: "33",
-  headingSize: "4",
-  textSize: "auto",
-  elementTextSize: "auto",
-  contactSize: "auto",
-  logoSize: "auto",
-  sectionGap: "auto",
-  entryGap: "auto",
-  photoSize: "standard",
-  photoPosition: "left",
-  footer: { enabled: false, revision: "" },
-};
 
 // ---------------------------------------------------------------------
 // Artistic — a graphic design/illustration career.
