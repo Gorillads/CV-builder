@@ -56,8 +56,8 @@ const SEEDS: CategorySeed[] = [
       {
         head: ["", ""],
         desc: [
-          "Kort profiltekst der opsummerer din baggrund og hvad du søger. Redigér denne tekst direkte.",
-          "Short profile summarising your background and what you're looking for. Edit this text directly.",
+          "Indsæt her en kort profiltekst, der opsummerer din baggrund – tilpas den til den konkrete stillings specifikationer og nøgleord.",
+          "Insert a short profile here summarising your background — tailor it to the specifications and keywords of the position you're applying for.",
         ],
       },
     ],
@@ -68,17 +68,17 @@ const SEEDS: CategorySeed[] = [
     onByDefault: true,
     items: [
       {
-        head: ["Projektledelse", "Project management"],
+        head: ["Kompetence fra stillingsopslaget", "Skill from the job posting"],
         desc: [
-          "Kort forklaring af hvordan kompetencen er brugt i praksis.",
-          "Short explanation of how the competency has been used in practice.",
+          "Indsæt en kompetence, stillingen efterspørger, og en kort forklaring af, hvordan du har brugt den.",
+          "Insert a skill the position is asking for, and a short explanation of how you've used it.",
         ],
       },
       {
-        head: ["Stakeholder management", "Stakeholder management"],
+        head: ["Endnu en relevant kompetence", "Another relevant skill"],
         desc: [
-          "Kort forklaring af, hvornår og hvordan kompetencen er anvendt.",
-          "Short explanation of when and how the competency has been applied.",
+          "Indsæt endnu et konkret eksempel på en kompetence og hvornår den er blevet anvendt.",
+          "Insert another concrete example of a skill and when it's been applied.",
         ],
       },
     ],
@@ -90,14 +90,14 @@ const SEEDS: CategorySeed[] = [
     items: [
       {
         head: ["Stillingstitel, Virksomhed", "Job Title, Company"],
-        meta: "2023–nu",
+        meta: "Angiv år / Insert year",
         desc: [
-          "Kort beskrivelse af rollen og ansvarsområder.",
-          "Short description of the role and responsibilities.",
+          "Indsæt her en kort beskrivelse af rollen og ansvarsområderne, tilpasset de specifikationer stillingen efterspørger.",
+          "Insert a short description of the role and responsibilities here, tailored to the specifications the position asks for.",
         ],
         activities: [
-          ["Eksempel på en konkret leverance eller resultat", "Example of a concrete deliverable or result"],
-          ["Endnu et eksempel på en aktivitet i rollen", "Another example of an activity in the role"],
+          ["Indsæt et konkret resultat eller en leverance, der matcher stillingens krav", "Insert a concrete result or deliverable that matches the position's requirements"],
+          ["Indsæt endnu et eksempel på en relevant aktivitet i rollen", "Insert another example of a relevant activity in the role"],
         ],
       },
     ],
@@ -109,10 +109,10 @@ const SEEDS: CategorySeed[] = [
     items: [
       {
         head: ["Uddannelsestitel, Institution", "Degree Title, Institution"],
-        meta: "2019–2023",
-        desc: ["Kort beskrivelse af uddannelsen.", "Short description of the degree."],
+        meta: "Angiv år / Insert year",
+        desc: ["Indsæt her en kort beskrivelse af uddannelsen.", "Insert a short description of the degree here."],
         activities: [
-          ["Relevant hovedfag eller speciale", "Relevant major or specialization"],
+          ["Indsæt et relevant hovedfag eller speciale", "Insert a relevant major or specialization"],
         ],
       },
     ],
@@ -124,10 +124,13 @@ const SEEDS: CategorySeed[] = [
     items: [
       {
         head: ["Fagnavn", "Course Name"],
-        meta: "2022",
-        desc: ["Kort beskrivelse af faget og hvad du lærte.", "Short description of the course and what you learned."],
+        meta: "Angiv år / Insert year",
+        desc: [
+          "Indsæt her en kort beskrivelse af faget, og hvorfor det er relevant for stillingen.",
+          "Insert a short description of the course here, and why it's relevant to the position.",
+        ],
         activities: [
-          ["Eksempel på en opgave eller et projekt fra faget", "Example of an assignment or project from the course"],
+          ["Indsæt et eksempel på en opgave eller et projekt fra faget", "Insert an example of an assignment or project from the course"],
         ],
       },
     ],
@@ -220,16 +223,20 @@ const SEEDS: CategorySeed[] = [
   },
 ];
 
-const DEFAULT_DESIGN: AppState["design"] = {
-  font: "industry",
+/** The "Modern" preset's look (see MODERN_SEEDS/the "modern" Preset entry
+ *  in presets.ts) — shared from here, rather than presets.ts, so the blank
+ *  default state below can also open in it without presets.ts importing
+ *  back into this module. */
+export const MODERN_DESIGN: AppState["design"] = {
+  font: "plex",
   scheme: "staal",
-  headSize: "auto",
-  struct: "single",
+  headSize: "4",
+  struct: "sidebar",
   headKind: "left",
   density: "4",
   sidebarSide: "right",
   sidebarWidth: "33",
-  headingSize: "auto",
+  headingSize: "4",
   textSize: "auto",
   elementTextSize: "auto",
   contactSize: "auto",
@@ -320,11 +327,16 @@ export function buildStateFromConfig(config: StateConfig): AppState {
   };
 }
 
+/** The very first state a new document opens in (and what "Nulstil"/reset
+ *  restores) — the Modern template's look, with every category's content
+ *  replaced by instructions rather than a fictive person's CV, so it reads
+ *  unmistakably as a template to fill in rather than someone else's resume. */
 export function createDefaultState(): AppState {
   return buildStateFromConfig({
     seeds: SEEDS,
-    design: DEFAULT_DESIGN,
+    design: MODERN_DESIGN,
     header: { name: "", address: "", phone: "", mail: "", location: { da: "", en: "" }, photo: "" },
     appliedTitle: { da: "", en: "" },
+    variant: { kompetencer: "chips" },
   });
 }
