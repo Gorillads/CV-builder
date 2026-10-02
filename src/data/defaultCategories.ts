@@ -56,8 +56,8 @@ const SEEDS: CategorySeed[] = [
       {
         head: ["", ""],
         desc: [
-          "Indsæt her en kort profiltekst, der opsummerer din baggrund – tilpas den til den konkrete stillings specifikationer og nøgleord.",
-          "Insert a short profile here summarising your background — tailor it to the specifications and keywords of the position you're applying for.",
+          "Indsæt her en kort profiltekst, der opsummerer din baggrund, dine styrker og hvad der kendetegner dig fagligt.",
+          "Insert a short profile here summarising your background, your strengths, and what characterises you professionally.",
         ],
       },
     ],
@@ -68,14 +68,14 @@ const SEEDS: CategorySeed[] = [
     onByDefault: true,
     items: [
       {
-        head: ["Kompetence fra stillingsopslaget", "Skill from the job posting"],
+        head: ["Kompetence", "Skill"],
         desc: [
-          "Indsæt en kompetence, stillingen efterspørger, og en kort forklaring af, hvordan du har brugt den.",
-          "Insert a skill the position is asking for, and a short explanation of how you've used it.",
+          "Indsæt en af dine kompetencer her, og en kort forklaring af, hvordan du har brugt den.",
+          "Insert one of your skills here, and a short explanation of how you've used it.",
         ],
       },
       {
-        head: ["Endnu en relevant kompetence", "Another relevant skill"],
+        head: ["Endnu en kompetence", "Another skill"],
         desc: [
           "Indsæt endnu et konkret eksempel på en kompetence og hvornår den er blevet anvendt.",
           "Insert another concrete example of a skill and when it's been applied.",
@@ -92,11 +92,11 @@ const SEEDS: CategorySeed[] = [
         head: ["Stillingstitel, Virksomhed", "Job Title, Company"],
         meta: "Angiv år / Insert year",
         desc: [
-          "Indsæt her en kort beskrivelse af rollen og ansvarsområderne, tilpasset de specifikationer stillingen efterspørger.",
-          "Insert a short description of the role and responsibilities here, tailored to the specifications the position asks for.",
+          "Indsæt her en kort beskrivelse af rollen og dine ansvarsområder.",
+          "Insert a short description of the role and your responsibilities here.",
         ],
         activities: [
-          ["Indsæt et konkret resultat eller en leverance, der matcher stillingens krav", "Insert a concrete result or deliverable that matches the position's requirements"],
+          ["Indsæt et konkret resultat eller en leverance fra rollen", "Insert a concrete result or deliverable from the role"],
           ["Indsæt endnu et eksempel på en relevant aktivitet i rollen", "Insert another example of a relevant activity in the role"],
         ],
       },
@@ -126,8 +126,8 @@ const SEEDS: CategorySeed[] = [
         head: ["Fagnavn", "Course Name"],
         meta: "Angiv år / Insert year",
         desc: [
-          "Indsæt her en kort beskrivelse af faget, og hvorfor det er relevant for stillingen.",
-          "Insert a short description of the course here, and why it's relevant to the position.",
+          "Indsæt her en kort beskrivelse af faget, og hvad du lærte.",
+          "Insert a short description of the course here, and what you learned.",
         ],
         activities: [
           ["Indsæt et eksempel på en opgave eller et projekt fra faget", "Insert an example of an assignment or project from the course"],
