@@ -77,6 +77,7 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
   const toggleItemLogoVisible = useStore((s) => s.toggleItemLogoVisible);
   const setItemLogoSize = useStore((s) => s.setItemLogoSize);
   const setActivityStyle = useStore((s) => s.setActivityStyle);
+  const toggleItemCollapsed = useStore((s) => s.toggleItemCollapsed);
   const reorderItem = useStore((s) => s.reorderItem);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
@@ -97,6 +98,10 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
         const text = item[lang];
         const desc = text.desc.trim();
         const label = text.head || (desc.length > 40 ? `${desc.slice(0, 40)}…` : desc) || T.custom;
+        const hasActivities = showsActivities && item.activities.length > 0;
+        const hasLogoSize = !!item.logo && item.logoVisible;
+        const collapsible = hasActivities || hasLogoSize;
+        const showCollapsed = collapsible && item.isCollapsed;
         return (
           <div
             key={id}
@@ -134,6 +139,16 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
                 <input type="checkbox" checked={selectedIds.includes(id)} onChange={() => toggleItemInCv(categoryId, id)} />
                 {label}
               </label>
+              {collapsible && (
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => toggleItemCollapsed(id)}
+                  title={showCollapsed ? T.expand : T.collapse}
+                >
+                  {showCollapsed ? "▸" : "▾"}
+                </button>
+              )}
               {item.logo && (
                 <label className="in-cv item-logo-toggle">
                   <input
@@ -160,7 +175,7 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
                 </select>
               )}
             </div>
-            {item.logo && item.logoVisible && (
+            {!showCollapsed && hasLogoSize && (
               <div className="item-logo-size-row">
                 <SizeSlider
                   label={T.itemLogoSize}
@@ -170,7 +185,7 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
                 />
               </div>
             )}
-            <ActivityChecklist itemId={id} lang={lang} />
+            {!showCollapsed && <ActivityChecklist itemId={id} lang={lang} />}
           </div>
         );
       })}
@@ -189,6 +204,7 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const toggleCategoryOn = useStore((s) => s.toggleCategoryOn);
   const setVariant = useStore((s) => s.setVariant);
   const setSidebarPlacement = useStore((s) => s.setSidebarPlacement);
+  const toggleCategoryCollapsed = useStore((s) => s.toggleCategoryCollapsed);
   const reorderCategory = useStore((s) => s.reorderCategory);
   const appliedTitle = useStore((s) => s.appliedTitle);
   const setAppliedTitle = useStore((s) => s.setAppliedTitle);
@@ -245,6 +261,14 @@ export function TailorTab({ lang }: { lang: Lang }) {
                 <span className="drag-handle" aria-hidden="true" title={T.dragToReorder}>
                   ⠿
                 </span>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => toggleCategoryCollapsed(id)}
+                  title={cat.isCollapsed ? T.expand : T.collapse}
+                >
+                  {cat.isCollapsed ? "▸" : "▾"}
+                </button>
                 <label className="in-cv">
                   <input type="checkbox" checked={!!on[id]} onChange={() => toggleCategoryOn(id)} />
                   {cat.title[lang]}
@@ -281,7 +305,7 @@ export function TailorTab({ lang }: { lang: Lang }) {
                     );
                   })()}
               </div>
-              <ItemChecklist categoryId={id} lang={lang} />
+              {!cat.isCollapsed && <ItemChecklist categoryId={id} lang={lang} />}
             </div>
           );
         })}
