@@ -96,13 +96,26 @@ function EntryBlock({
   // inline style, which takes precedence over that CSS var.
   const logoOverridePx =
     item.logoSize && item.logoSize !== "auto" ? LOGO_SIZES[clampStep(Number(item.logoSize))] : undefined;
+  // The frame reserves exactly the logo's own width (so it still pushes
+  // neighbouring flex items, like the year, over by the right amount)
+  // but a fixed height of just one text line — a logo taller than that
+  // overflows the frame purely visually (guaranteed by overflow: visible
+  // never growing an ancestor's box) instead of depending on a negative
+  // margin to cancel its extra height back out after the fact. That
+  // cancellation is only ever an approximation, and a real difference
+  // between it and the actual rendered line height showed up as a gap
+  // appearing under the heading in an exported PDF that wasn't there in
+  // the on-screen preview, once a logo was both large and taller than
+  // the approximation assumed.
   const logoEl = showLogo && (
-    <img
-      className="cv-entry-logo"
-      src={item.logo}
-      alt=""
-      style={logoOverridePx ? { width: logoOverridePx, height: logoOverridePx } : undefined}
-    />
+    <span className="cv-entry-logo-frame" style={logoOverridePx ? { width: logoOverridePx } : undefined}>
+      <img
+        className="cv-entry-logo"
+        src={item.logo}
+        alt=""
+        style={logoOverridePx ? { width: logoOverridePx, height: logoOverridePx } : undefined}
+      />
+    </span>
   );
 
   if (variant === "line") {
