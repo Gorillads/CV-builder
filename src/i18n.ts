@@ -110,6 +110,8 @@ export const UI = {
     footerCvLabel: "CV",
     footerAppendixLabel: "BILAG",
     pageLabel: (n: number) => `SIDE ${n}`,
+    resetAll: "Nulstil",
+    confirmResetAll: "Nulstil alt indhold og alle indstillinger til udgangspunktet? Dette kan ikke fortrydes.",
   },
   en: {
     appName: "CV Builder",
@@ -220,6 +222,8 @@ export const UI = {
     footerCvLabel: "CV",
     footerAppendixLabel: "APPENDIX",
     pageLabel: (n: number) => `PAGE ${n}`,
+    resetAll: "Reset",
+    confirmResetAll: "Reset all content and settings to the starting point? This can't be undone.",
   },
 } satisfies Record<Lang, Record<string, unknown>>;
 
