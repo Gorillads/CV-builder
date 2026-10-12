@@ -58,6 +58,8 @@ function App() {
   const setLang = useStore((s) => s.setLang);
   const header = useStore((s) => s.header);
   const setHeaderField = useStore((s) => s.setHeaderField);
+  const setHeaderLocation = useStore((s) => s.setHeaderLocation);
+  const resetAll = useStore((s) => s.resetAll);
   const [tab, setTab] = useState<Tab>("content");
   const [mainPageStatus, setMainPageStatus] = useState<PageOverflow | null>(null);
   const [zoomPct, setZoomPct] = useState(100);
@@ -112,12 +114,19 @@ function App() {
     document.fonts.ready.then(() => window.print());
   };
 
+  const handleResetAll = () => {
+    if (window.confirm(T.confirmResetAll)) resetAll();
+  };
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>{T.appName}</h1>
         <div className="app-header-controls">
           <ImportExportBar lang={lang} />
+          <button type="button" className="btn" onClick={handleResetAll}>
+            {T.resetAll}
+          </button>
           <div className="lang-toggle">
             <button type="button" className={lang === "da" ? "active" : ""} onClick={() => setLang("da")}>
               DA
@@ -155,6 +164,12 @@ function App() {
               placeholder={T.mail}
               value={header.mail}
               onChange={(e) => setHeaderField("mail", e.target.value)}
+            />
+            <input
+              className="field"
+              placeholder={T.location}
+              value={header.location[lang]}
+              onChange={(e) => setHeaderLocation(lang, e.target.value)}
             />
           </div>
 
