@@ -11,7 +11,6 @@ import {
   SIDEBAR_WIDTHS,
   PHOTO_POSITIONS,
   PHOTO_SHAPES,
-  PHOTO_BORDERS,
   SIZE_STEPS,
   clampStep,
 } from "../data/designTokens";
@@ -320,24 +319,6 @@ export function DesignTab({ lang }: { lang: Lang }) {
                 onClick={() => setDesign("photoShape", p.id)}
               >
                 {p.name[lang]}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {header.photo && (
-        <div className="design-group">
-          <div className="design-group-label">{T.photoBorder}</div>
-          <div className="design-pills">
-            {PHOTO_BORDERS.map((b) => (
-              <button
-                key={b.id}
-                type="button"
-                className={"pill" + (design.photoBorder === b.id ? " active" : "")}
-                onClick={() => setDesign("photoBorder", b.id)}
-              >
-                {b.name[lang]}
               </button>
             ))}
           </div>
