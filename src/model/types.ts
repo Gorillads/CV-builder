@@ -206,13 +206,19 @@ export interface AppState {
      *  same "auto" vs explicit-step-into-ENTRY_GAPS shape as the other
      *  size controls. */
     entryGap: string;
-    /** Diameter of the optional profile picture (see header.photo) — an id
-     *  into PHOTO_SIZES (see src/data/designTokens), independent of whether
-     *  a photo is actually set. */
+    /** Diameter of the optional profile picture (see header.photo) — a
+     *  plain 0-9 slider step into PHOTO_SIZES (see src/data/designTokens),
+     *  independent of whether a photo is actually set. */
     photoSize: string;
     /** Where the profile picture sits relative to the name/title/contact
      *  block — an id into PHOTO_POSITIONS (see src/data/designTokens). */
     photoPosition: string;
+    /** Outline of the profile picture — an id into PHOTO_SHAPES (see
+     *  src/data/designTokens). */
+    photoShape: string;
+    /** Whether a ring in the accent colour is drawn around the profile
+     *  picture — an id into PHOTO_BORDERS (see src/data/designTokens). */
+    photoBorder: string;
     footer: {
       enabled: boolean;
       revision: string;
