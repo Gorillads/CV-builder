@@ -216,9 +216,6 @@ export interface AppState {
     /** Outline of the profile picture — an id into PHOTO_SHAPES (see
      *  src/data/designTokens). */
     photoShape: string;
-    /** Whether a ring in the accent colour is drawn around the profile
-     *  picture — an id into PHOTO_BORDERS (see src/data/designTokens). */
-    photoBorder: string;
     footer: {
       enabled: boolean;
       revision: string;

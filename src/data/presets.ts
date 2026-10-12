@@ -314,7 +314,6 @@ const CLASSIC_DESIGN: AppState["design"] = {
   photoSize: "4",
   photoPosition: "left",
   photoShape: "circle",
-  photoBorder: "none",
   footer: { enabled: false, revision: "" },
 };
 
@@ -831,7 +830,6 @@ const ARTISTIC_DESIGN: AppState["design"] = {
   photoSize: "4",
   photoPosition: "left",
   photoShape: "circle",
-  photoBorder: "none",
   footer: { enabled: false, revision: "" },
 };
 

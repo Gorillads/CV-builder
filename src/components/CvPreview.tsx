@@ -300,7 +300,6 @@ function HeaderBlock({
   photoSizePx,
   photoPosition,
   photoShape,
-  photoBorder,
 }: {
   name: string;
   appliedTitle: string;
@@ -313,7 +312,6 @@ function HeaderBlock({
   photoSizePx: number;
   photoPosition: string;
   photoShape: string;
-  photoBorder: string;
 }) {
   const nameEl = <h1>{name || "—"}</h1>;
   const titleEl = appliedTitle ? <p className="cv-applied-title">{appliedTitle}</p> : null;
@@ -329,8 +327,7 @@ function HeaderBlock({
     );
   }
 
-  const photoClass =
-    `cv-header-photo cv-header-photo--${photoShape}` + (photoBorder === "accent" ? " cv-header-photo--border" : "");
+  const photoClass = `cv-header-photo cv-header-photo--${photoShape}`;
   const photoEl = (
     <img
       className={photoClass}
@@ -865,7 +862,6 @@ export function CvPreview({
             photoSizePx={photoSizePx}
             photoPosition={design.photoPosition}
             photoShape={photoShapeId}
-            photoBorder={design.photoBorder}
           />
         </div>
         {hasColumns ? (
@@ -909,7 +905,6 @@ export function CvPreview({
             photoSizePx={photoSizePx}
             photoPosition={design.photoPosition}
             photoShape={photoShapeId}
-            photoBorder={design.photoBorder}
           />
           {isSidebar ? (
             <div className={sidebarClass}>

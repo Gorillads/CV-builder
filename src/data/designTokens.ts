@@ -236,18 +236,6 @@ export const PHOTO_SHAPES: PhotoShape[] = [
   { id: "square", name: { da: "Firkant", en: "Square" } },
 ];
 
-export interface PhotoBorder {
-  id: string;
-  name: ByLang<string>;
-}
-
-/** Whether a thin ring in the current colour scheme's accent is drawn
- *  around the profile picture. */
-export const PHOTO_BORDERS: PhotoBorder[] = [
-  { id: "none", name: { da: "Ingen ramme", en: "No border" } },
-  { id: "accent", name: { da: "Ramme i temafarve", en: "Border in accent colour" } },
-];
-
 export interface Variant {
   id: string;
   name: ByLang<string>;

@@ -269,11 +269,10 @@ function migrateSizeSliders(state: unknown): unknown {
  *  PHOTO_SIZES in src/data/designTokens) — maps each old id onto the step
  *  that resolves to the same px diameter it already meant, so a document
  *  saved before the slider existed keeps rendering at the same size.
- *  Also backfills photoShape/photoBorder, both new in the same change,
- *  defaulting to "circle"/"none" to match the fixed circular, borderless
- *  look every photo had before either was choosable. Safe to re-run: an
- *  already-migrated numeric step, and an already-present shape/border,
- *  both pass through unchanged. */
+ *  Also backfills photoShape, new in the same change, defaulting to
+ *  "circle" to match the fixed circular look every photo had before it was
+ *  choosable. Safe to re-run: an already-migrated numeric step, and an
+ *  already-present shape, both pass through unchanged. */
 const OLD_PHOTO_SIZE_TO_STEP: Record<string, string> = {
   small: "1",
   standard: "4",
@@ -289,9 +288,8 @@ function migratePhotoControls(state: unknown): unknown {
   const photoSize =
     typeof design.photoSize === "string" ? (OLD_PHOTO_SIZE_TO_STEP[design.photoSize] ?? design.photoSize) : "4";
   const photoShape = typeof design.photoShape === "string" ? design.photoShape : "circle";
-  const photoBorder = typeof design.photoBorder === "string" ? design.photoBorder : "none";
 
-  return { ...s, design: { ...design, photoSize, photoShape, photoBorder } };
+  return { ...s, design: { ...design, photoSize, photoShape } };
 }
 
 /** Falls back to an in-memory map when localStorage isn't reachable (a
@@ -421,8 +419,7 @@ export interface Store extends AppState {
       | "entryGap"
       | "photoSize"
       | "photoPosition"
-      | "photoShape"
-      | "photoBorder",
+      | "photoShape",
     value: string,
   ): void;
   setFooterEnabled(enabled: boolean): void;
