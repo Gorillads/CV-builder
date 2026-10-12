@@ -16,6 +16,7 @@ import {
   SECTION_GAPS,
   ENTRY_GAPS,
   PHOTO_SIZES,
+  PHOTO_SHAPES,
   SIDEBAR_WIDTHS,
   isInSidebar,
   byId,
@@ -298,6 +299,8 @@ function HeaderBlock({
   photoUrl,
   photoSizePx,
   photoPosition,
+  photoShape,
+  photoBorder,
 }: {
   name: string;
   appliedTitle: string;
@@ -309,6 +312,8 @@ function HeaderBlock({
   photoUrl: string;
   photoSizePx: number;
   photoPosition: string;
+  photoShape: string;
+  photoBorder: string;
 }) {
   const nameEl = <h1>{name || "—"}</h1>;
   const titleEl = appliedTitle ? <p className="cv-applied-title">{appliedTitle}</p> : null;
@@ -324,9 +329,11 @@ function HeaderBlock({
     );
   }
 
+  const photoClass =
+    `cv-header-photo cv-header-photo--${photoShape}` + (photoBorder === "accent" ? " cv-header-photo--border" : "");
   const photoEl = (
     <img
-      className="cv-header-photo"
+      className={photoClass}
       src={photoUrl}
       alt=""
       style={{ width: photoSizePx, height: photoSizePx }}
@@ -750,7 +757,13 @@ export function CvPreview({
   const logoSizePx = resolveSizePx(LOGO_SIZES, design.logoSize, densityStep);
   const sectionGap = resolveSizePx(SECTION_GAPS, design.sectionGap, densityStep);
   const entryGap = resolveSizePx(ENTRY_GAPS, design.entryGap, densityStep);
-  const photoSize = byId(PHOTO_SIZES, design.photoSize);
+  const photoSizePx = PHOTO_SIZES[clampStep(Number(design.photoSize))];
+  // byId falls back to PHOTO_SHAPES[0] ("circle") for a missing/unknown id
+  // — needed here since a JSON backup imported from before this field
+  // existed (see commitJsonImport in state/store.ts) skips the persist
+  // middleware's migrate pipeline entirely, landing design.photoShape as
+  // undefined rather than going through migratePhotoControls.
+  const photoShapeId = byId(PHOTO_SHAPES, design.photoShape).id;
   const sidebarWidthPct = SIDEBAR_WIDTHS.find((w) => w.id === design.sidebarWidth)?.pct ?? 33;
 
   const themeStyle = {
@@ -849,8 +862,10 @@ export function CvPreview({
             location={header.location[lang]}
             headKind={design.headKind}
             photoUrl={header.photo}
-            photoSizePx={photoSize.px}
+            photoSizePx={photoSizePx}
             photoPosition={design.photoPosition}
+            photoShape={photoShapeId}
+            photoBorder={design.photoBorder}
           />
         </div>
         {hasColumns ? (
@@ -891,8 +906,10 @@ export function CvPreview({
             location={header.location[lang]}
             headKind={design.headKind}
             photoUrl={header.photo}
-            photoSizePx={photoSize.px}
+            photoSizePx={photoSizePx}
             photoPosition={design.photoPosition}
+            photoShape={photoShapeId}
+            photoBorder={design.photoBorder}
           />
           {isSidebar ? (
             <div className={sidebarClass}>

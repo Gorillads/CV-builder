@@ -203,19 +203,12 @@ export const SECTION_GAPS: number[] = [8.4, 10.8, 13.2, 15.6, 18, 20.4, 22.8, 25
  *  change it. */
 export const ENTRY_GAPS: number[] = [4.2, 5.4, 6.6, 7.8, 9, 10.2, 11.4, 12.6, 13.8, 15];
 
-export interface PhotoSize {
-  id: string;
-  name: ByLang<string>;
-  /** Diameter, in px, of the profile picture on the CV. */
-  px: number;
-}
-
-/** Diameter options for the optional profile picture (see AppState.header.photo). */
-export const PHOTO_SIZES: PhotoSize[] = [
-  { id: "small", name: { da: "Lille", en: "Small" }, px: 64 },
-  { id: "standard", name: { da: "Standard", en: "Standard" }, px: 88 },
-  { id: "large", name: { da: "Stor", en: "Large" }, px: 112 },
-];
+/** Diameter, in px, of the optional profile picture (see
+ *  AppState.header.photo) at each of the 10 slider positions — same plain,
+ *  unnamed 0-9 step as every other size control (see HEAD_SIZES etc.).
+ *  Index 4 (88px) is the default, matching the old "standard" preset from
+ *  before this was a slider. */
+export const PHOTO_SIZES: number[] = [56, 64, 72, 80, 88, 96, 104, 112, 120, 128];
 
 export interface PhotoPosition {
   id: string;
@@ -227,6 +220,32 @@ export const PHOTO_POSITIONS: PhotoPosition[] = [
   { id: "left", name: { da: "Venstre for teksten", en: "Left of the text" } },
   { id: "right", name: { da: "Højre for teksten", en: "Right of the text" } },
   { id: "top", name: { da: "Over teksten", en: "Above the text" } },
+];
+
+export interface PhotoShape {
+  id: string;
+  name: ByLang<string>;
+}
+
+/** Outline of the optional profile picture — id maps directly onto a
+ *  .cv-header-photo--<id> modifier class in App.css, same pattern as
+ *  STRUCTS' struct-<id>. */
+export const PHOTO_SHAPES: PhotoShape[] = [
+  { id: "circle", name: { da: "Cirkel", en: "Circle" } },
+  { id: "rounded", name: { da: "Afrundet firkant", en: "Rounded square" } },
+  { id: "square", name: { da: "Firkant", en: "Square" } },
+];
+
+export interface PhotoBorder {
+  id: string;
+  name: ByLang<string>;
+}
+
+/** Whether a thin ring in the current colour scheme's accent is drawn
+ *  around the profile picture. */
+export const PHOTO_BORDERS: PhotoBorder[] = [
+  { id: "none", name: { da: "Ingen ramme", en: "No border" } },
+  { id: "accent", name: { da: "Ramme i temafarve", en: "Border in accent colour" } },
 ];
 
 export interface Variant {

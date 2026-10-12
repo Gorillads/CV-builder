@@ -311,8 +311,10 @@ const CLASSIC_DESIGN: AppState["design"] = {
   logoSize: "auto",
   sectionGap: "auto",
   entryGap: "auto",
-  photoSize: "standard",
+  photoSize: "4",
   photoPosition: "left",
+  photoShape: "circle",
+  photoBorder: "none",
   footer: { enabled: false, revision: "" },
 };
 
@@ -826,8 +828,10 @@ const ARTISTIC_DESIGN: AppState["design"] = {
   logoSize: "auto",
   sectionGap: "auto",
   entryGap: "auto",
-  photoSize: "standard",
+  photoSize: "4",
   photoPosition: "left",
+  photoShape: "circle",
+  photoBorder: "none",
   footer: { enabled: false, revision: "" },
 };
 

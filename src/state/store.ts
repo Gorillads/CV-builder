@@ -264,6 +264,36 @@ function migrateSizeSliders(state: unknown): unknown {
   };
 }
 
+/** photoSize switched from three named presets (small/standard/large) to
+ *  the same plain 0-9 slider step every other size control uses (see
+ *  PHOTO_SIZES in src/data/designTokens) — maps each old id onto the step
+ *  that resolves to the same px diameter it already meant, so a document
+ *  saved before the slider existed keeps rendering at the same size.
+ *  Also backfills photoShape/photoBorder, both new in the same change,
+ *  defaulting to "circle"/"none" to match the fixed circular, borderless
+ *  look every photo had before either was choosable. Safe to re-run: an
+ *  already-migrated numeric step, and an already-present shape/border,
+ *  both pass through unchanged. */
+const OLD_PHOTO_SIZE_TO_STEP: Record<string, string> = {
+  small: "1",
+  standard: "4",
+  large: "7",
+};
+
+function migratePhotoControls(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const design = s.design as Record<string, unknown> | undefined;
+  if (!design || typeof design !== "object") return state;
+
+  const photoSize =
+    typeof design.photoSize === "string" ? (OLD_PHOTO_SIZE_TO_STEP[design.photoSize] ?? design.photoSize) : "4";
+  const photoShape = typeof design.photoShape === "string" ? design.photoShape : "circle";
+  const photoBorder = typeof design.photoBorder === "string" ? design.photoBorder : "none";
+
+  return { ...s, design: { ...design, photoSize, photoShape, photoBorder } };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -390,7 +420,9 @@ export interface Store extends AppState {
       | "sectionGap"
       | "entryGap"
       | "photoSize"
-      | "photoPosition",
+      | "photoPosition"
+      | "photoShape"
+      | "photoBorder",
     value: string,
   ): void;
   setFooterEnabled(enabled: boolean): void;
@@ -813,14 +845,16 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 17,
+      version: 18,
       migrate: (persisted) =>
-        migrateSidebarWidth(
-          migrateItemLogo(
-            migrateSizeSliders(
-              migrateDensityScale(
-                migrateHeaderAddress(
-                  migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migratePhotoControls(
+          migrateSidebarWidth(
+            migrateItemLogo(
+              migrateSizeSliders(
+                migrateDensityScale(
+                  migrateHeaderAddress(
+                    migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+                  ),
                 ),
               ),
             ),

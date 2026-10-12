@@ -9,8 +9,9 @@ import {
   HEADS,
   SIDEBAR_SIDES,
   SIDEBAR_WIDTHS,
-  PHOTO_SIZES,
   PHOTO_POSITIONS,
+  PHOTO_SHAPES,
+  PHOTO_BORDERS,
   SIZE_STEPS,
   clampStep,
 } from "../data/designTokens";
@@ -285,18 +286,7 @@ export function DesignTab({ lang }: { lang: Lang }) {
       {header.photo && (
         <div className="design-group">
           <div className="design-group-label">{T.photoSize}</div>
-          <div className="design-pills">
-            {PHOTO_SIZES.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={"pill" + (design.photoSize === p.id ? " active" : "")}
-                onClick={() => setDesign("photoSize", p.id)}
-              >
-                {p.name[lang]}
-              </button>
-            ))}
-          </div>
+          <StepSlider value={clampStep(Number(design.photoSize))} onChange={(s) => setDesign("photoSize", String(s))} />
         </div>
       )}
 
@@ -312,6 +302,42 @@ export function DesignTab({ lang }: { lang: Lang }) {
                 onClick={() => setDesign("photoPosition", p.id)}
               >
                 {p.name[lang]}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {header.photo && (
+        <div className="design-group">
+          <div className="design-group-label">{T.photoShape}</div>
+          <div className="design-pills">
+            {PHOTO_SHAPES.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={"pill" + (design.photoShape === p.id ? " active" : "")}
+                onClick={() => setDesign("photoShape", p.id)}
+              >
+                {p.name[lang]}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {header.photo && (
+        <div className="design-group">
+          <div className="design-group-label">{T.photoBorder}</div>
+          <div className="design-pills">
+            {PHOTO_BORDERS.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                className={"pill" + (design.photoBorder === b.id ? " active" : "")}
+                onClick={() => setDesign("photoBorder", b.id)}
+              >
+                {b.name[lang]}
               </button>
             ))}
           </div>

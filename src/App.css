@@ -958,8 +958,31 @@ textarea.field {
 
 .cv-header-photo {
   flex: none;
-  border-radius: 50%;
   object-fit: cover;
+  /* box-sizing: border-box keeps the rendered size exactly what the
+     "Photo size" slider set (width/height, via inline style) whether or
+     not --border below adds a ring, instead of the border growing the
+     box past that size. */
+  box-sizing: border-box;
+}
+
+.cv-header-photo--circle {
+  border-radius: 50%;
+}
+
+/* A percentage, not a fixed px, so it scales proportionally with
+   whatever diameter the "Photo size" slider resolves to instead of
+   needing its own re-tuned value per size. */
+.cv-header-photo--rounded {
+  border-radius: 16%;
+}
+
+.cv-header-photo--square {
+  border-radius: 0;
+}
+
+.cv-header-photo--border {
+  border: 3px solid var(--cv-accent);
 }
 
 .cv-header-text {
