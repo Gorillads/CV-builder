@@ -1179,8 +1179,12 @@ textarea.field {
   /* A chip is normally one short, un-wrapped label — but a longer one
      (e.g. a full sentence used as a competency) would otherwise just
      overflow past a narrow sidebar column instead of stopping at it, so
-     it wraps internally as a fallback rather than bleeding off the page. */
-  max-width: 100%;
+     it wraps internally as a fallback rather than bleeding off the page.
+     The 165px cap keeps a wrapped chip no wider than it needs to be for
+     its own two lines, instead of stretching out to the full column —
+     short, single-line labels stay sized to their own text as before,
+     since this only ever shrinks a chip, never grows one. */
+  max-width: min(100%, 165px);
   overflow-wrap: break-word;
 }
 
