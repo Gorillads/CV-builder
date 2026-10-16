@@ -1,17 +1,16 @@
 import { useRef } from "react";
-import { useStore } from "../state/store";
+import { useActiveStore, useTabsStore, MAX_TABS } from "../state/tabs";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
 import { downloadCsv } from "../csv/exportCsv";
-import { downloadJson } from "../json/backupJson";
+import { downloadJson, parseJsonBackup } from "../json/backupJson";
 
 export function ImportExportBar({ lang }: { lang: Lang }) {
   const T = t(lang);
-  const state = useStore((s) => s);
-  const parseImport = useStore((s) => s.parseImport);
-  const commitImport = useStore((s) => s.commitImport);
-  const parseJsonImport = useStore((s) => s.parseJsonImport);
-  const commitJsonImport = useStore((s) => s.commitJsonImport);
+  const state = useActiveStore((s) => s);
+  const parseImport = useActiveStore((s) => s.parseImport);
+  const commitImport = useActiveStore((s) => s.commitImport);
+  const addTabFromData = useTabsStore((s) => s.addTabFromData);
   const csvFileInput = useRef<HTMLInputElement>(null);
   const jsonFileInput = useRef<HTMLInputElement>(null);
 
@@ -53,13 +52,20 @@ export function ImportExportBar({ lang }: { lang: Lang }) {
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result ?? "");
-      const result = parseJsonImport(text);
+      const result = parseJsonBackup(text);
       if (!result.ok) {
         window.alert(T.jsonImportError + ": " + result.error);
         return;
       }
-      if (!window.confirm(T.confirmJsonImport)) return;
-      commitJsonImport(result.data);
+      // Opens as its own new tab rather than replacing what's currently
+      // open, so there's nothing destructive here to confirm — the
+      // backup's own name, or the existing content underneath, never
+      // disappears.
+      if (useTabsStore.getState().tabs.length >= MAX_TABS) {
+        window.alert(T.jsonImportTabLimit);
+        return;
+      }
+      addTabFromData(result.data);
       window.alert(T.jsonImportDone);
     };
     reader.readAsText(file);

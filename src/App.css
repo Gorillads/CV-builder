@@ -9,6 +9,82 @@
   overflow: hidden;
 }
 
+/* ---- Document tabs — several CVs open at once, each its own fully
+   independent document (see state/tabs.ts), switched between here like
+   browser tabs. Sits above .app-header, the same relative position as the
+   browser's own tab strip sits above its toolbar. ------------------------ */
+
+.tab-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-bar-items {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 200px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: var(--bg);
+  color: var(--text-soft);
+  font-size: 13px;
+  cursor: pointer;
+  flex: none;
+}
+
+.tab-item.active {
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tab-item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-item-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  color: var(--text-soft);
+  flex: none;
+  cursor: pointer;
+}
+
+.tab-item-close:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.tab-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 6px;
+  flex: none;
+}
+
 .app-header {
   display: flex;
   align-items: center;

@@ -1,11 +1,15 @@
 import type { AppState } from "../model/types";
 
-/** A full-state backup — unlike the CSV, this also carries header contact
- *  details, design tokens, per-category display variants, on/off toggles
- *  and order, and applied title, so restoring one puts the app back
- *  exactly as it was, not just the content library. */
-export function exportJson(state: AppState): string {
-  const data: AppState = {
+/** Pulls just the plain-data AppState fields out of a state object that may
+ *  carry extra properties alongside them — namely a Zustand Store, whose
+ *  action methods (setHeaderField, addCategory, ...) aren't part of a
+ *  document's actual content and must never end up copied into another
+ *  store's state (they're closures bound to the store they came from, so
+ *  spreading them into a different store would silently call the wrong
+ *  store's `set`/`get`). Used both for the JSON backup below and for
+ *  duplicating a tab (see state/tabs.ts). */
+export function snapshotAppState(state: AppState): AppState {
+  return {
     lang: state.lang,
     order: state.order,
     categories: state.categories,
@@ -21,7 +25,14 @@ export function exportJson(state: AppState): string {
     header: state.header,
     design: state.design,
   };
-  return JSON.stringify(data, null, 2);
+}
+
+/** A full-state backup — unlike the CSV, this also carries header contact
+ *  details, design tokens, per-category display variants, on/off toggles
+ *  and order, and applied title, so restoring one puts the app back
+ *  exactly as it was, not just the content library. */
+export function exportJson(state: AppState): string {
+  return JSON.stringify(snapshotAppState(state), null, 2);
 }
 
 export function downloadJson(state: AppState, filename = "CV-builder-backup.json"): void {

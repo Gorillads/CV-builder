@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStore } from "../state/store";
+import { useActiveStore } from "../state/tabs";
 import type { Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
 import { CategoryCard } from "./CategoryCard";
@@ -8,13 +8,13 @@ import { PRESETS } from "../data/presets";
 
 export function ContentTab({ lang }: { lang: Lang }) {
   const T = t(lang);
-  const order = useStore((s) => s.order);
-  const categories = useStore((s) => s.categories);
-  const items = useStore((s) => s.items);
-  const itemOrder = useStore((s) => s.itemOrder);
-  const addCategory = useStore((s) => s.addCategory);
-  const reorderCategory = useStore((s) => s.reorderCategory);
-  const applyPreset = useStore((s) => s.applyPreset);
+  const order = useActiveStore((s) => s.order);
+  const categories = useActiveStore((s) => s.categories);
+  const items = useActiveStore((s) => s.items);
+  const itemOrder = useActiveStore((s) => s.itemOrder);
+  const addCategory = useActiveStore((s) => s.addCategory);
+  const reorderCategory = useActiveStore((s) => s.reorderCategory);
+  const applyPreset = useActiveStore((s) => s.applyPreset);
   const [newName, setNewName] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);

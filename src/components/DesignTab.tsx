@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useStore } from "../state/store";
+import { useActiveStore } from "../state/tabs";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
 import {
@@ -461,12 +461,12 @@ function ThemeGroup({
 
 export function DesignTab({ lang }: { lang: Lang }) {
   const T = t(lang);
-  const design = useStore((s) => s.design);
-  const setDesign = useStore((s) => s.setDesign);
-  const header = useStore((s) => s.header);
-  const setHeaderPhoto = useStore((s) => s.setHeaderPhoto);
-  const setFooterEnabled = useStore((s) => s.setFooterEnabled);
-  const setFooterRevision = useStore((s) => s.setFooterRevision);
+  const design = useActiveStore((s) => s.design);
+  const setDesign = useActiveStore((s) => s.setDesign);
+  const header = useActiveStore((s) => s.header);
+  const setHeaderPhoto = useActiveStore((s) => s.setHeaderPhoto);
+  const setFooterEnabled = useActiveStore((s) => s.setFooterEnabled);
+  const setFooterRevision = useActiveStore((s) => s.setFooterRevision);
   const photoFileInput = useRef<HTMLInputElement>(null);
 
   const handlePhotoFile = (e: React.ChangeEvent<HTMLInputElement>) => {

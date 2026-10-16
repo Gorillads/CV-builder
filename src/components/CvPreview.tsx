@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
-import { useStore } from "../state/store";
+import { useActiveStore } from "../state/tabs";
 import { useShallow } from "zustand/react/shallow";
 import type { CSSProperties, ReactNode } from "react";
 import type { Category, Lang, LibraryItem } from "../model/types";
@@ -208,7 +208,7 @@ function SectionBlock({
   variant: string;
   activityStyles: Record<string, string>;
 }) {
-  const items = useStore(
+  const items = useActiveStore(
     useShallow((s) => {
       const selected = new Set(s.selectedItems[category.id] ?? []);
       const ids = s.itemOrder[category.id] ?? [];
@@ -218,7 +218,7 @@ function SectionBlock({
         .filter((it): it is LibraryItem => !!it);
     }),
   );
-  const selectedActivities = useStore((s) => s.selectedActivities);
+  const selectedActivities = useActiveStore((s) => s.selectedActivities);
   if (!items.length && !category.blurb[lang]) return null;
 
   // "chips"/"inline" are compact, name-only display choices available to
@@ -734,15 +734,15 @@ export function CvPreview({
   zoom?: number;
 }) {
   const T = t(lang);
-  const order = useStore((s) => s.order);
-  const categories = useStore((s) => s.categories);
-  const on = useStore((s) => s.on);
-  const variant = useStore((s) => s.variant);
-  const activityStyle = useStore((s) => s.activityStyle);
-  const sidebarPlacement = useStore((s) => s.sidebarPlacement);
-  const header = useStore((s) => s.header);
-  const appliedTitle = useStore((s) => s.appliedTitle);
-  const design = useStore((s) => s.design);
+  const order = useActiveStore((s) => s.order);
+  const categories = useActiveStore((s) => s.categories);
+  const on = useActiveStore((s) => s.on);
+  const variant = useActiveStore((s) => s.variant);
+  const activityStyle = useActiveStore((s) => s.activityStyle);
+  const sidebarPlacement = useActiveStore((s) => s.sidebarPlacement);
+  const header = useActiveStore((s) => s.header);
+  const appliedTitle = useActiveStore((s) => s.appliedTitle);
+  const design = useActiveStore((s) => s.design);
 
   const activeIds = order.filter((id) => categories[id] && !categories[id].isHidden && on[id]);
 
