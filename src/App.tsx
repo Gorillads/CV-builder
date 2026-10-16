@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useStore } from "./state/store";
+import { useActiveStore } from "./state/tabs";
 import { t } from "./i18n";
 import { ContentTab } from "./components/ContentTab";
 import { TailorTab } from "./components/TailorTab";
 import { DesignTab } from "./components/DesignTab";
 import { CvPreview } from "./components/CvPreview";
 import { ImportExportBar } from "./components/ImportExportBar";
+import { TabBar } from "./components/TabBar";
 import { useLocalFonts } from "./hooks/useLocalFonts";
 import { pxToMm, type PageOverflow } from "./hooks/usePageOverflow";
 import "./App.css";
@@ -54,12 +55,12 @@ function saveEditorWidth(width: number): void {
 }
 
 function App() {
-  const lang = useStore((s) => s.lang);
-  const setLang = useStore((s) => s.setLang);
-  const header = useStore((s) => s.header);
-  const setHeaderField = useStore((s) => s.setHeaderField);
-  const setHeaderLocation = useStore((s) => s.setHeaderLocation);
-  const resetAll = useStore((s) => s.resetAll);
+  const lang = useActiveStore((s) => s.lang);
+  const setLang = useActiveStore((s) => s.setLang);
+  const header = useActiveStore((s) => s.header);
+  const setHeaderField = useActiveStore((s) => s.setHeaderField);
+  const setHeaderLocation = useActiveStore((s) => s.setHeaderLocation);
+  const resetAll = useActiveStore((s) => s.resetAll);
   const [tab, setTab] = useState<Tab>("content");
   const [mainPageStatus, setMainPageStatus] = useState<PageOverflow | null>(null);
   const [zoomPct, setZoomPct] = useState(100);
@@ -120,6 +121,7 @@ function App() {
 
   return (
     <div className="app">
+      <TabBar lang={lang} />
       <header className="app-header">
         <h1>{T.appName}</h1>
         <div className="app-header-controls">

@@ -564,7 +564,16 @@ export function isActivitySelected(state: AppState, item: LibraryItem, index: nu
   return selectedActivityIndices(state, item).includes(index);
 }
 
-export const useStore = create<Store>()(
+/** Builds one independent document's store, persisted under its own
+ *  `storageKey` — each open tab (see state/tabs.ts) gets its own instance
+ *  via this factory, so documents are fully isolated from one another:
+ *  there's no shared state between tabs beyond what a user explicitly
+ *  duplicates or imports. `useStore` below is the original single-document
+ *  instance, kept as the storage key an existing (pre-tabs) user's CV
+ *  already lives under — state/tabs.ts's "legacy" tab reuses it directly,
+ *  so there's nothing to migrate for anyone who already had a CV open. */
+export function createDocumentStore(storageKey: string) {
+  return create<Store>()(
   persist(
     (set, get) => ({
       ...createDefaultState(),
@@ -944,7 +953,7 @@ export const useStore = create<Store>()(
       resetAll: () => set(createDefaultState()),
     }),
     {
-      name: "cv-builder-state-v1",
+      name: storageKey,
       storage: createJSONStorage(() => safeStorage),
       version: 21,
       migrate: (persisted) =>
@@ -969,7 +978,15 @@ export const useStore = create<Store>()(
         ) as Store,
     },
   ),
-);
+  );
+}
+
+/** The original (pre-multi-tab) single-document storage key — the "legacy"
+ *  tab in state/tabs.ts points its document store at this exact key, so an
+ *  existing user's one CV becomes their first tab with no data migration
+ *  at all. */
+export const LEGACY_DOC_KEY = "cv-builder-state-v1";
+export const useStore = createDocumentStore(LEGACY_DOC_KEY);
 
 export function useItemsForCategory(categoryId: string): LibraryItem[] {
   return useStore(useShallow((s) => itemsForCategory(s, categoryId)));

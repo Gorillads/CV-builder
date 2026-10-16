@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useStore } from "../state/store";
+import { useActiveStore } from "../state/tabs";
 import { useShallow } from "zustand/react/shallow";
 import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
@@ -50,10 +50,10 @@ function ActivityEditor({
    *  expanded even if isCollapsed, so the hit is actually visible. */
   searchQuery: string;
 }) {
-  const activity = useStore((s) => s.items[itemId]?.activities[index]);
-  const removeActivity = useStore((s) => s.removeActivity);
-  const setActivity = useStore((s) => s.setActivity);
-  const toggleActivityCollapsed = useStore((s) => s.toggleActivityCollapsed);
+  const activity = useActiveStore((s) => s.items[itemId]?.activities[index]);
+  const removeActivity = useActiveStore((s) => s.removeActivity);
+  const setActivity = useActiveStore((s) => s.setActivity);
+  const toggleActivityCollapsed = useActiveStore((s) => s.toggleActivityCollapsed);
   const T = t(lang);
 
   if (!activity) return null;
@@ -154,13 +154,13 @@ function ItemEditor({
    *  reason enough to force it open. */
   searchQuery: string;
 }) {
-  const item = useStore((s) => s.items[itemId]);
-  const setItemField = useStore((s) => s.setItemField);
-  const setItemLogo = useStore((s) => s.setItemLogo);
-  const deleteItem = useStore((s) => s.deleteItem);
-  const addActivity = useStore((s) => s.addActivity);
-  const reorderActivity = useStore((s) => s.reorderActivity);
-  const toggleItemCollapsed = useStore((s) => s.toggleItemCollapsed);
+  const item = useActiveStore((s) => s.items[itemId]);
+  const setItemField = useActiveStore((s) => s.setItemField);
+  const setItemLogo = useActiveStore((s) => s.setItemLogo);
+  const deleteItem = useActiveStore((s) => s.deleteItem);
+  const addActivity = useActiveStore((s) => s.addActivity);
+  const reorderActivity = useActiveStore((s) => s.reorderActivity);
+  const toggleItemCollapsed = useActiveStore((s) => s.toggleItemCollapsed);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const logoFileInput = useRef<HTMLInputElement>(null);
@@ -342,15 +342,15 @@ export function CategoryCard({
   searchQuery?: string;
 }) {
   const T = t(lang);
-  const itemOrder = useStore(useShallow((s) => s.itemOrder[category.id] ?? []));
-  const items = useStore((s) => s.items);
-  const setCategoryTitle = useStore((s) => s.setCategoryTitle);
-  const setCategoryBlurb = useStore((s) => s.setCategoryBlurb);
-  const toggleCategoryCollapsed = useStore((s) => s.toggleCategoryCollapsed);
-  const deleteCategory = useStore((s) => s.deleteCategory);
-  const duplicateCategory = useStore((s) => s.duplicateCategory);
-  const addItem = useStore((s) => s.addItem);
-  const reorderItem = useStore((s) => s.reorderItem);
+  const itemOrder = useActiveStore(useShallow((s) => s.itemOrder[category.id] ?? []));
+  const items = useActiveStore((s) => s.items);
+  const setCategoryTitle = useActiveStore((s) => s.setCategoryTitle);
+  const setCategoryBlurb = useActiveStore((s) => s.setCategoryBlurb);
+  const toggleCategoryCollapsed = useActiveStore((s) => s.toggleCategoryCollapsed);
+  const deleteCategory = useActiveStore((s) => s.deleteCategory);
+  const duplicateCategory = useActiveStore((s) => s.duplicateCategory);
+  const addItem = useActiveStore((s) => s.addItem);
+  const reorderItem = useActiveStore((s) => s.reorderItem);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
 

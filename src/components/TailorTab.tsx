@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useStore, isActivitySelected } from "../state/store";
+import { isActivitySelected } from "../state/store";
+import { useActiveStore } from "../state/tabs";
 import { useShallow } from "zustand/react/shallow";
 import type { Lang } from "../model/types";
 import { t } from "../i18n";
@@ -13,12 +14,12 @@ import { SizeSlider } from "./DesignTab";
  *  same way category and item rows do, since activities have no stable
  *  id of their own — position is identity for the length of one drag. */
 function ActivityChecklist({ itemId, lang }: { itemId: string; lang: Lang }) {
-  const item = useStore((s) => s.items[itemId]);
-  const selected = useStore(
+  const item = useActiveStore((s) => s.items[itemId]);
+  const selected = useActiveStore(
     useShallow((s) => (item ? item.activities.map((_, i) => isActivitySelected(s, item, i)) : [])),
   );
-  const toggleActivitySelected = useStore((s) => s.toggleActivitySelected);
-  const reorderActivity = useStore((s) => s.reorderActivity);
+  const toggleActivitySelected = useActiveStore((s) => s.toggleActivitySelected);
+  const reorderActivity = useActiveStore((s) => s.reorderActivity);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -68,17 +69,17 @@ function ActivityChecklist({ itemId, lang }: { itemId: string; lang: Lang }) {
 
 function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang }) {
   const T = t(lang);
-  const items = useStore((s) => s.items);
-  const itemOrder = useStore(useShallow((s) => s.itemOrder[categoryId] ?? []));
-  const selectedIds = useStore(useShallow((s) => s.selectedItems[categoryId] ?? []));
-  const variant = useStore((s) => s.variant);
-  const activityStyle = useStore((s) => s.activityStyle);
-  const toggleItemInCv = useStore((s) => s.toggleItemInCv);
-  const toggleItemLogoVisible = useStore((s) => s.toggleItemLogoVisible);
-  const setItemLogoSize = useStore((s) => s.setItemLogoSize);
-  const setActivityStyle = useStore((s) => s.setActivityStyle);
-  const toggleItemCollapsed = useStore((s) => s.toggleItemCollapsed);
-  const reorderItem = useStore((s) => s.reorderItem);
+  const items = useActiveStore((s) => s.items);
+  const itemOrder = useActiveStore(useShallow((s) => s.itemOrder[categoryId] ?? []));
+  const selectedIds = useActiveStore(useShallow((s) => s.selectedItems[categoryId] ?? []));
+  const variant = useActiveStore((s) => s.variant);
+  const activityStyle = useActiveStore((s) => s.activityStyle);
+  const toggleItemInCv = useActiveStore((s) => s.toggleItemInCv);
+  const toggleItemLogoVisible = useActiveStore((s) => s.toggleItemLogoVisible);
+  const setItemLogoSize = useActiveStore((s) => s.setItemLogoSize);
+  const setActivityStyle = useActiveStore((s) => s.setActivityStyle);
+  const toggleItemCollapsed = useActiveStore((s) => s.toggleItemCollapsed);
+  const reorderItem = useActiveStore((s) => s.reorderItem);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
@@ -195,19 +196,19 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
 
 export function TailorTab({ lang }: { lang: Lang }) {
   const T = t(lang);
-  const order = useStore((s) => s.order);
-  const categories = useStore((s) => s.categories);
-  const on = useStore((s) => s.on);
-  const variant = useStore((s) => s.variant);
-  const sidebarPlacement = useStore((s) => s.sidebarPlacement);
-  const design = useStore((s) => s.design);
-  const toggleCategoryOn = useStore((s) => s.toggleCategoryOn);
-  const setVariant = useStore((s) => s.setVariant);
-  const setSidebarPlacement = useStore((s) => s.setSidebarPlacement);
-  const toggleCategoryCollapsed = useStore((s) => s.toggleCategoryCollapsed);
-  const reorderCategory = useStore((s) => s.reorderCategory);
-  const appliedTitle = useStore((s) => s.appliedTitle);
-  const setAppliedTitle = useStore((s) => s.setAppliedTitle);
+  const order = useActiveStore((s) => s.order);
+  const categories = useActiveStore((s) => s.categories);
+  const on = useActiveStore((s) => s.on);
+  const variant = useActiveStore((s) => s.variant);
+  const sidebarPlacement = useActiveStore((s) => s.sidebarPlacement);
+  const design = useActiveStore((s) => s.design);
+  const toggleCategoryOn = useActiveStore((s) => s.toggleCategoryOn);
+  const setVariant = useActiveStore((s) => s.setVariant);
+  const setSidebarPlacement = useActiveStore((s) => s.setSidebarPlacement);
+  const toggleCategoryCollapsed = useActiveStore((s) => s.toggleCategoryCollapsed);
+  const reorderCategory = useActiveStore((s) => s.reorderCategory);
+  const appliedTitle = useActiveStore((s) => s.appliedTitle);
+  const setAppliedTitle = useActiveStore((s) => s.setAppliedTitle);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
