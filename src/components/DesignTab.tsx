@@ -345,7 +345,13 @@ function ThemeGroup({
             key={s.id}
             type="button"
             className={"swatch" + (design.scheme === s.id ? " active" : "")}
-            style={{ background: s.accent }}
+            // A scheme with its own dark page (see ColorScheme.textOverride
+            // in designTokens.ts) previews as that page color instead of
+            // its accent — "Mørk"'s accent is deliberately a light color
+            // (it needs to read against its own dark page), which would
+            // otherwise make its swatch look like a *light* theme instead
+            // of the dark one it actually is.
+            style={{ background: s.textOverride?.pageBg ?? s.accent }}
             onClick={() => setDesign("scheme", s.id)}
             title={s.name[lang]}
           />

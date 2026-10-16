@@ -83,21 +83,24 @@ export const SCHEMES: ColorScheme[] = [
   { id: "marine", name: { da: "Marine", en: "Marine" }, accent: "#24405c", soft: "#3d5f80", line: "#8fa9c1", chipBorder: "#aec6de", chipBg: "#e8f0f7", chipFg: "#1b3247" },
   { id: "kobber", name: { da: "Kobber", en: "Copper" }, accent: "#8a4b2f", soft: "#a5674a", line: "#c99872", chipBorder: "#e2c3b2", chipBg: "#f7ece6", chipFg: "#63341f" },
   { id: "skov", name: { da: "Skov", en: "Forest" }, accent: "#2f5546", soft: "#487262", line: "#8bab98", chipBorder: "#b8cfc5", chipBg: "#eaf2ee", chipFg: "#224034" },
-  // A pure-black accent (as distinct from Grafit's softer charcoal) on the
-  // same light page every scheme above uses. textOverride pushes the name/
-  // entry-heading/body text to near-black too (rather than leaving them the
-  // standard grey every scheme used before this one), so the whole page
-  // actually reads as black, not just the headings/lines.
+  // A near-black, dark-grey accent (darker and flatter than Grafit's softer
+  // charcoal, but not literal #000000 — pure black read as too harsh, and
+  // made this swatch indistinguishable from "Mørk"'s page-background
+  // swatch, see DesignTab.tsx) on the same light page every scheme above
+  // uses. textOverride pushes the name/entry-heading/body text to the same
+  // dark grey too (rather than leaving them the standard lighter grey
+  // every scheme used before this one), so the whole page actually reads
+  // as dark, not just the headings/lines.
   {
     id: "sort",
     name: { da: "Sort", en: "Black" },
-    accent: "#000000",
-    soft: "#4d4d4d",
+    accent: "#262626",
+    soft: "#595959",
     line: "#999999",
     chipBorder: "#bfbfbf",
     chipBg: "#f0f0f0",
-    chipFg: "#1a1a1a",
-    textOverride: { strongText: "#000000", softText: "#1a1a1a" },
+    chipFg: "#262626",
+    textOverride: { strongText: "#262626", softText: "#404040" },
   },
   // The one scheme with a genuine dark page — accent/soft are deliberately
   // close to `textOverride.strongText`/`softText` below so a theme-preset
