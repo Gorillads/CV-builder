@@ -779,7 +779,11 @@ textarea.field {
    growing to fit whatever content exists. */
 .cv-page {
   background: var(--cv-page-bg, #f3f2f0);
-  color: var(--cv-text-body, #24282e);
+  /* A generic safety net for any text that doesn't have its own explicit
+     color rule below — every element the Theme section's text controls
+     actually target sets its own color directly instead of relying on
+     this inherited default. */
+  color: var(--cv-body-text, #24282e);
   border: 1px solid var(--border);
   border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(20, 24, 31, 0.12);
@@ -868,6 +872,7 @@ textarea.field {
   margin: 0 0 4px;
   font-family: var(--cv-head), system-ui, sans-serif;
   font-size: var(--cv-name-size);
+  color: var(--cv-h1, #24282e);
   font-weight: 700;
   letter-spacing: 0.01em;
   text-wrap: balance;
@@ -880,7 +885,11 @@ textarea.field {
    same relative size that gap always had. */
 .cv-applied-title {
   margin: 0 0 6px;
-  color: var(--cv-text, var(--cv-accent));
+  /* Part of "Brødtekst" (see Theme section), alongside .cv-blurb/.cv-contact
+     below and the footer — each keeps its own current shade (this one the
+     accent, like a heading) until the Brødtekst control is actually
+     overridden, at which point all of them unify to that one picked color. */
+  color: var(--cv-body-text, var(--cv-accent));
   font-weight: 600;
   font-size: calc(var(--cv-contact-size, 12.5px) * 1.12);
 }
@@ -893,7 +902,7 @@ textarea.field {
    the text, or an ATS parsing the PDF, gets a broken character instead. */
 .cv-contact {
   margin: 0;
-  color: var(--cv-text-muted, #5c6672);
+  color: var(--cv-body-text, #5c6672);
   font-size: var(--cv-contact-size, 12.5px);
 }
 
@@ -1060,7 +1069,7 @@ textarea.field {
   border-bottom: 1.5px solid var(--cv-accent);
   padding-bottom: 3px;
   margin: 0 0 8px;
-  color: var(--cv-text, var(--cv-accent));
+  color: var(--cv-h2, var(--cv-accent));
   text-transform: uppercase;
   font-family: var(--cv-head), system-ui, sans-serif;
   font-size: var(--cv-heading-size, 12.5px);
@@ -1069,7 +1078,7 @@ textarea.field {
 }
 
 .cv-blurb {
-  color: var(--cv-text-muted, #5c6672);
+  color: var(--cv-body-text, #5c6672);
   font-size: 12.5px;
   margin: 0 0 8px;
 }
@@ -1083,7 +1092,7 @@ textarea.field {
 .cv-entry-meta-col {
   display: none;
   flex: 0 0 72px;
-  color: var(--cv-text-soft, var(--cv-accent-soft));
+  color: var(--cv-underheading, var(--cv-accent-soft));
   font-size: 11.5px;
   padding-top: 1px;
 }
@@ -1111,6 +1120,7 @@ textarea.field {
 }
 
 .cv-entry-head strong {
+  color: var(--cv-h3, #24282e);
   font-weight: 600;
 }
 
@@ -1149,7 +1159,7 @@ textarea.field {
 }
 
 .cv-entry-meta {
-  color: var(--cv-text-soft, var(--cv-accent-soft));
+  color: var(--cv-underheading, var(--cv-accent-soft));
   font-size: 11.5px;
   white-space: nowrap;
 }
@@ -1157,24 +1167,28 @@ textarea.field {
 /* Short optional note right under the heading, distinct from (and above)
    the full .cv-entry-desc paragraph — stays a bit smaller than the other
    element text (the same ~0.92 ratio as its old fixed 11.5px/12.5px
-   values) rather than tracking --cv-element-text-size 1:1. */
+   values) rather than tracking --cv-element-text-size 1:1. Part of "Tekst i
+   elementer" (see Theme section) alongside .cv-entry-desc/.cv-entry-acts
+   below — each keeps its own current shade until that control is actually
+   overridden, same as the "Brødtekst" group above. */
 .cv-entry-comment {
   margin: 1px 0 0;
   font-size: calc(var(--cv-element-text-size, 12.5px) * 0.92);
   font-style: italic;
-  color: var(--cv-text-soft, var(--cv-accent-soft));
+  color: var(--cv-element-text, var(--cv-accent-soft));
 }
 
 .cv-entry-desc {
   margin: 2px 0;
   font-size: var(--cv-element-text-size, 12.5px);
-  color: var(--cv-text-muted, #5c6672);
+  color: var(--cv-element-text, #5c6672);
 }
 
 .cv-entry-acts {
   margin: 3px 0 0;
   padding-left: 16px;
   font-size: var(--cv-element-text-size, 12.5px);
+  color: var(--cv-element-text, #24282e);
 }
 
 .cv-entry-acts li {
@@ -1186,6 +1200,7 @@ textarea.field {
 .cv-entry-acts-inline {
   margin: 3px 0 0;
   font-size: var(--cv-element-text-size, 12.5px);
+  color: var(--cv-element-text, #24282e);
 }
 
 /* ---- Tags: "chips" variant (rounded pills) -------------------------- */
@@ -1259,11 +1274,12 @@ textarea.field {
 }
 
 .cv-entry-line-head {
+  color: var(--cv-h3, #24282e);
   font-weight: 600;
 }
 
 .cv-entry-line-meta {
-  color: var(--cv-text-soft, var(--cv-accent-soft));
+  color: var(--cv-underheading, var(--cv-accent-soft));
   font-size: 11.5px;
   white-space: nowrap;
 }
@@ -1288,7 +1304,11 @@ textarea.field {
 .cv-appendix h2 {
   margin: 0 0 18px;
   font-family: var(--cv-head), system-ui, sans-serif;
-  color: var(--cv-text-soft, var(--cv-accent-soft));
+  /* Part of "Heading 2" (see Theme section) alongside .cv-section h3
+     above — shares the same control as the section titles but keeps its
+     own softer shade by default (its own fallback here), only unifying
+     with them once Heading 2 is actually overridden. */
+  color: var(--cv-h2, var(--cv-accent-soft));
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -1304,10 +1324,10 @@ textarea.field {
   justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid var(--cv-line);
-  /* A fainter version of the muted text tone (rather than its own fixed
-     color) so the footer still visibly sits one step below .cv-contact/
-     .cv-blurb's own muted text once a custom text color is picked. */
-  color: color-mix(in srgb, var(--cv-text-muted, #5c6672) 78%, transparent);
+  /* A fainter version of "Brødtekst" (rather than its own fixed color) so
+     the footer still visibly sits one step below .cv-contact/.cv-blurb's
+     own text once that control is actually overridden. */
+  color: color-mix(in srgb, var(--cv-body-text, #5c6672) 78%, transparent);
   font-size: 10px;
 }
 

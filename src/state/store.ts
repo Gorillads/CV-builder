@@ -292,10 +292,13 @@ function migratePhotoControls(state: unknown): unknown {
   return { ...s, design: { ...design, photoSize, photoShape } };
 }
 
-/** Backfills the four Theme sub-controls (boxColor, chipColor, textColor,
- *  bgColor — new alongside the Theme design-tab section) with "auto" so an
- *  existing document keeps following whatever `design.scheme` it already
- *  had, rendering exactly as it did before these existed. */
+/** Backfills the Theme sub-controls (boxColor, chipColor, bgColor — new
+ *  alongside the Theme design-tab section) with "auto" so an existing
+ *  document keeps following whatever `design.scheme` it already had,
+ *  rendering exactly as it did before these existed. Text color isn't
+ *  handled here — see migrateTextColorSplit below, which has its own
+ *  backward-compatibility concern (a *later* version's single textColor
+ *  needs to carry forward, not just default to "auto"). */
 function migrateThemeColors(state: unknown): unknown {
   if (!state || typeof state !== "object") return state;
   const s = state as Record<string, unknown>;
@@ -308,8 +311,43 @@ function migrateThemeColors(state: unknown): unknown {
       ...design,
       boxColor: typeof design.boxColor === "string" ? design.boxColor : "auto",
       chipColor: typeof design.chipColor === "string" ? design.chipColor : "auto",
-      textColor: typeof design.textColor === "string" ? design.textColor : "auto",
       bgColor: typeof design.bgColor === "string" ? design.bgColor : "auto",
+    },
+  };
+}
+
+/** The single "Tekstfarve" control (design.textColor) this app briefly
+ *  shipped with split into six — heading1Color/heading2Color/
+ *  heading3Color/underheadingColor/elementTextColor/bodyTextColor — one
+ *  per category (see the Theme section's "Advanced" sub-controls). A
+ *  document saved under that single-control version had its own custom
+ *  color carried over to *all six* new fields (preserving the
+ *  customization instead of silently discarding it); everything else,
+ *  including any document older still that never had textColor at all,
+ *  just defaults every new field to "auto". Safe to re-run: an
+ *  already-split document (no more design.textColor) passes through
+ *  unchanged aside from backfilling any field that somehow isn't already
+ *  a string. */
+function migrateTextColorSplit(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const design = s.design as Record<string, unknown> | undefined;
+  if (!design || typeof design !== "object") return state;
+
+  const legacy = typeof design.textColor === "string" && design.textColor !== "auto" ? design.textColor : undefined;
+  const { textColor: _oldTextColor, ...rest } = design;
+  const fallback = (field: string) => (typeof design[field] === "string" ? (design[field] as string) : (legacy ?? "auto"));
+
+  return {
+    ...s,
+    design: {
+      ...rest,
+      heading1Color: fallback("heading1Color"),
+      heading2Color: fallback("heading2Color"),
+      heading3Color: fallback("heading3Color"),
+      underheadingColor: fallback("underheadingColor"),
+      elementTextColor: fallback("elementTextColor"),
+      bodyTextColor: fallback("bodyTextColor"),
     },
   };
 }
@@ -444,8 +482,13 @@ export interface Store extends AppState {
       | "photoShape"
       | "boxColor"
       | "chipColor"
-      | "textColor"
-      | "bgColor",
+      | "bgColor"
+      | "heading1Color"
+      | "heading2Color"
+      | "heading3Color"
+      | "underheadingColor"
+      | "elementTextColor"
+      | "bodyTextColor",
     value: string,
   ): void;
   setFooterEnabled(enabled: boolean): void;
@@ -868,16 +911,18 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 19,
+      version: 20,
       migrate: (persisted) =>
-        migrateThemeColors(
-          migratePhotoControls(
-            migrateSidebarWidth(
-              migrateItemLogo(
-                migrateSizeSliders(
-                  migrateDensityScale(
-                    migrateHeaderAddress(
-                      migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateTextColorSplit(
+          migrateThemeColors(
+            migratePhotoControls(
+              migrateSidebarWidth(
+                migrateItemLogo(
+                  migrateSizeSliders(
+                    migrateDensityScale(
+                      migrateHeaderAddress(
+                        migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+                      ),
                     ),
                   ),
                 ),

@@ -25,11 +25,8 @@ import {
   defaultVariant,
   defaultActivityStyle,
   DEFAULT_PAGE_BG,
-  DEFAULT_TEXT_BODY,
-  DEFAULT_TEXT_MUTED,
   resolveBoxColor,
   deriveChipTrio,
-  deriveTextTones,
 } from "../data/designTokens";
 import { usePageOverflow, pxToMm, type PageOverflow } from "../hooks/usePageOverflow";
 
@@ -779,7 +776,6 @@ export function CvPreview({
   // undefined rather than the string "auto".
   const boxColorField = design.boxColor || "auto";
   const chipColorField = design.chipColor || "auto";
-  const textColorField = design.textColor || "auto";
   const bgColorField = design.bgColor || "auto";
 
   const pageBg = bgColorField === "auto" ? DEFAULT_PAGE_BG : bgColorField;
@@ -788,10 +784,29 @@ export function CvPreview({
     chipColorField === "auto"
       ? { bg: scheme.chipBg, border: scheme.chipBorder, fg: scheme.chipFg }
       : deriveChipTrio(chipColorField);
-  const textTones =
-    textColorField === "auto"
-      ? { heading: scheme.accent, soft: scheme.soft, body: DEFAULT_TEXT_BODY, muted: DEFAULT_TEXT_MUTED }
-      : deriveTextTones(textColorField);
+
+  // The six text-color sub-controls (see DesignTab's ThemeGroup) each either
+  // follow the overall theme ("auto") or pin one literal color. Unlike
+  // box/chip above, "auto" doesn't resolve to a single computed value here:
+  // each CSS rule that reads one of these variables supplies its *own*
+  // fallback (e.g. ".cv-section h3 { color: var(--cv-h2, var(--cv-accent)); }"
+  // vs ".cv-appendix h2 { color: var(--cv-h2, var(--cv-accent-soft)); }" —
+  // same control, different auto-default per element, see App.css), so the
+  // variable is simply omitted from this object while "auto", letting each
+  // rule's own fallback take over. Only once a field holds a literal picked
+  // color does it get set here, which then overrides every element sharing
+  // that one variable to the same picked value.
+  const textColorVars: CSSProperties = {};
+  const setTextColorVar = (cssVar: string, field: string) => {
+    const value = (design as unknown as Record<string, string>)[field] || "auto";
+    if (value !== "auto") (textColorVars as Record<string, string>)[cssVar] = value;
+  };
+  setTextColorVar("--cv-h1", "heading1Color");
+  setTextColorVar("--cv-h2", "heading2Color");
+  setTextColorVar("--cv-h3", "heading3Color");
+  setTextColorVar("--cv-underheading", "underheadingColor");
+  setTextColorVar("--cv-element-text", "elementTextColor");
+  setTextColorVar("--cv-body-text", "bodyTextColor");
 
   const themeStyle = {
     "--cv-head": font.head,
@@ -813,10 +828,7 @@ export function CvPreview({
     "--cv-chip-border": chipTrio.border,
     "--cv-chip-bg": chipTrio.bg,
     "--cv-chip-fg": chipTrio.fg,
-    "--cv-text": textTones.heading,
-    "--cv-text-soft": textTones.soft,
-    "--cv-text-body": textTones.body,
-    "--cv-text-muted": textTones.muted,
+    ...textColorVars,
   } as CSSProperties;
 
   const isSidebar = design.struct === "sidebar";

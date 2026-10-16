@@ -235,12 +235,35 @@ export interface AppState {
      *  chip's text color; see deriveChipTrio in src/data/designTokens)
      *  overrides it on its own. */
     chipColor: string;
-    /** All text on the CV, from section headings down to body copy —
-     *  "auto" follows `scheme` (headings/labels in the scheme's accent,
-     *  body in the standard near-black), or a literal CSS color (see
-     *  deriveTextTones in src/data/designTokens) overrides it on its own,
-     *  unifying every text color to tints of the one picked value. */
-    textColor: string;
+    /** The person's own name — "auto" is the standard near-black body
+     *  color (the name isn't scheme-tinted by default), or a literal CSS
+     *  color overrides it on its own. Mirrors `headSize` in what it
+     *  controls. */
+    heading1Color: string;
+    /** Section titles ("Profil", "Erfaring", ...) and the appendix page's
+     *  own "Bilag" heading — "auto" follows `scheme` (each keeping its own
+     *  current shade: section titles the full accent, the appendix heading
+     *  its softer secondary tone), or a literal CSS color overrides both
+     *  to the same value. Mirrors `headingSize` in what it controls. */
+    heading2Color: string;
+    /** An entry's own heading (e.g. a job title) — "auto" is the standard
+     *  near-black body color (not scheme-tinted by default, same as
+     *  heading1Color), or a literal CSS color overrides it on its own. */
+    heading3Color: string;
+    /** An entry's year/source label — "auto" follows `scheme`'s softer
+     *  secondary tone, or a literal CSS color overrides it on its own. */
+    underheadingColor: string;
+    /** An entry's own description, short comment line, and activity
+     *  bullets — "auto" keeps each of their own current shade (they aren't
+     *  identical today), or a literal CSS color unifies all three to one
+     *  value. Mirrors `elementTextSize` in what it controls. */
+    elementTextColor: string;
+    /** Running text: a category's own intro (blurb), the applied title,
+     *  the contact line, and the page footer — "auto" keeps each of their
+     *  own current shade (again not identical today), or a literal CSS
+     *  color unifies all of them to one value. Roughly mirrors
+     *  `contactSize` plus the rest of `textSize` in what it controls. */
+    bodyTextColor: string;
     /** The page's own paper color — "auto" is the standard off-white (see
      *  DEFAULT_PAGE_BG in src/data/designTokens), or a literal CSS color
      *  overrides it on its own. */
