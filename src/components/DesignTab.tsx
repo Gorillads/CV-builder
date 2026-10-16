@@ -263,10 +263,11 @@ function ColorControl({
 }
 
 /** The overall color scheme plus the individual color controls it defaults
- *  each of them to (box, chips, background, and six text categories — one
- *  per Density's own text-size categories, see each ColorControl's
- *  comment below) — same "one master, many followers" shape as
- *  DensityGroup above. */
+ *  each of them to (box, chips, background, and eight text categories —
+ *  roughly one per Density's own text-size categories, with Density's
+ *  elementTextSize and contactSize each further split in two, see each
+ *  ColorControl's comment below) — same "one master, many followers" shape
+ *  as DensityGroup above. */
 function ThemeGroup({
   design,
   setDesign,
@@ -283,6 +284,8 @@ function ThemeGroup({
     heading3Color: string;
     underheadingColor: string;
     elementTextColor: string;
+    activityColor: string;
+    contactColor: string;
     bodyTextColor: string;
   };
   setDesign: (
@@ -296,6 +299,8 @@ function ThemeGroup({
       | "heading3Color"
       | "underheadingColor"
       | "elementTextColor"
+      | "activityColor"
+      | "contactColor"
       | "bodyTextColor",
     value: string,
   ) => void;
@@ -304,21 +309,21 @@ function ThemeGroup({
 }) {
   const [advanced, setAdvanced] = useState(false);
   const activeScheme = SCHEMES.find((s) => s.id === design.scheme);
-  const pageBg = design.bgColor === "auto" ? (activeScheme?.dark?.pageBg ?? DEFAULT_PAGE_BG) : design.bgColor;
+  const pageBg = design.bgColor === "auto" ? (activeScheme?.textOverride?.pageBg ?? DEFAULT_PAGE_BG) : design.bgColor;
 
   // Each scheme's own box swatch previews against *its own* page
-  // background (its dark.pageBg, if it has one) rather than always the
-  // currently active one, so e.g. the "Mørk" swatch still looks right
+  // background (its textOverride.pageBg, if it has one) rather than always
+  // the currently active one, so e.g. the "Mørk" swatch still looks right
   // under Box even while some other (light) scheme is actually selected.
   const boxSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({
     id: s.id,
-    color: resolveBoxColor(s.accent, s.dark?.pageBg ?? pageBg),
+    color: resolveBoxColor(s.accent, s.textOverride?.pageBg ?? pageBg),
     title: s.name[lang],
   }));
   const chipSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({ id: s.id, color: s.chipFg, title: s.name[lang] }));
   const bgSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({
     id: s.id,
-    color: s.dark?.pageBg ?? resolveBgSwatch(s.accent),
+    color: s.textOverride?.pageBg ?? resolveBgSwatch(s.accent),
     title: s.name[lang],
   }));
   // Heading-ish controls (the name, section titles, an entry's own
@@ -414,6 +419,22 @@ function ThemeGroup({
             label={T.elementTextColor}
             value={design.elementTextColor}
             onChange={(v) => setDesign("elementTextColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={softSwatches}
+          />
+          <ColorControl
+            label={T.activityColor}
+            value={design.activityColor}
+            onChange={(v) => setDesign("activityColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={softSwatches}
+          />
+          <ColorControl
+            label={T.contactColor}
+            value={design.contactColor}
+            onChange={(v) => setDesign("contactColor", v)}
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={softSwatches}

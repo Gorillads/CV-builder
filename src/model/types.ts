@@ -253,16 +253,29 @@ export interface AppState {
     /** An entry's year/source label — "auto" follows `scheme`'s softer
      *  secondary tone, or a literal CSS color overrides it on its own. */
     underheadingColor: string;
-    /** An entry's own description, short comment line, and activity
-     *  bullets — "auto" keeps each of their own current shade (they aren't
-     *  identical today), or a literal CSS color unifies all three to one
-     *  value. Mirrors `elementTextSize` in what it controls. */
+    /** An entry's own description and short comment line — "auto" keeps
+     *  each of their own current shade (they aren't identical today), or a
+     *  literal CSS color unifies both to one value. Mirrors
+     *  `elementTextSize` in what it controls, minus activity bullets (see
+     *  activityColor below, split out on its own). */
     elementTextColor: string;
-    /** Running text: a category's own intro (blurb), the applied title,
-     *  the contact line, and the page footer — "auto" keeps each of their
-     *  own current shade (again not identical today), or a literal CSS
-     *  color unifies all of them to one value. Roughly mirrors
-     *  `contactSize` plus the rest of `textSize` in what it controls. */
+    /** An entry's own activity bullets, split out from elementTextColor
+     *  above so they can be colored independently of the description/
+     *  comment they sit under — "auto" is the standard near-black body
+     *  color (not scheme-tinted by default), or a literal CSS color
+     *  overrides it on its own. */
+    activityColor: string;
+    /** The applied title and the contact line (address/phone/mail/
+     *  location) — "auto" keeps each of their own current shade (the
+     *  applied title in the scheme's accent, the contact line the standard
+     *  muted grey), or a literal CSS color unifies both to one value.
+     *  Mirrors `contactSize` in what it controls. */
+    contactColor: string;
+    /** Running text: a category's own intro (blurb) and the page footer —
+     *  "auto" keeps each of their own current shade, or a literal CSS
+     *  color unifies both to one value. Roughly mirrors the rest of
+     *  `textSize` (minus an entry's own heading/meta, see heading3Color/
+     *  underheadingColor) in what it controls. */
     bodyTextColor: string;
     /** The page's own paper color — "auto" is the standard off-white (see
      *  DEFAULT_PAGE_BG in src/data/designTokens), or a literal CSS color

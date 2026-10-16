@@ -352,6 +352,39 @@ function migrateTextColorSplit(state: unknown): unknown {
   };
 }
 
+/** Splits two more things out of the six text-color categories above:
+ *  activityColor (an entry's activity bullets, previously bundled into
+ *  elementTextColor alongside its description/comment) and contactColor
+ *  (the applied title + contact line, previously bundled into
+ *  bodyTextColor alongside the category blurb/footer) — see heading3Color/
+ *  underheadingColor's own split for the same shape of change. A document
+ *  that already had a *custom* elementTextColor or bodyTextColor keeps
+ *  that color on the original field and carries it over to the new one
+ *  split out of it, so the customization still covers everything it used
+ *  to; a document still on "auto" for either just defaults the new field
+ *  to "auto" too. Safe to re-run: an already-split document (both new
+ *  fields already strings) passes through unchanged. */
+function migrateActivityAndContactColor(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const design = s.design as Record<string, unknown> | undefined;
+  if (!design || typeof design !== "object") return state;
+
+  const carryOver = (newField: string, sourceField: string) => {
+    if (typeof design[newField] === "string") return design[newField] as string;
+    return typeof design[sourceField] === "string" ? (design[sourceField] as string) : "auto";
+  };
+
+  return {
+    ...s,
+    design: {
+      ...design,
+      activityColor: carryOver("activityColor", "elementTextColor"),
+      contactColor: carryOver("contactColor", "bodyTextColor"),
+    },
+  };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -488,6 +521,8 @@ export interface Store extends AppState {
       | "heading3Color"
       | "underheadingColor"
       | "elementTextColor"
+      | "activityColor"
+      | "contactColor"
       | "bodyTextColor",
     value: string,
   ): void;
@@ -911,17 +946,19 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 20,
+      version: 21,
       migrate: (persisted) =>
-        migrateTextColorSplit(
-          migrateThemeColors(
-            migratePhotoControls(
-              migrateSidebarWidth(
-                migrateItemLogo(
-                  migrateSizeSliders(
-                    migrateDensityScale(
-                      migrateHeaderAddress(
-                        migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateActivityAndContactColor(
+          migrateTextColorSplit(
+            migrateThemeColors(
+              migratePhotoControls(
+                migrateSidebarWidth(
+                  migrateItemLogo(
+                    migrateSizeSliders(
+                      migrateDensityScale(
+                        migrateHeaderAddress(
+                          migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+                        ),
                       ),
                     ),
                   ),

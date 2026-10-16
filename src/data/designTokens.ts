@@ -55,19 +55,20 @@ export interface ColorScheme {
   chipBorder: string;
   chipBg: string;
   chipFg: string;
-  /** Optional dark-mode bundle. Every other scheme assumes a light page
-   *  (the standard off-white background, dark body/entry-heading text —
-   *  see DEFAULT_PAGE_BG and the literal CSS fallbacks in App.css) since
-   *  that's genuinely a *different* color than this scheme's own accent/
-   *  soft. A scheme that sets this instead gets used as the "auto" value
-   *  for the page background and for the two text buckets whose default
-   *  color isn't already tied to accent/soft (the name/an entry's own
-   *  heading, and element/body text) — see the CvPreview.tsx comment next
-   *  to where this is read. Section headings and an entry's date label
-   *  need no entry here: their own CSS fallback already chains to
-   *  accent/soft, which already resolves correctly for a dark scheme. */
-  dark?: {
-    pageBg: string;
+  /** Optional override bundle for the two text buckets whose default color
+   *  isn't already tied to accent/soft (the name/an entry's own heading,
+   *  and element/body text — see the CvPreview.tsx comment next to where
+   *  this is read) — every other scheme leaves this unset and those two
+   *  buckets stay the standard dark-grey/near-black body text every scheme
+   *  used before "Sort"/"Mørk" existed. Section headings and an entry's
+   *  date label need no entry here: their own CSS fallback already chains
+   *  to accent/soft directly. `pageBg` is itself optional within this —
+   *  only a genuinely dark scheme (like "Mørk") needs to also flip the
+   *  page itself to a dark color; a scheme that's merely a *darker, more
+   *  literal black* on the usual light page (like "Sort") only needs
+   *  strongText/softText pushed darker too, without touching the page. */
+  textOverride?: {
+    pageBg?: string;
     /** The name and an entry's own heading (e.g. a job title). */
     strongText: string;
     /** An entry's description/comment/activities, and running text
@@ -83,10 +84,23 @@ export const SCHEMES: ColorScheme[] = [
   { id: "kobber", name: { da: "Kobber", en: "Copper" }, accent: "#8a4b2f", soft: "#a5674a", line: "#c99872", chipBorder: "#e2c3b2", chipBg: "#f7ece6", chipFg: "#63341f" },
   { id: "skov", name: { da: "Skov", en: "Forest" }, accent: "#2f5546", soft: "#487262", line: "#8bab98", chipBorder: "#b8cfc5", chipBg: "#eaf2ee", chipFg: "#224034" },
   // A pure-black accent (as distinct from Grafit's softer charcoal) on the
-  // same light page every scheme above uses — no `dark` bundle needed.
-  { id: "sort", name: { da: "Sort", en: "Black" }, accent: "#000000", soft: "#4d4d4d", line: "#999999", chipBorder: "#bfbfbf", chipBg: "#f0f0f0", chipFg: "#1a1a1a" },
+  // same light page every scheme above uses. textOverride pushes the name/
+  // entry-heading/body text to near-black too (rather than leaving them the
+  // standard grey every scheme used before this one), so the whole page
+  // actually reads as black, not just the headings/lines.
+  {
+    id: "sort",
+    name: { da: "Sort", en: "Black" },
+    accent: "#000000",
+    soft: "#4d4d4d",
+    line: "#999999",
+    chipBorder: "#bfbfbf",
+    chipBg: "#f0f0f0",
+    chipFg: "#1a1a1a",
+    textOverride: { strongText: "#000000", softText: "#1a1a1a" },
+  },
   // The one scheme with a genuine dark page — accent/soft are deliberately
-  // close to `dark.strongText`/`dark.softText` below so a theme-preset
+  // close to `textOverride.strongText`/`softText` below so a theme-preset
   // swatch (which always previews accent/soft, see DesignTab.tsx) still
   // looks right for this scheme without needing its own special-cased
   // swatch colors.
@@ -99,7 +113,7 @@ export const SCHEMES: ColorScheme[] = [
     chipBorder: "#555555",
     chipBg: "#2a2a2a",
     chipFg: "#f2f2f2",
-    dark: { pageBg: "#121212", strongText: "#f5f5f5", softText: "#c7c7c7" },
+    textOverride: { pageBg: "#121212", strongText: "#f5f5f5", softText: "#c7c7c7" },
   },
 ];
 
