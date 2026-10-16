@@ -1286,6 +1286,11 @@ textarea.field {
 .cv-tags {
   display: flex;
   flex-wrap: wrap;
+  /* Without this, flex's default align-items: stretch pulls a short,
+     single-line chip's height up to match a taller neighbor wrapped to two
+     lines on the same row (e.g. "LCA" next to a long wrapped label) — each
+     chip should size to its own content regardless of what's beside it. */
+  align-items: flex-start;
   gap: 6px;
 }
 
