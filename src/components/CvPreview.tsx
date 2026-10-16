@@ -778,7 +778,10 @@ export function CvPreview({
   const chipColorField = design.chipColor || "auto";
   const bgColorField = design.bgColor || "auto";
 
-  const pageBg = bgColorField === "auto" ? DEFAULT_PAGE_BG : bgColorField;
+  // "auto" page background follows the scheme when the scheme is a dark one
+  // (see ColorScheme.dark in designTokens.ts) — every other scheme leaves
+  // `dark` unset and falls back to the same flat off-white as always.
+  const pageBg = bgColorField === "auto" ? (scheme.dark?.pageBg ?? DEFAULT_PAGE_BG) : bgColorField;
   const boxBg = boxColorField === "auto" ? resolveBoxColor(scheme.accent, pageBg) : boxColorField;
   const chipTrio =
     chipColorField === "auto"
@@ -787,26 +790,33 @@ export function CvPreview({
 
   // The six text-color sub-controls (see DesignTab's ThemeGroup) each either
   // follow the overall theme ("auto") or pin one literal color. Unlike
-  // box/chip above, "auto" doesn't resolve to a single computed value here:
-  // each CSS rule that reads one of these variables supplies its *own*
+  // box/chip above, "auto" mostly doesn't resolve to a single computed value
+  // here: each CSS rule that reads one of these variables supplies its own
   // fallback (e.g. ".cv-section h3 { color: var(--cv-h2, var(--cv-accent)); }"
   // vs ".cv-appendix h2 { color: var(--cv-h2, var(--cv-accent-soft)); }" —
   // same control, different auto-default per element, see App.css), so the
   // variable is simply omitted from this object while "auto", letting each
-  // rule's own fallback take over. Only once a field holds a literal picked
-  // color does it get set here, which then overrides every element sharing
-  // that one variable to the same picked value.
+  // rule's own fallback take over. The exception is heading1/heading3/
+  // elementText/bodyText for a *dark* scheme: those four buckets' own CSS
+  // fallbacks are flat dark literals (never scheme-reactive, since no other
+  // scheme has ever needed anything but dark-on-light text), so without an
+  // explicit override here they'd render unreadably dark-on-dark — a dark
+  // scheme's `dark.strongText`/`dark.softText` (see designTokens.ts) is set
+  // here instead, overriding that literal fallback for exactly those four.
+  // Once a field holds a user-picked literal color (from a theme-preset
+  // swatch or the free picker) it always wins over either of those.
   const textColorVars: CSSProperties = {};
-  const setTextColorVar = (cssVar: string, field: string) => {
+  const setTextColorVar = (cssVar: string, field: string, darkFallback?: string) => {
     const value = (design as unknown as Record<string, string>)[field] || "auto";
-    if (value !== "auto") (textColorVars as Record<string, string>)[cssVar] = value;
+    const resolved = value !== "auto" ? value : darkFallback;
+    if (resolved) (textColorVars as Record<string, string>)[cssVar] = resolved;
   };
-  setTextColorVar("--cv-h1", "heading1Color");
+  setTextColorVar("--cv-h1", "heading1Color", scheme.dark?.strongText);
   setTextColorVar("--cv-h2", "heading2Color");
-  setTextColorVar("--cv-h3", "heading3Color");
+  setTextColorVar("--cv-h3", "heading3Color", scheme.dark?.strongText);
   setTextColorVar("--cv-underheading", "underheadingColor");
-  setTextColorVar("--cv-element-text", "elementTextColor");
-  setTextColorVar("--cv-body-text", "bodyTextColor");
+  setTextColorVar("--cv-element-text", "elementTextColor", scheme.dark?.softText);
+  setTextColorVar("--cv-body-text", "bodyTextColor", scheme.dark?.softText);
 
   const themeStyle = {
     "--cv-head": font.head,

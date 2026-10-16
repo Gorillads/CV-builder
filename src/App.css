@@ -1324,10 +1324,11 @@ textarea.field {
   justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid var(--cv-line);
-  /* A fainter version of "Brødtekst" (rather than its own fixed color) so
-     the footer still visibly sits one step below .cv-contact/.cv-blurb's
-     own text once that control is actually overridden. */
-  color: color-mix(in srgb, var(--cv-body-text, #5c6672) 78%, transparent);
+  /* Same color as the rest of "Brødtekst" (.cv-contact/.cv-blurb) — fully
+     solid, not a faded/transparent version of it, so it stays legible on
+     any page background (notably a dark one; see ColorScheme.dark in
+     designTokens.ts) rather than fading toward whatever's behind it. */
+  color: var(--cv-body-text, #5c6672);
   font-size: 10px;
 }
 
