@@ -315,6 +315,10 @@ const CLASSIC_DESIGN: AppState["design"] = {
   photoPosition: "left",
   photoShape: "circle",
   footer: { enabled: false, revision: "" },
+  boxColor: "auto",
+  chipColor: "auto",
+  textColor: "auto",
+  bgColor: "auto",
 };
 
 // ---------------------------------------------------------------------
@@ -831,6 +835,10 @@ const ARTISTIC_DESIGN: AppState["design"] = {
   photoPosition: "left",
   photoShape: "circle",
   footer: { enabled: false, revision: "" },
+  boxColor: "auto",
+  chipColor: "auto",
+  textColor: "auto",
+  bgColor: "auto",
 };
 
 export const PRESETS: Preset[] = [

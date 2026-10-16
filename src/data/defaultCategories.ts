@@ -247,6 +247,10 @@ export const MODERN_DESIGN: AppState["design"] = {
   photoPosition: "left",
   photoShape: "circle",
   footer: { enabled: false, revision: "" },
+  boxColor: "auto",
+  chipColor: "auto",
+  textColor: "auto",
+  bgColor: "auto",
 };
 
 let seq = 0;
