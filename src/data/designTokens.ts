@@ -55,6 +55,25 @@ export interface ColorScheme {
   chipBorder: string;
   chipBg: string;
   chipFg: string;
+  /** Optional dark-mode bundle. Every other scheme assumes a light page
+   *  (the standard off-white background, dark body/entry-heading text —
+   *  see DEFAULT_PAGE_BG and the literal CSS fallbacks in App.css) since
+   *  that's genuinely a *different* color than this scheme's own accent/
+   *  soft. A scheme that sets this instead gets used as the "auto" value
+   *  for the page background and for the two text buckets whose default
+   *  color isn't already tied to accent/soft (the name/an entry's own
+   *  heading, and element/body text) — see the CvPreview.tsx comment next
+   *  to where this is read. Section headings and an entry's date label
+   *  need no entry here: their own CSS fallback already chains to
+   *  accent/soft, which already resolves correctly for a dark scheme. */
+  dark?: {
+    pageBg: string;
+    /** The name and an entry's own heading (e.g. a job title). */
+    strongText: string;
+    /** An entry's description/comment/activities, and running text
+     *  (category intro, applied title, contact line, footer). */
+    softText: string;
+  };
 }
 
 export const SCHEMES: ColorScheme[] = [
@@ -63,6 +82,25 @@ export const SCHEMES: ColorScheme[] = [
   { id: "marine", name: { da: "Marine", en: "Marine" }, accent: "#24405c", soft: "#3d5f80", line: "#8fa9c1", chipBorder: "#aec6de", chipBg: "#e8f0f7", chipFg: "#1b3247" },
   { id: "kobber", name: { da: "Kobber", en: "Copper" }, accent: "#8a4b2f", soft: "#a5674a", line: "#c99872", chipBorder: "#e2c3b2", chipBg: "#f7ece6", chipFg: "#63341f" },
   { id: "skov", name: { da: "Skov", en: "Forest" }, accent: "#2f5546", soft: "#487262", line: "#8bab98", chipBorder: "#b8cfc5", chipBg: "#eaf2ee", chipFg: "#224034" },
+  // A pure-black accent (as distinct from Grafit's softer charcoal) on the
+  // same light page every scheme above uses — no `dark` bundle needed.
+  { id: "sort", name: { da: "Sort", en: "Black" }, accent: "#000000", soft: "#4d4d4d", line: "#999999", chipBorder: "#bfbfbf", chipBg: "#f0f0f0", chipFg: "#1a1a1a" },
+  // The one scheme with a genuine dark page — accent/soft are deliberately
+  // close to `dark.strongText`/`dark.softText` below so a theme-preset
+  // swatch (which always previews accent/soft, see DesignTab.tsx) still
+  // looks right for this scheme without needing its own special-cased
+  // swatch colors.
+  {
+    id: "moerk",
+    name: { da: "Mørk", en: "Dark" },
+    accent: "#f2f2f2",
+    soft: "#c9c9c9",
+    line: "#4d4d4d",
+    chipBorder: "#555555",
+    chipBg: "#2a2a2a",
+    chipFg: "#f2f2f2",
+    dark: { pageBg: "#121212", strongText: "#f5f5f5", softText: "#c7c7c7" },
+  },
 ];
 
 /** The CV page's own paper color when design.bgColor is "auto" — the same

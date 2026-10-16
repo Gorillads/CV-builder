@@ -303,17 +303,22 @@ function ThemeGroup({
   T: ReturnType<typeof t>;
 }) {
   const [advanced, setAdvanced] = useState(false);
-  const pageBg = design.bgColor === "auto" ? DEFAULT_PAGE_BG : design.bgColor;
+  const activeScheme = SCHEMES.find((s) => s.id === design.scheme);
+  const pageBg = design.bgColor === "auto" ? (activeScheme?.dark?.pageBg ?? DEFAULT_PAGE_BG) : design.bgColor;
 
+  // Each scheme's own box swatch previews against *its own* page
+  // background (its dark.pageBg, if it has one) rather than always the
+  // currently active one, so e.g. the "Mørk" swatch still looks right
+  // under Box even while some other (light) scheme is actually selected.
   const boxSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({
     id: s.id,
-    color: resolveBoxColor(s.accent, pageBg),
+    color: resolveBoxColor(s.accent, s.dark?.pageBg ?? pageBg),
     title: s.name[lang],
   }));
   const chipSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({ id: s.id, color: s.chipFg, title: s.name[lang] }));
   const bgSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({
     id: s.id,
-    color: resolveBgSwatch(s.accent),
+    color: s.dark?.pageBg ?? resolveBgSwatch(s.accent),
     title: s.name[lang],
   }));
   // Heading-ish controls (the name, section titles, an entry's own
