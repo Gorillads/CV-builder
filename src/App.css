@@ -1304,14 +1304,25 @@ textarea.field {
   font-size: 11.5px;
   /* A chip is normally one short, un-wrapped label — but a longer one
      (e.g. a full sentence used as a competency) would otherwise just
-     overflow past a narrow sidebar column instead of stopping at it, so
-     it wraps internally as a fallback rather than bleeding off the page.
-     The 165px cap keeps a wrapped chip no wider than it needs to be for
-     its own two lines, instead of stretching out to the full column —
-     short, single-line labels stay sized to their own text as before,
-     since this only ever shrinks a chip, never grows one. */
-  max-width: min(100%, 165px);
+     overflow past its column instead of stopping at it, so it wraps
+     internally as a fallback rather than bleeding off the page. No extra
+     cap here beyond the column's own width: in the main column (or any
+     other wide context) a chip should stay on one line whenever there's
+     room for it, same as any other text — see .cv-aside .cv-tag below for
+     the narrower sidebar, where that's not true. */
+  max-width: 100%;
   overflow-wrap: break-word;
+}
+
+/* The sidebar column is narrow enough (see --cv-sidebar-width) that an
+   un-capped wrapped chip stretches out to fill the entire column width,
+   leaving a lot of visibly empty space next to its actual text — capping
+   it here keeps a wrapped chip no wider than it needs to be for its own
+   two lines instead. Only ever shrinks a chip, never grows one, so a
+   short, single-line label in the sidebar is unaffected. The main column
+   (and any other wide context) has no such cap — see .cv-tag above. */
+.cv-aside .cv-tag {
+  max-width: 165px;
 }
 
 /* ---- Tags: "list" variant (standard — plain bold lines) ------------- */
