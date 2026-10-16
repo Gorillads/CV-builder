@@ -65,6 +65,71 @@ export const SCHEMES: ColorScheme[] = [
   { id: "skov", name: { da: "Skov", en: "Forest" }, accent: "#2f5546", soft: "#487262", line: "#8bab98", chipBorder: "#b8cfc5", chipBg: "#eaf2ee", chipFg: "#224034" },
 ];
 
+/** The CV page's own paper color when design.bgColor is "auto" — the same
+ *  flat off-white every scheme has always used, unrelated to which scheme
+ *  is picked (unlike accent/soft/line/chip*, there's no per-scheme
+ *  background in SCHEMES above). */
+export const DEFAULT_PAGE_BG = "#f3f2f0";
+/** Body/paragraph text color when design.textColor is "auto" — see
+ *  resolveTextTones below. */
+export const DEFAULT_TEXT_BODY = "#24282e";
+/** Secondary/muted text (contact line, category blurb, entry description)
+ *  when design.textColor is "auto". */
+export const DEFAULT_TEXT_MUTED = "#5c6672";
+
+/** The sidebar's tinted backdrop box (see --cv-box-bg in CvPreview.tsx,
+ *  consumed by .cv-sidebar-fill in App.css) when design.boxColor is
+ *  "auto" — a light wash of the scheme's own accent against whatever the
+ *  page background currently resolves to, so the box always reads as a
+ *  clearly separate panel without needing its own stored color. Mixing
+ *  against the *resolved* page background (not always the hardcoded
+ *  default) means a custom background color is still respected even while
+ *  the box itself is left on "auto". Doesn't cover the "banded" structure's
+ *  full-bleed header block — that stays a bold, solid accent color (see
+ *  .struct-banded .cv-header in App.css) rather than this light wash. */
+export function resolveBoxColor(accent: string, pageBg: string): string {
+  return `color-mix(in srgb, ${accent} 30%, ${pageBg})`;
+}
+
+/** A barely-there wash of a scheme's accent, used only as that scheme's
+ *  preset swatch under the Theme section's Background sub-control — the
+ *  schemes themselves don't carry a background color (see DEFAULT_PAGE_BG
+ *  above), so each scheme's "own" background option is this faint tint
+ *  rather than a literal stored value. */
+export function resolveBgSwatch(accent: string): string {
+  return `color-mix(in srgb, ${accent} 4%, white)`;
+}
+
+/** The three chip colors (background tint, border, text) derived from a
+ *  single picked "chip color" — used whenever design.chipColor isn't
+ *  "auto" (the picked value, from either a theme-preset swatch or the free
+ *  color picker, becomes the chip's text color directly, with the
+ *  background and border just lighter tints of it) so the whole trio
+ *  always stays coordinated from one control instead of needing three. */
+export function deriveChipTrio(base: string): { bg: string; border: string; fg: string } {
+  return {
+    bg: `color-mix(in srgb, ${base} 18%, white)`,
+    border: `color-mix(in srgb, ${base} 55%, white)`,
+    fg: base,
+  };
+}
+
+/** The four text tones (heading, secondary/soft heading, body, muted body)
+ *  derived from a single picked "text color" — used whenever
+ *  design.textColor isn't "auto". The picked color becomes both the
+ *  heading and body color directly (that's the point of one "text color"
+ *  control covering everything), while the soft/muted secondary tones are
+ *  lighter tints of it so headings, dates and descriptions still read as
+ *  a hierarchy rather than one flat color. */
+export function deriveTextTones(base: string): { heading: string; soft: string; body: string; muted: string } {
+  return {
+    heading: base,
+    soft: `color-mix(in srgb, ${base} 75%, white)`,
+    body: base,
+    muted: `color-mix(in srgb, ${base} 65%, white)`,
+  };
+}
+
 /** Number of steps every size slider (density, and the four individual
  *  controls below) offers — a plain 0-9 position, unnamed, rather than a
  *  handful of named categories (Small/Standard/Large, ...). */

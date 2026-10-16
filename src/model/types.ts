@@ -148,6 +148,10 @@ export interface AppState {
   /** Design tokens for the CV sheet itself — ids into src/data/designTokens. */
   design: {
     font: string;
+    /** The overall/master color lever (an id into SCHEMES, see
+     *  src/data/designTokens) — like `density` for sizes, it's the default
+     *  every "auto" individual color control below (boxColor, chipColor,
+     *  textColor, bgColor) falls back to. */
     scheme: string;
     /** "Heading size" (the CV owner's own name) — a slider, "auto" follows
      *  `density` (see below), or a stringified 0-9 step into HEAD_SIZES
@@ -220,5 +224,26 @@ export interface AppState {
       enabled: boolean;
       revision: string;
     };
+    /** The sidebar's tinted backdrop box — "auto" follows `scheme` (see
+     *  resolveBoxColor in src/data/designTokens), or a literal CSS color (a
+     *  theme-preset swatch or a free-picked hex) overrides it on its own.
+     *  Doesn't cover the "banded" structure's header block, which always
+     *  stays a bold, solid accent color regardless of this field. */
+    boxColor: string;
+    /** The "chips"-variant pill's background/border/text — "auto" follows
+     *  `scheme`, or a literal CSS color (the picked value becomes the
+     *  chip's text color; see deriveChipTrio in src/data/designTokens)
+     *  overrides it on its own. */
+    chipColor: string;
+    /** All text on the CV, from section headings down to body copy —
+     *  "auto" follows `scheme` (headings/labels in the scheme's accent,
+     *  body in the standard near-black), or a literal CSS color (see
+     *  deriveTextTones in src/data/designTokens) overrides it on its own,
+     *  unifying every text color to tints of the one picked value. */
+    textColor: string;
+    /** The page's own paper color — "auto" is the standard off-white (see
+     *  DEFAULT_PAGE_BG in src/data/designTokens), or a literal CSS color
+     *  overrides it on its own. */
+    bgColor: string;
   };
 }

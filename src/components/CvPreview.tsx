@@ -24,6 +24,12 @@ import {
   clampStep,
   defaultVariant,
   defaultActivityStyle,
+  DEFAULT_PAGE_BG,
+  DEFAULT_TEXT_BODY,
+  DEFAULT_TEXT_MUTED,
+  resolveBoxColor,
+  deriveChipTrio,
+  deriveTextTones,
 } from "../data/designTokens";
 import { usePageOverflow, pxToMm, type PageOverflow } from "../hooks/usePageOverflow";
 
@@ -763,6 +769,30 @@ export function CvPreview({
   const photoShapeId = byId(PHOTO_SHAPES, design.photoShape).id;
   const sidebarWidthPct = SIDEBAR_WIDTHS.find((w) => w.id === design.sidebarWidth)?.pct ?? 33;
 
+  // Each Theme sub-control (see DesignTab's ThemeGroup) is either "auto" —
+  // follow the overall scheme, reproducing exactly what every document
+  // rendered before these existed — or a literal CSS color, picked from a
+  // theme-preset swatch or the free color picker, that overrides just that
+  // one slot. A JSON backup imported from before these fields existed (see
+  // commitJsonImport in state/store.ts) skips the persist migrate pipeline
+  // entirely, so `|| "auto"` guards against boxColor etc. landing as
+  // undefined rather than the string "auto".
+  const boxColorField = design.boxColor || "auto";
+  const chipColorField = design.chipColor || "auto";
+  const textColorField = design.textColor || "auto";
+  const bgColorField = design.bgColor || "auto";
+
+  const pageBg = bgColorField === "auto" ? DEFAULT_PAGE_BG : bgColorField;
+  const boxBg = boxColorField === "auto" ? resolveBoxColor(scheme.accent, pageBg) : boxColorField;
+  const chipTrio =
+    chipColorField === "auto"
+      ? { bg: scheme.chipBg, border: scheme.chipBorder, fg: scheme.chipFg }
+      : deriveChipTrio(chipColorField);
+  const textTones =
+    textColorField === "auto"
+      ? { heading: scheme.accent, soft: scheme.soft, body: DEFAULT_TEXT_BODY, muted: DEFAULT_TEXT_MUTED }
+      : deriveTextTones(textColorField);
+
   const themeStyle = {
     "--cv-head": font.head,
     "--cv-body": font.body,
@@ -778,9 +808,15 @@ export function CvPreview({
     "--cv-accent": scheme.accent,
     "--cv-accent-soft": scheme.soft,
     "--cv-line": scheme.line,
-    "--cv-chip-border": scheme.chipBorder,
-    "--cv-chip-bg": scheme.chipBg,
-    "--cv-chip-fg": scheme.chipFg,
+    "--cv-page-bg": pageBg,
+    "--cv-box-bg": boxBg,
+    "--cv-chip-border": chipTrio.border,
+    "--cv-chip-bg": chipTrio.bg,
+    "--cv-chip-fg": chipTrio.fg,
+    "--cv-text": textTones.heading,
+    "--cv-text-soft": textTones.soft,
+    "--cv-text-body": textTones.body,
+    "--cv-text-muted": textTones.muted,
   } as CSSProperties;
 
   const isSidebar = design.struct === "sidebar";

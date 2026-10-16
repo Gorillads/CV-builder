@@ -13,6 +13,9 @@ import {
   PHOTO_SHAPES,
   SIZE_STEPS,
   clampStep,
+  DEFAULT_PAGE_BG,
+  resolveBoxColor,
+  resolveBgSwatch,
 } from "../data/designTokens";
 import { resizeImage } from "../utils/resizeImage";
 
@@ -180,6 +183,183 @@ function DensityGroup({
   );
 }
 
+/** One preset color option for a ColorControl's swatch row — "color" is
+ *  what both the swatch itself is painted and what gets stored on pick
+ *  (see deriveChipTrio/deriveTextTones/resolveBoxColor in
+ *  src/data/designTokens, which turn that single value into the actual
+ *  rendered trio/tones at render time in CvPreview.tsx). */
+interface ColorSwatchOption {
+  id: string;
+  color: string;
+  title: string;
+}
+
+/** One Theme sub-control (Box/Chips/Text/Background): a "Follow theme"
+ *  checkbox plus, once unchecked, a row of curated swatches — one per
+ *  scheme, so there's always a quick, coordinated option — followed by a
+ *  "Custom…" swatch that opens a native color picker for a free RGB/hex
+ *  pick. Mirrors SizeSlider's "follow master, or pin your own" shape. */
+function ColorControl({
+  label,
+  value,
+  onChange,
+  followLabel,
+  customLabel,
+  swatches,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  followLabel: string;
+  customLabel: string;
+  swatches: ColorSwatchOption[];
+}) {
+  const following = value === "auto";
+  const colorInputRef = useRef<HTMLInputElement>(null);
+  const isPreset = swatches.some((s) => s.color === value);
+  const isCustomActive = !following && !isPreset;
+
+  return (
+    <div className="design-group">
+      <div className="design-group-label">{label}</div>
+      <label className="in-cv">
+        <input
+          type="checkbox"
+          checked={following}
+          onChange={(e) => onChange(e.target.checked ? "auto" : (swatches[0]?.color ?? "#000000"))}
+        />
+        {followLabel}
+      </label>
+      {!following && (
+        <div className="design-swatches">
+          {swatches.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className={"swatch" + (value === s.color ? " active" : "")}
+              style={{ background: s.color }}
+              title={s.title}
+              onClick={() => onChange(s.color)}
+            />
+          ))}
+          <button
+            type="button"
+            className={"swatch swatch-custom" + (isCustomActive ? " active" : "")}
+            style={isCustomActive ? { background: value } : undefined}
+            title={customLabel}
+            onClick={() => colorInputRef.current?.click()}
+          />
+          <input
+            ref={colorInputRef}
+            type="color"
+            className="color-input-hidden"
+            value={isCustomActive ? value : "#000000"}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The overall color scheme plus the four individual color controls it
+ *  defaults each of them to (box, chips, text, background) — same
+ *  "one master, four followers" shape as DensityGroup above. */
+function ThemeGroup({
+  design,
+  setDesign,
+  lang,
+  T,
+}: {
+  design: {
+    scheme: string;
+    boxColor: string;
+    chipColor: string;
+    textColor: string;
+    bgColor: string;
+  };
+  setDesign: (field: "scheme" | "boxColor" | "chipColor" | "textColor" | "bgColor", value: string) => void;
+  lang: Lang;
+  T: ReturnType<typeof t>;
+}) {
+  const [advanced, setAdvanced] = useState(false);
+  const pageBg = design.bgColor === "auto" ? DEFAULT_PAGE_BG : design.bgColor;
+
+  const boxSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({
+    id: s.id,
+    color: resolveBoxColor(s.accent, pageBg),
+    title: s.name[lang],
+  }));
+  const chipSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({ id: s.id, color: s.chipFg, title: s.name[lang] }));
+  const textSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({ id: s.id, color: s.accent, title: s.name[lang] }));
+  const bgSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({
+    id: s.id,
+    color: resolveBgSwatch(s.accent),
+    title: s.name[lang],
+  }));
+
+  return (
+    <div className="design-group">
+      <div className="design-group-label">{T.theme}</div>
+      <div className="design-group-label">{T.colorScheme}</div>
+      <div className="design-swatches">
+        {SCHEMES.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={"swatch" + (design.scheme === s.id ? " active" : "")}
+            style={{ background: s.accent }}
+            onClick={() => setDesign("scheme", s.id)}
+            title={s.name[lang]}
+          />
+        ))}
+      </div>
+
+      <label className="in-cv advanced-toggle">
+        <input type="checkbox" checked={advanced} onChange={(e) => setAdvanced(e.target.checked)} />
+        {T.advancedColors}
+      </label>
+
+      {advanced && (
+        <div className="design-subgroup">
+          <ColorControl
+            label={T.boxColor}
+            value={design.boxColor}
+            onChange={(v) => setDesign("boxColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={boxSwatches}
+          />
+          <ColorControl
+            label={T.chipColor}
+            value={design.chipColor}
+            onChange={(v) => setDesign("chipColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={chipSwatches}
+          />
+          <ColorControl
+            label={T.textColor}
+            value={design.textColor}
+            onChange={(v) => setDesign("textColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={textSwatches}
+          />
+          <ColorControl
+            label={T.bgColor}
+            value={design.bgColor}
+            onChange={(v) => setDesign("bgColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={bgSwatches}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function DesignTab({ lang }: { lang: Lang }) {
   const T = t(lang);
   const design = useStore((s) => s.design);
@@ -216,21 +396,7 @@ export function DesignTab({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      <div className="design-group">
-        <div className="design-group-label">{T.colorScheme}</div>
-        <div className="design-swatches">
-          {SCHEMES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className={"swatch" + (design.scheme === s.id ? " active" : "")}
-              style={{ background: s.accent }}
-              onClick={() => setDesign("scheme", s.id)}
-              title={s.name[lang]}
-            />
-          ))}
-        </div>
-      </div>
+      <ThemeGroup design={design} setDesign={setDesign} lang={lang} T={T} />
 
       <DensityGroup design={design} setDesign={setDesign} T={T} />
 

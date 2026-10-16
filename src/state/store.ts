@@ -292,6 +292,28 @@ function migratePhotoControls(state: unknown): unknown {
   return { ...s, design: { ...design, photoSize, photoShape } };
 }
 
+/** Backfills the four Theme sub-controls (boxColor, chipColor, textColor,
+ *  bgColor — new alongside the Theme design-tab section) with "auto" so an
+ *  existing document keeps following whatever `design.scheme` it already
+ *  had, rendering exactly as it did before these existed. */
+function migrateThemeColors(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const design = s.design as Record<string, unknown> | undefined;
+  if (!design || typeof design !== "object") return state;
+
+  return {
+    ...s,
+    design: {
+      ...design,
+      boxColor: typeof design.boxColor === "string" ? design.boxColor : "auto",
+      chipColor: typeof design.chipColor === "string" ? design.chipColor : "auto",
+      textColor: typeof design.textColor === "string" ? design.textColor : "auto",
+      bgColor: typeof design.bgColor === "string" ? design.bgColor : "auto",
+    },
+  };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -419,7 +441,11 @@ export interface Store extends AppState {
       | "entryGap"
       | "photoSize"
       | "photoPosition"
-      | "photoShape",
+      | "photoShape"
+      | "boxColor"
+      | "chipColor"
+      | "textColor"
+      | "bgColor",
     value: string,
   ): void;
   setFooterEnabled(enabled: boolean): void;
@@ -842,15 +868,17 @@ export const useStore = create<Store>()(
     {
       name: "cv-builder-state-v1",
       storage: createJSONStorage(() => safeStorage),
-      version: 18,
+      version: 19,
       migrate: (persisted) =>
-        migratePhotoControls(
-          migrateSidebarWidth(
-            migrateItemLogo(
-              migrateSizeSliders(
-                migrateDensityScale(
-                  migrateHeaderAddress(
-                    migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateThemeColors(
+          migratePhotoControls(
+            migrateSidebarWidth(
+              migrateItemLogo(
+                migrateSizeSliders(
+                  migrateDensityScale(
+                    migrateHeaderAddress(
+                      migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+                    ),
                   ),
                 ),
               ),

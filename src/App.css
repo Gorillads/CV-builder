@@ -636,6 +636,28 @@ textarea.field {
   box-shadow: 0 0 0 2px var(--panel);
 }
 
+/* The "pick your own" swatch in a Theme sub-control's row — a rainbow ring
+   stands in for a preview color until a custom value is actually picked
+   (ColorControl in DesignTab.tsx then inlines that color as this button's
+   own background, overriding the gradient below). */
+.swatch-custom {
+  background: conic-gradient(from 0deg, #e4572e, #e8c547, #6a9e5c, #3f7cac, #8d5fd3, #e4572e);
+}
+
+/* The native color picker this swatch opens (see ColorControl) — visually
+   invisible and out of layout flow, triggered only via the swatch
+   button's own onClick (ref.current.click()), never shown or tabbed to
+   directly. */
+.color-input-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .design-pills {
   display: flex;
   flex-wrap: wrap;
@@ -756,8 +778,8 @@ textarea.field {
    edge (see usePageOverflow) is meaningful rather than the box just
    growing to fit whatever content exists. */
 .cv-page {
-  background: #f3f2f0;
-  color: #24282e;
+  background: var(--cv-page-bg, #f3f2f0);
+  color: var(--cv-text-body, #24282e);
   border: 1px solid var(--border);
   border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 12px 28px rgba(20, 24, 31, 0.12);
@@ -858,7 +880,7 @@ textarea.field {
    same relative size that gap always had. */
 .cv-applied-title {
   margin: 0 0 6px;
-  color: var(--cv-accent);
+  color: var(--cv-text, var(--cv-accent));
   font-weight: 600;
   font-size: calc(var(--cv-contact-size, 12.5px) * 1.12);
 }
@@ -871,7 +893,7 @@ textarea.field {
    the text, or an ATS parsing the PDF, gets a broken character instead. */
 .cv-contact {
   margin: 0;
-  color: #5c6672;
+  color: var(--cv-text-muted, #5c6672);
   font-size: var(--cv-contact-size, 12.5px);
 }
 
@@ -1003,6 +1025,11 @@ textarea.field {
    Works with any header alignment (left/center/inline). ---------------- */
 
 .struct-banded .cv-header {
+  /* Stays tied to the overall theme's accent rather than --cv-box-bg: that
+     variable resolves (when "auto") to a *light wash* meant for the
+     sidebar's subtle backdrop panel — using it here too would turn this
+     full-bleed header block pale instead of a bold color block, breaking
+     the white header text's contrast against it. */
   background: var(--cv-accent);
   color: #fff;
   margin: -40px -44px 24px;
@@ -1033,7 +1060,7 @@ textarea.field {
   border-bottom: 1.5px solid var(--cv-accent);
   padding-bottom: 3px;
   margin: 0 0 8px;
-  color: var(--cv-accent);
+  color: var(--cv-text, var(--cv-accent));
   text-transform: uppercase;
   font-family: var(--cv-head), system-ui, sans-serif;
   font-size: var(--cv-heading-size, 12.5px);
@@ -1042,7 +1069,7 @@ textarea.field {
 }
 
 .cv-blurb {
-  color: #5c6672;
+  color: var(--cv-text-muted, #5c6672);
   font-size: 12.5px;
   margin: 0 0 8px;
 }
@@ -1056,7 +1083,7 @@ textarea.field {
 .cv-entry-meta-col {
   display: none;
   flex: 0 0 72px;
-  color: var(--cv-accent-soft);
+  color: var(--cv-text-soft, var(--cv-accent-soft));
   font-size: 11.5px;
   padding-top: 1px;
 }
@@ -1122,7 +1149,7 @@ textarea.field {
 }
 
 .cv-entry-meta {
-  color: var(--cv-accent-soft);
+  color: var(--cv-text-soft, var(--cv-accent-soft));
   font-size: 11.5px;
   white-space: nowrap;
 }
@@ -1135,13 +1162,13 @@ textarea.field {
   margin: 1px 0 0;
   font-size: calc(var(--cv-element-text-size, 12.5px) * 0.92);
   font-style: italic;
-  color: var(--cv-accent-soft);
+  color: var(--cv-text-soft, var(--cv-accent-soft));
 }
 
 .cv-entry-desc {
   margin: 2px 0;
   font-size: var(--cv-element-text-size, 12.5px);
-  color: #5c6672;
+  color: var(--cv-text-muted, #5c6672);
 }
 
 .cv-entry-acts {
@@ -1236,7 +1263,7 @@ textarea.field {
 }
 
 .cv-entry-line-meta {
-  color: var(--cv-accent-soft);
+  color: var(--cv-text-soft, var(--cv-accent-soft));
   font-size: 11.5px;
   white-space: nowrap;
 }
@@ -1261,7 +1288,7 @@ textarea.field {
 .cv-appendix h2 {
   margin: 0 0 18px;
   font-family: var(--cv-head), system-ui, sans-serif;
-  color: var(--cv-accent-soft);
+  color: var(--cv-text-soft, var(--cv-accent-soft));
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -1277,7 +1304,10 @@ textarea.field {
   justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid var(--cv-line);
-  color: #7c8590;
+  /* A fainter version of the muted text tone (rather than its own fixed
+     color) so the footer still visibly sits one step below .cv-contact/
+     .cv-blurb's own muted text once a custom text color is picked. */
+  color: color-mix(in srgb, var(--cv-text-muted, #5c6672) 78%, transparent);
   font-size: 10px;
 }
 
@@ -1382,13 +1412,12 @@ textarea.field {
   bottom: -20px;
   left: 6px;
   border-radius: 10px;
-  /* --cv-chip-bg (designed as a subtle backdrop for small pill chips) reads
-     as almost the same tone as the page's own off-white background, so the
-     sidebar barely stood out — this mixes in enough of the scheme's own
-     accent color to read as a clearly separate panel at a glance, while
-     leaving every other color on the page (main column, header, text)
-     untouched and still tracking whichever scheme is picked. */
-  background: color-mix(in srgb, var(--cv-accent) 30%, #f3f2f0);
+  /* --cv-box-bg (see CvPreview.tsx/resolveBoxColor in designTokens) mixes
+     in enough of the scheme's own accent color to read as a clearly
+     separate panel at a glance — "auto" reproduces the same mix this rule
+     used to compute inline; the Theme section's Box sub-control can
+     override it directly instead. */
+  background: var(--cv-box-bg, color-mix(in srgb, var(--cv-accent) 30%, #f3f2f0));
   z-index: -1;
 }
 
