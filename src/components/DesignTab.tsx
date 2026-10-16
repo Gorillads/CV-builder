@@ -262,9 +262,11 @@ function ColorControl({
   );
 }
 
-/** The overall color scheme plus the four individual color controls it
- *  defaults each of them to (box, chips, text, background) — same
- *  "one master, four followers" shape as DensityGroup above. */
+/** The overall color scheme plus the individual color controls it defaults
+ *  each of them to (box, chips, background, and six text categories — one
+ *  per Density's own text-size categories, see each ColorControl's
+ *  comment below) — same "one master, many followers" shape as
+ *  DensityGroup above. */
 function ThemeGroup({
   design,
   setDesign,
@@ -275,10 +277,28 @@ function ThemeGroup({
     scheme: string;
     boxColor: string;
     chipColor: string;
-    textColor: string;
     bgColor: string;
+    heading1Color: string;
+    heading2Color: string;
+    heading3Color: string;
+    underheadingColor: string;
+    elementTextColor: string;
+    bodyTextColor: string;
   };
-  setDesign: (field: "scheme" | "boxColor" | "chipColor" | "textColor" | "bgColor", value: string) => void;
+  setDesign: (
+    field:
+      | "scheme"
+      | "boxColor"
+      | "chipColor"
+      | "bgColor"
+      | "heading1Color"
+      | "heading2Color"
+      | "heading3Color"
+      | "underheadingColor"
+      | "elementTextColor"
+      | "bodyTextColor",
+    value: string,
+  ) => void;
   lang: Lang;
   T: ReturnType<typeof t>;
 }) {
@@ -291,12 +311,19 @@ function ThemeGroup({
     title: s.name[lang],
   }));
   const chipSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({ id: s.id, color: s.chipFg, title: s.name[lang] }));
-  const textSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({ id: s.id, color: s.accent, title: s.name[lang] }));
   const bgSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({
     id: s.id,
     color: resolveBgSwatch(s.accent),
     title: s.name[lang],
   }));
+  // Heading-ish controls (the name, section titles, an entry's own
+  // heading) offer each scheme's bold accent as a quick preset; the more
+  // secondary ones (dates, element text, running text) offer its softer
+  // tone instead — both are just starting points, not tied to what "auto"
+  // actually resolves to for that particular control (see each CSS rule's
+  // own fallback in App.css for that).
+  const accentSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({ id: s.id, color: s.accent, title: s.name[lang] }));
+  const softSwatches: ColorSwatchOption[] = SCHEMES.map((s) => ({ id: s.id, color: s.soft, title: s.name[lang] }));
 
   return (
     <div className="design-group">
@@ -339,20 +366,60 @@ function ThemeGroup({
             swatches={chipSwatches}
           />
           <ColorControl
-            label={T.textColor}
-            value={design.textColor}
-            onChange={(v) => setDesign("textColor", v)}
-            followLabel={T.followTheme}
-            customLabel={T.customColor}
-            swatches={textSwatches}
-          />
-          <ColorControl
             label={T.bgColor}
             value={design.bgColor}
             onChange={(v) => setDesign("bgColor", v)}
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={bgSwatches}
+          />
+          <ColorControl
+            label={T.heading1Color}
+            value={design.heading1Color}
+            onChange={(v) => setDesign("heading1Color", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={accentSwatches}
+          />
+          <ColorControl
+            label={T.heading2Color}
+            value={design.heading2Color}
+            onChange={(v) => setDesign("heading2Color", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={accentSwatches}
+          />
+          <ColorControl
+            label={T.heading3Color}
+            value={design.heading3Color}
+            onChange={(v) => setDesign("heading3Color", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={accentSwatches}
+          />
+          <ColorControl
+            label={T.underheadingColor}
+            value={design.underheadingColor}
+            onChange={(v) => setDesign("underheadingColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={softSwatches}
+          />
+          <ColorControl
+            label={T.elementTextColor}
+            value={design.elementTextColor}
+            onChange={(v) => setDesign("elementTextColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={softSwatches}
+          />
+          <ColorControl
+            label={T.bodyTextColor}
+            value={design.bodyTextColor}
+            onChange={(v) => setDesign("bodyTextColor", v)}
+            followLabel={T.followTheme}
+            customLabel={T.customColor}
+            swatches={softSwatches}
           />
         </div>
       )}

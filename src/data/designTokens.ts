@@ -70,12 +70,6 @@ export const SCHEMES: ColorScheme[] = [
  *  is picked (unlike accent/soft/line/chip*, there's no per-scheme
  *  background in SCHEMES above). */
 export const DEFAULT_PAGE_BG = "#f3f2f0";
-/** Body/paragraph text color when design.textColor is "auto" — see
- *  resolveTextTones below. */
-export const DEFAULT_TEXT_BODY = "#24282e";
-/** Secondary/muted text (contact line, category blurb, entry description)
- *  when design.textColor is "auto". */
-export const DEFAULT_TEXT_MUTED = "#5c6672";
 
 /** The sidebar's tinted backdrop box (see --cv-box-bg in CvPreview.tsx,
  *  consumed by .cv-sidebar-fill in App.css) when design.boxColor is
@@ -111,22 +105,6 @@ export function deriveChipTrio(base: string): { bg: string; border: string; fg: 
     bg: `color-mix(in srgb, ${base} 18%, white)`,
     border: `color-mix(in srgb, ${base} 55%, white)`,
     fg: base,
-  };
-}
-
-/** The four text tones (heading, secondary/soft heading, body, muted body)
- *  derived from a single picked "text color" — used whenever
- *  design.textColor isn't "auto". The picked color becomes both the
- *  heading and body color directly (that's the point of one "text color"
- *  control covering everything), while the soft/muted secondary tones are
- *  lighter tints of it so headings, dates and descriptions still read as
- *  a hierarchy rather than one flat color. */
-export function deriveTextTones(base: string): { heading: string; soft: string; body: string; muted: string } {
-  return {
-    heading: base,
-    soft: `color-mix(in srgb, ${base} 75%, white)`,
-    body: base,
-    muted: `color-mix(in srgb, ${base} 65%, white)`,
   };
 }
 

@@ -317,7 +317,12 @@ const CLASSIC_DESIGN: AppState["design"] = {
   footer: { enabled: false, revision: "" },
   boxColor: "auto",
   chipColor: "auto",
-  textColor: "auto",
+  heading1Color: "auto",
+  heading2Color: "auto",
+  heading3Color: "auto",
+  underheadingColor: "auto",
+  elementTextColor: "auto",
+  bodyTextColor: "auto",
   bgColor: "auto",
 };
 
@@ -837,7 +842,12 @@ const ARTISTIC_DESIGN: AppState["design"] = {
   footer: { enabled: false, revision: "" },
   boxColor: "auto",
   chipColor: "auto",
-  textColor: "auto",
+  heading1Color: "auto",
+  heading2Color: "auto",
+  heading3Color: "auto",
+  underheadingColor: "auto",
+  elementTextColor: "auto",
+  bodyTextColor: "auto",
   bgColor: "auto",
 };
 
