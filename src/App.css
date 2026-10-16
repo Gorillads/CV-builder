@@ -885,11 +885,11 @@ textarea.field {
    same relative size that gap always had. */
 .cv-applied-title {
   margin: 0 0 6px;
-  /* Part of "Brødtekst" (see Theme section), alongside .cv-blurb/.cv-contact
-     below and the footer — each keeps its own current shade (this one the
-     accent, like a heading) until the Brødtekst control is actually
-     overridden, at which point all of them unify to that one picked color. */
-  color: var(--cv-body-text, var(--cv-accent));
+  /* Part of "Kontaktoplysninger" (see Theme section), alongside .cv-contact
+     below — each keeps its own current shade (this one the accent, like a
+     heading) until that control is actually overridden, at which point
+     both unify to that one picked color. */
+  color: var(--cv-contact, var(--cv-accent));
   font-weight: 600;
   font-size: calc(var(--cv-contact-size, 12.5px) * 1.12);
 }
@@ -902,7 +902,7 @@ textarea.field {
    the text, or an ATS parsing the PDF, gets a broken character instead. */
 .cv-contact {
   margin: 0;
-  color: var(--cv-body-text, #5c6672);
+  color: var(--cv-contact, #5c6672);
   font-size: var(--cv-contact-size, 12.5px);
 }
 
@@ -1168,9 +1168,8 @@ textarea.field {
    the full .cv-entry-desc paragraph — stays a bit smaller than the other
    element text (the same ~0.92 ratio as its old fixed 11.5px/12.5px
    values) rather than tracking --cv-element-text-size 1:1. Part of "Tekst i
-   elementer" (see Theme section) alongside .cv-entry-desc/.cv-entry-acts
-   below — each keeps its own current shade until that control is actually
-   overridden, same as the "Brødtekst" group above. */
+   elementer" (see Theme section) alongside .cv-entry-desc below — each
+   keeps its own current shade until that control is actually overridden. */
 .cv-entry-comment {
   margin: 1px 0 0;
   font-size: calc(var(--cv-element-text-size, 12.5px) * 0.92);
@@ -1184,11 +1183,14 @@ textarea.field {
   color: var(--cv-element-text, #5c6672);
 }
 
+/* Activity bullets have their own "Aktiviteter" color control, split out
+   from "Tekst i elementer" (.cv-entry-desc/.cv-entry-comment above) so they
+   can be colored independently of the description they sit under. */
 .cv-entry-acts {
   margin: 3px 0 0;
   padding-left: 16px;
   font-size: var(--cv-element-text-size, 12.5px);
-  color: var(--cv-element-text, #24282e);
+  color: var(--cv-activity, #24282e);
 }
 
 .cv-entry-acts li {
@@ -1200,7 +1202,7 @@ textarea.field {
 .cv-entry-acts-inline {
   margin: 3px 0 0;
   font-size: var(--cv-element-text-size, 12.5px);
-  color: var(--cv-element-text, #24282e);
+  color: var(--cv-activity, #24282e);
 }
 
 /* ---- Tags: "chips" variant (rounded pills) -------------------------- */
@@ -1324,9 +1326,9 @@ textarea.field {
   justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid var(--cv-line);
-  /* Same color as the rest of "Brødtekst" (.cv-contact/.cv-blurb) — fully
-     solid, not a faded/transparent version of it, so it stays legible on
-     any page background (notably a dark one; see ColorScheme.dark in
+  /* Same color as the rest of "Brødtekst" (.cv-blurb) — fully solid, not a
+     faded/transparent version of it, so it stays legible on any page
+     background (notably a dark one; see ColorScheme.textOverride in
      designTokens.ts) rather than fading toward whatever's behind it. */
   color: var(--cv-body-text, #5c6672);
   font-size: 10px;

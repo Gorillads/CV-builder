@@ -255,6 +255,8 @@ export const MODERN_DESIGN: AppState["design"] = {
   underheadingColor: "auto",
   elementTextColor: "auto",
   bodyTextColor: "auto",
+  activityColor: "auto",
+  contactColor: "auto",
   bgColor: "auto",
 };
 
