@@ -58,7 +58,7 @@ function TabButton({
  *  session always overwriting the last. Each tab is its own fully
  *  independent, independently-persisted document (see state/tabs.ts); this
  *  bar is just the switcher/opener/closer UI on top of that. */
-export function TabBar({ lang }: { lang: Lang }) {
+export function TabBar({ lang, onOpenTutorial }: { lang: Lang; onOpenTutorial: () => void }) {
   const T = t(lang);
   const tabs = useTabsStore((s) => s.tabs);
   const activeId = useTabsStore((s) => s.activeId);
@@ -88,6 +88,9 @@ export function TabBar({ lang }: { lang: Lang }) {
         ))}
       </div>
       <div className="tab-bar-actions">
+        <button type="button" className="icon-btn" onClick={onOpenTutorial} title={T.tutorialButton}>
+          ?
+        </button>
         <button
           type="button"
           className="icon-btn"
