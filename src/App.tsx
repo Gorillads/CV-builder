@@ -7,6 +7,7 @@ import { DesignTab } from "./components/DesignTab";
 import { CvPreview } from "./components/CvPreview";
 import { ImportExportBar } from "./components/ImportExportBar";
 import { TabBar } from "./components/TabBar";
+import { TutorialOverlay } from "./components/TutorialOverlay";
 import { useLocalFonts } from "./hooks/useLocalFonts";
 import { pxToMm, type PageOverflow } from "./hooks/usePageOverflow";
 import "./App.css";
@@ -65,6 +66,7 @@ function App() {
   const [mainPageStatus, setMainPageStatus] = useState<PageOverflow | null>(null);
   const [zoomPct, setZoomPct] = useState(100);
   const [editorWidth, setEditorWidth] = useState(loadEditorWidth);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   const editorWidthRef = useRef(editorWidth);
   const T = t(lang);
   useLocalFonts();
@@ -121,7 +123,7 @@ function App() {
 
   return (
     <div className="app">
-      <TabBar lang={lang} />
+      <TabBar lang={lang} onOpenTutorial={() => setTutorialOpen(true)} />
       <header className="app-header">
         <h1>{T.appName}</h1>
         <div className="app-header-controls">
@@ -243,6 +245,7 @@ function App() {
           <CvPreview lang={lang} onMainPageStatus={setMainPageStatus} zoom={zoomPct / 100} />
         </div>
       </div>
+      {tutorialOpen && <TutorialOverlay lang={lang} onClose={() => setTutorialOpen(false)} />}
     </div>
   );
 }
