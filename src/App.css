@@ -1319,13 +1319,19 @@ textarea.field {
   overflow-wrap: break-word;
 }
 
-/* The sidebar column is narrow enough (see --cv-sidebar-width) that an
-   un-capped wrapped chip stretches out to fill the entire column width,
-   leaving a lot of visibly empty space next to its actual text — capping
-   it here keeps a wrapped chip no wider than it needs to be for its own
-   two lines instead. Only ever shrinks a chip, never grows one, so a
-   short, single-line label in the sidebar is unaffected. The main column
-   (and any other wide context) has no such cap — see .cv-tag above. */
+/* The sidebar column is narrow enough that an un-capped wrapped chip
+   stretches out to fill the entire column width, leaving a lot of visibly
+   empty space next to its actual text — this caps how wide a wrapped chip
+   is allowed to be. It can't shrink a wrapped chip all the way down to its
+   own longest line, though: CSS's shrink-to-fit sizing (including
+   `width: fit-content`) only ever resolves to either the full unwrapped
+   width or this max-width itself, never to the narrower width an actual
+   multi-line wrap produced — that takes measuring the real rendered lines
+   in JS, done by tightenWrappedTag() in CvPreview.tsx's TagsBlock, which
+   sets a tighter inline width after layout. Only ever shrinks a chip,
+   never grows one, so a short, single-line label in the sidebar is
+   unaffected. The main column (and any other wide context) has no such
+   cap — see .cv-tag above. */
 .cv-aside .cv-tag {
   max-width: 165px;
 }

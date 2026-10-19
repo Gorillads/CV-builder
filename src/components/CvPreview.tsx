@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { useActiveStore } from "../state/tabs";
 import { useShallow } from "zustand/react/shallow";
 import type { CSSProperties, ReactNode } from "react";
@@ -65,14 +65,100 @@ function selectedActivityTexts(
   return indices.map((i) => item.activities[i]).filter(Boolean).map((a) => a[lang] || a.da);
 }
 
+/** Shrinks a wrapped "chips" pill (see .cv-aside .cv-tag in App.css) down
+ *  to the width of its own longest wrapped line, instead of leaving it
+ *  stretched out to the sidebar's max-width cap. CSS's own shrink-to-fit
+ *  sizing can't do this on its own: once a chip's unwrapped width exceeds
+ *  that cap, `width: auto` and `width: fit-content` alike just resolve to
+ *  the cap itself, regardless of how much shorter the actual wrapped
+ *  lines end up being — there's no declarative way to ask for "the width
+ *  the already-wrapped content needs." So this measures it directly: it
+ *  reflows the element a handful of times (binary search) to find the
+ *  narrowest width that still wraps onto the same number of lines as the
+ *  capped width does, then fixes the chip at that width.
+ *
+ *  A chip that already fits on one line under the cap is left alone
+ *  entirely (that's already its tightest fit). Safe to call repeatedly —
+ *  it always re-measures from a clean (uncapped, unforced) state first,
+ *  so re-running it after a resize never compounds a previous shrink. */
+function tightenWrappedTag(el: HTMLSpanElement) {
+  const prevWidth = el.style.width;
+  const prevMaxWidth = el.style.maxWidth;
+  const prevWhiteSpace = el.style.whiteSpace;
+
+  el.style.width = "";
+  el.style.maxWidth = "none";
+  el.style.whiteSpace = "nowrap";
+  const oneLineWidth = el.offsetWidth;
+  el.style.whiteSpace = prevWhiteSpace;
+
+  el.style.maxWidth = prevMaxWidth;
+  const capWidth = el.offsetWidth;
+  const targetHeight = el.offsetHeight;
+
+  if (oneLineWidth <= capWidth) {
+    el.style.width = prevWidth;
+    return;
+  }
+
+  el.style.width = "min-content";
+  let lo = el.offsetWidth;
+  let hi = capWidth;
+  let best = capWidth;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    el.style.width = `${mid}px`;
+    if (el.offsetHeight <= targetHeight) {
+      best = mid;
+      hi = mid - 1;
+    } else {
+      lo = mid + 1;
+    }
+  }
+  el.style.width = `${best}px`;
+}
+
 function TagsBlock({ items, lang, variant }: { items: LibraryItem[]; lang: Lang; variant: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tagRefs = useRef<Map<string, HTMLSpanElement>>(new Map());
+  const lastWidthRef = useRef<number | null>(null);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const tightenAll = () => {
+      tagRefs.current.forEach((el) => tightenWrappedTag(el));
+    };
+    tightenAll();
+
+    // Only react to width changes (sidebar resize, zoom, window resize) —
+    // tightening a chip changes the container's height, and re-running on
+    // that would be a no-op loop, not a real reason to re-measure.
+    const ro = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width;
+      if (width == null || width === lastWidthRef.current) return;
+      lastWidthRef.current = width;
+      tightenAll();
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [items, lang, variant]);
+
   if (variant === "inline") {
     return <p className="cv-tags-inline">{items.map((it) => it[lang].head).filter(Boolean).join(" · ")}</p>;
   }
   return (
-    <div className="cv-tags">
+    <div className="cv-tags" ref={containerRef}>
       {items.map((it) => (
-        <span className="cv-tag" key={it.id}>
+        <span
+          className="cv-tag"
+          key={it.id}
+          ref={(el) => {
+            if (el) tagRefs.current.set(it.id, el);
+            else tagRefs.current.delete(it.id);
+          }}
+        >
           {it[lang].head}
         </span>
       ))}
