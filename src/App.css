@@ -1157,6 +1157,13 @@ textarea.field {
   color: var(--cv-body-text, #5c6672);
   font-size: 12.5px;
   margin: 0 0 8px;
+  /* The field behind this text is a <textarea> — a line break the user
+     types there is a real "\n" in the stored value, but the browser's
+     default white-space: normal collapses it to a plain space, silently
+     merging what was typed as separate lines/paragraphs back into one
+     run-on block. pre-line keeps each typed line break as a line break
+     here while still wrapping and collapsing ordinary spaces normally. */
+  white-space: pre-line;
 }
 
 .cv-entry {
@@ -1257,6 +1264,9 @@ textarea.field {
   margin: 2px 0;
   font-size: var(--cv-element-text-size, 12.5px);
   color: var(--cv-element-text, #5c6672);
+  /* See .cv-blurb above — this is a <textarea> field too, so a typed line
+     break needs the same treatment to actually show up as one. */
+  white-space: pre-line;
 }
 
 /* Activity bullets have their own "Aktiviteter" color control, split out
