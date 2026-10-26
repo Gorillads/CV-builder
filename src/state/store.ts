@@ -385,6 +385,38 @@ function migrateActivityAndContactColor(state: unknown): unknown {
   };
 }
 
+/** Backfills five more size controls split out the same way activitySize
+ *  (see migrateActivityAndContactColor above) and the earlier size sliders
+ *  were: heading3Size/underheadingSize/activitySize/chipSize/bodyTextSize
+ *  each mirror a Theme color control (heading3Color/underheadingColor/
+ *  activityColor/chipColor/bodyTextColor respectively) that already had no
+ *  matching size control — undefined defaults to "auto", so an existing
+ *  document keeps rendering at exactly the fixed sizes those elements
+ *  always had (see HEADING3_SIZES etc. in src/data/designTokens, each
+ *  index 4 matching the old hardcoded value). Safe to re-run: an
+ *  already-migrated document (all five already strings) passes through
+ *  unchanged. */
+function migrateMoreSizeSliders(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const design = s.design as Record<string, unknown> | undefined;
+  if (!design || typeof design !== "object") return state;
+
+  const toStepOrAuto = (value: unknown): string => (typeof value === "string" ? value : "auto");
+
+  return {
+    ...s,
+    design: {
+      ...design,
+      heading3Size: toStepOrAuto(design.heading3Size),
+      underheadingSize: toStepOrAuto(design.underheadingSize),
+      activitySize: toStepOrAuto(design.activitySize),
+      chipSize: toStepOrAuto(design.chipSize),
+      bodyTextSize: toStepOrAuto(design.bodyTextSize),
+    },
+  };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -519,11 +551,16 @@ export interface Store extends AppState {
       | "heading1Color"
       | "heading2Color"
       | "heading3Color"
+      | "heading3Size"
       | "underheadingColor"
+      | "underheadingSize"
       | "elementTextColor"
       | "activityColor"
+      | "activitySize"
       | "contactColor"
-      | "bodyTextColor",
+      | "bodyTextColor"
+      | "bodyTextSize"
+      | "chipSize",
     value: string,
   ): void;
   setFooterEnabled(enabled: boolean): void;
@@ -955,18 +992,20 @@ export function createDocumentStore(storageKey: string) {
     {
       name: storageKey,
       storage: createJSONStorage(() => safeStorage),
-      version: 21,
+      version: 22,
       migrate: (persisted) =>
-        migrateActivityAndContactColor(
-          migrateTextColorSplit(
-            migrateThemeColors(
-              migratePhotoControls(
-                migrateSidebarWidth(
-                  migrateItemLogo(
-                    migrateSizeSliders(
-                      migrateDensityScale(
-                        migrateHeaderAddress(
-                          migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateMoreSizeSliders(
+          migrateActivityAndContactColor(
+            migrateTextColorSplit(
+              migrateThemeColors(
+                migratePhotoControls(
+                  migrateSidebarWidth(
+                    migrateItemLogo(
+                      migrateSizeSliders(
+                        migrateDensityScale(
+                          migrateHeaderAddress(
+                            migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+                          ),
                         ),
                       ),
                     ),

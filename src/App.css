@@ -1155,7 +1155,7 @@ textarea.field {
 
 .cv-blurb {
   color: var(--cv-body-text, #5c6672);
-  font-size: 12.5px;
+  font-size: var(--cv-body-text-size, 12.5px);
   margin: 0 0 8px;
   /* The field behind this text is a <textarea> — a line break the user
      types there is a real "\n" in the stored value, but the browser's
@@ -1176,7 +1176,7 @@ textarea.field {
   display: none;
   flex: 0 0 72px;
   color: var(--cv-underheading, var(--cv-accent-soft));
-  font-size: 11.5px;
+  font-size: var(--cv-underheading-size, 11.5px);
   padding-top: 1px;
 }
 
@@ -1204,6 +1204,7 @@ textarea.field {
 
 .cv-entry-head strong {
   color: var(--cv-h3, #24282e);
+  font-size: var(--cv-h3-size, var(--cv-text-size, 13px));
   font-weight: 600;
 }
 
@@ -1243,7 +1244,7 @@ textarea.field {
 
 .cv-entry-meta {
   color: var(--cv-underheading, var(--cv-accent-soft));
-  font-size: 11.5px;
+  font-size: var(--cv-underheading-size, 11.5px);
   white-space: nowrap;
 }
 
@@ -1269,13 +1270,14 @@ textarea.field {
   white-space: pre-line;
 }
 
-/* Activity bullets have their own "Aktiviteter" color control, split out
-   from "Tekst i elementer" (.cv-entry-desc/.cv-entry-comment above) so they
-   can be colored independently of the description they sit under. */
+/* Activity bullets have their own "Aktiviteter" color AND size control,
+   split out from "Tekst i elementer" (.cv-entry-desc/.cv-entry-comment
+   above) so they can be colored and sized independently of the
+   description they sit under. */
 .cv-entry-acts {
   margin: 3px 0 0;
   padding-left: 16px;
-  font-size: var(--cv-element-text-size, 12.5px);
+  font-size: var(--cv-activity-size, var(--cv-element-text-size, 12.5px));
   color: var(--cv-activity, #24282e);
 }
 
@@ -1287,7 +1289,7 @@ textarea.field {
    one dot-separated line, for a denser look (see AppState.activityStyle). */
 .cv-entry-acts-inline {
   margin: 3px 0 0;
-  font-size: var(--cv-element-text-size, 12.5px);
+  font-size: var(--cv-activity-size, var(--cv-element-text-size, 12.5px));
   color: var(--cv-activity, #24282e);
 }
 
@@ -1316,7 +1318,7 @@ textarea.field {
      it wraps to. */
   border-radius: 10px;
   padding: 2px 10px;
-  font-size: 11.5px;
+  font-size: var(--cv-chip-size, 11.5px);
   /* A chip is normally one short, un-wrapped label — but a longer one
      (e.g. a full sentence used as a competency) would otherwise just
      overflow past its column instead of stopping at it, so it wraps
@@ -1391,12 +1393,13 @@ textarea.field {
 
 .cv-entry-line-head {
   color: var(--cv-h3, #24282e);
+  font-size: var(--cv-h3-size, var(--cv-text-size, 13px));
   font-weight: 600;
 }
 
 .cv-entry-line-meta {
   color: var(--cv-underheading, var(--cv-accent-soft));
-  font-size: 11.5px;
+  font-size: var(--cv-underheading-size, 11.5px);
   white-space: nowrap;
 }
 

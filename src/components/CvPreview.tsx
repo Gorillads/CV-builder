@@ -12,6 +12,11 @@ import {
   TEXT_SIZES,
   ELEMENT_TEXT_SIZES,
   CONTACT_SIZES,
+  HEADING3_SIZES,
+  UNDERHEADING_SIZES,
+  ACTIVITY_SIZES,
+  CHIP_SIZES,
+  BODY_TEXT_SIZES,
   LOGO_SIZES,
   SECTION_GAPS,
   ENTRY_GAPS,
@@ -840,6 +845,11 @@ export function CvPreview({
   const textSizePx = resolveSizePx(TEXT_SIZES, design.textSize, densityStep);
   const elementTextSizePx = resolveSizePx(ELEMENT_TEXT_SIZES, design.elementTextSize, densityStep);
   const contactSizePx = resolveSizePx(CONTACT_SIZES, design.contactSize, densityStep);
+  const heading3SizePx = resolveSizePx(HEADING3_SIZES, design.heading3Size, densityStep);
+  const underheadingSizePx = resolveSizePx(UNDERHEADING_SIZES, design.underheadingSize, densityStep);
+  const activitySizePx = resolveSizePx(ACTIVITY_SIZES, design.activitySize, densityStep);
+  const chipSizePx = resolveSizePx(CHIP_SIZES, design.chipSize, densityStep);
+  const bodyTextSizePx = resolveSizePx(BODY_TEXT_SIZES, design.bodyTextSize, densityStep);
   const logoSizePx = resolveSizePx(LOGO_SIZES, design.logoSize, densityStep);
   const sectionGap = resolveSizePx(SECTION_GAPS, design.sectionGap, densityStep);
   const entryGap = resolveSizePx(ENTRY_GAPS, design.entryGap, densityStep);
@@ -917,6 +927,11 @@ export function CvPreview({
     "--cv-text-size": `${textSizePx}px`,
     "--cv-element-text-size": `${elementTextSizePx}px`,
     "--cv-contact-size": `${contactSizePx}px`,
+    "--cv-h3-size": `${heading3SizePx}px`,
+    "--cv-underheading-size": `${underheadingSizePx}px`,
+    "--cv-activity-size": `${activitySizePx}px`,
+    "--cv-chip-size": `${chipSizePx}px`,
+    "--cv-body-text-size": `${bodyTextSizePx}px`,
     "--cv-logo-size": `${logoSizePx}px`,
     "--cv-sidebar-width": `${sidebarWidthPct}%`,
     "--cv-section-gap": `${sectionGap}px`,

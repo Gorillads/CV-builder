@@ -71,12 +71,15 @@ export function SizeSlider({
   );
 }
 
-/** The overall density control plus the seven individual controls it
- *  defaults each of them to (five text sizes, plus section/element
- *  spacing) — grouped into one design-group with the individual ones
- *  nested visually underneath (see .design-subgroup in App.css) so the
- *  "this knob adjusts those seven" relationship reads at a glance instead
- *  of eight same-looking boxes in a row. */
+/** The overall density control plus the individual controls it defaults
+ *  each of them to — grouped into one design-group with the individual
+ *  ones nested visually underneath (see .design-subgroup in App.css) so
+ *  the "this knob adjusts those" relationship reads at a glance instead of
+ *  a dozen same-looking boxes in a row. The first nine individual controls
+ *  (Chip through Body text) each mirror one of the Theme section's own
+ *  color categories one-for-one — see HEADING3_SIZES etc. in
+ *  src/data/designTokens; the rest (Text size, Logo, Section/Element
+ *  spacing) don't have a Theme equivalent but predate this grouping. */
 function DensityGroup({
   design,
   setDesign,
@@ -84,11 +87,16 @@ function DensityGroup({
 }: {
   design: {
     density: string;
+    chipSize: string;
     headSize: string;
     headingSize: string;
-    textSize: string;
+    heading3Size: string;
+    underheadingSize: string;
     elementTextSize: string;
+    activitySize: string;
     contactSize: string;
+    bodyTextSize: string;
+    textSize: string;
     logoSize: string;
     sectionGap: string;
     entryGap: string;
@@ -96,11 +104,16 @@ function DensityGroup({
   setDesign: (
     field:
       | "density"
+      | "chipSize"
       | "headSize"
       | "headingSize"
-      | "textSize"
+      | "heading3Size"
+      | "underheadingSize"
       | "elementTextSize"
+      | "activitySize"
       | "contactSize"
+      | "bodyTextSize"
+      | "textSize"
       | "logoSize"
       | "sectionGap"
       | "entryGap",
@@ -123,6 +136,13 @@ function DensityGroup({
       {advanced && (
         <div className="design-subgroup">
           <SizeSlider
+            label={T.chipSize}
+            value={design.chipSize}
+            onChange={(v) => setDesign("chipSize", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
             label={T.headerSize}
             value={design.headSize}
             onChange={(v) => setDesign("headSize", v)}
@@ -137,9 +157,16 @@ function DensityGroup({
           />
 
           <SizeSlider
-            label={T.textSize}
-            value={design.textSize}
-            onChange={(v) => setDesign("textSize", v)}
+            label={T.heading3Size}
+            value={design.heading3Size}
+            onChange={(v) => setDesign("heading3Size", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
+            label={T.underheadingSize}
+            value={design.underheadingSize}
+            onChange={(v) => setDesign("underheadingSize", v)}
             followLabel={T.followDensity}
           />
 
@@ -151,9 +178,30 @@ function DensityGroup({
           />
 
           <SizeSlider
+            label={T.activitySize}
+            value={design.activitySize}
+            onChange={(v) => setDesign("activitySize", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
             label={T.contactSize}
             value={design.contactSize}
             onChange={(v) => setDesign("contactSize", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
+            label={T.bodyTextSize}
+            value={design.bodyTextSize}
+            onChange={(v) => setDesign("bodyTextSize", v)}
+            followLabel={T.followDensity}
+          />
+
+          <SizeSlider
+            label={T.textSize}
+            value={design.textSize}
+            onChange={(v) => setDesign("textSize", v)}
             followLabel={T.followDensity}
           />
 
