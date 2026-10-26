@@ -301,6 +301,41 @@ export const SECTION_GAPS: number[] = [8.4, 10.8, 13.2, 15.6, 18, 20.4, 22.8, 25
  *  change it. */
 export const ENTRY_GAPS: number[] = [4.2, 5.4, 6.6, 7.8, 9, 10.2, 11.4, 12.6, 13.8, 15];
 
+/** Font size, in px, of an entry's own heading (e.g. a job title) —
+ *  "Heading 3 size" in the Design tab, mirroring heading3Color in what it
+ *  controls. Before this control existed the heading just inherited
+ *  whatever TEXT_SIZES resolved to on the page, so this array is identical
+ *  to TEXT_SIZES — index 4 (13px) renders exactly as it always did,
+ *  pinning it to an explicit step is what's new. */
+export const HEADING3_SIZES: number[] = [10, 11, 11.5, 12, 13, 13.5, 14, 14.5, 15, 16];
+
+/** Font size, in px, of an entry's own year/source meta line — "Subheading
+ *  size" in the Design tab, mirroring underheadingColor in what it
+ *  controls. Index 4 (11.5px) is the default, the same fixed size this
+ *  line always had before density could change it. */
+export const UNDERHEADING_SIZES: number[] = [8.5, 9, 9.5, 10.5, 11.5, 12, 12.5, 13.5, 14.5, 15.5];
+
+/** Font size, in px, of an entry's own activity bullets — "Activity size"
+ *  in the Design tab, mirroring activityColor in what it controls,
+ *  independent of ELEMENT_TEXT_SIZES (which the bullets used to just
+ *  share the font size of, alongside the description/comment above them).
+ *  Identical to ELEMENT_TEXT_SIZES so index 4 (12.5px) still renders
+ *  exactly as it always did. */
+export const ACTIVITY_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.5, 15.5, 16.5];
+
+/** Font size, in px, of a "chips"-variant pill's own label — "Chip size" in
+ *  the Design tab, mirroring chipColor in what it controls. Index 4
+ *  (11.5px) is the default, the same fixed size a chip always had before
+ *  density could change it. */
+export const CHIP_SIZES: number[] = [8.5, 9, 9.5, 10.5, 11.5, 12, 12.5, 13.5, 14.5, 15.5];
+
+/** Font size, in px, of a category's own intro (blurb) — "Body text size"
+ *  in the Design tab, mirroring bodyTextColor in what it controls,
+ *  independent of the general TEXT_SIZES control. Identical to
+ *  ELEMENT_TEXT_SIZES so index 4 (12.5px) still renders exactly as it
+ *  always did. */
+export const BODY_TEXT_SIZES: number[] = [9.5, 10, 10.5, 11.5, 12.5, 13, 13.5, 14.5, 15.5, 16.5];
+
 /** Diameter, in px, of the optional profile picture (see
  *  AppState.header.photo) at each of the 10 slider positions — same plain,
  *  unnamed 0-9 step as every other size control (see HEAD_SIZES etc.).

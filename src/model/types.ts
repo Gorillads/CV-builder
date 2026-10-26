@@ -235,6 +235,10 @@ export interface AppState {
      *  chip's text color; see deriveChipTrio in src/data/designTokens)
      *  overrides it on its own. */
     chipColor: string;
+    /** "Chip size" — same "auto" vs explicit-step-into-CHIP_SIZES shape as
+     *  the other size controls, independent of `textSize`. Mirrors
+     *  chipColor in what it controls. */
+    chipSize: string;
     /** The person's own name — "auto" is the standard near-black body
      *  color (the name isn't scheme-tinted by default), or a literal CSS
      *  color overrides it on its own. Mirrors `headSize` in what it
@@ -250,9 +254,17 @@ export interface AppState {
      *  near-black body color (not scheme-tinted by default, same as
      *  heading1Color), or a literal CSS color overrides it on its own. */
     heading3Color: string;
+    /** "Heading 3 size" — same "auto" vs explicit-step-into-HEADING3_SIZES
+     *  shape as the other size controls, independent of them. Mirrors
+     *  heading3Color in what it controls. */
+    heading3Size: string;
     /** An entry's year/source label — "auto" follows `scheme`'s softer
      *  secondary tone, or a literal CSS color overrides it on its own. */
     underheadingColor: string;
+    /** "Subheading size" — same "auto" vs explicit-step-into-
+     *  UNDERHEADING_SIZES shape as the other size controls, independent of
+     *  them. Mirrors underheadingColor in what it controls. */
+    underheadingSize: string;
     /** An entry's own description and short comment line — "auto" keeps
      *  each of their own current shade (they aren't identical today), or a
      *  literal CSS color unifies both to one value. Mirrors
@@ -265,6 +277,11 @@ export interface AppState {
      *  color (not scheme-tinted by default), or a literal CSS color
      *  overrides it on its own. */
     activityColor: string;
+    /** "Activity size" — same "auto" vs explicit-step-into-ACTIVITY_SIZES
+     *  shape as the other size controls, split out from elementTextSize the
+     *  same way activityColor is split out from elementTextColor above.
+     *  Mirrors activityColor in what it controls. */
+    activitySize: string;
     /** The applied title and the contact line (address/phone/mail/
      *  location) — "auto" keeps each of their own current shade (the
      *  applied title in the scheme's accent, the contact line the standard
@@ -277,6 +294,12 @@ export interface AppState {
      *  `textSize` (minus an entry's own heading/meta, see heading3Color/
      *  underheadingColor) in what it controls. */
     bodyTextColor: string;
+    /** "Body text size" — same "auto" vs explicit-step-into-
+     *  BODY_TEXT_SIZES shape as the other size controls, independent of
+     *  `textSize`. Mirrors bodyTextColor in what it controls (just the
+     *  category blurb, not the footer — which keeps its own small fixed
+     *  size regardless of this control). */
+    bodyTextSize: string;
     /** The page's own paper color — "auto" is the standard off-white (see
      *  DEFAULT_PAGE_BG in src/data/designTokens), or a literal CSS color
      *  overrides it on its own. */
