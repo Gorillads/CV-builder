@@ -10,6 +10,7 @@ import { TabBar } from "./components/TabBar";
 import { TutorialOverlay } from "./components/TutorialOverlay";
 import { useLocalFonts } from "./hooks/useLocalFonts";
 import { pxToMm, type PageOverflow } from "./hooks/usePageOverflow";
+import { useHoverTarget, isExactHover } from "./state/hoverTarget";
 import "./App.css";
 
 type Tab = "content" | "tailor" | "design";
@@ -68,6 +69,7 @@ function App() {
   const [editorWidth, setEditorWidth] = useState(loadEditorWidth);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const editorWidthRef = useRef(editorWidth);
+  const hoverTarget = useHoverTarget();
   const T = t(lang);
   useLocalFonts();
 
@@ -146,31 +148,31 @@ function App() {
         <div className="editor-panel">
           <div className="header-fields">
             <input
-              className="field"
+              className={"field" + (isExactHover(hoverTarget, "name") ? " hover-exact" : "")}
               placeholder={T.name}
               value={header.name}
               onChange={(e) => setHeaderField("name", e.target.value)}
             />
             <input
-              className="field"
+              className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
               placeholder={T.address}
               value={header.address}
               onChange={(e) => setHeaderField("address", e.target.value)}
             />
             <input
-              className="field"
+              className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
               placeholder={T.phone}
               value={header.phone}
               onChange={(e) => setHeaderField("phone", e.target.value)}
             />
             <input
-              className="field"
+              className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
               placeholder={T.mail}
               value={header.mail}
               onChange={(e) => setHeaderField("mail", e.target.value)}
             />
             <input
-              className="field"
+              className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
               placeholder={T.location}
               value={header.location[lang]}
               onChange={(e) => setHeaderLocation(lang, e.target.value)}

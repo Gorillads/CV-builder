@@ -6,6 +6,7 @@ import type { Lang } from "../model/types";
 import { t } from "../i18n";
 import { defaultVariant, variantsFor, defaultActivityStyle, ACTIVITY_STYLES, isInSidebar } from "../data/designTokens";
 import { SizeSlider } from "./DesignTab";
+import { useHoverTarget, isExactHover, isCategoryAncestorHover, isItemAncestorHover } from "../state/hoverTarget";
 
 /** An item's own bullet pool, checkable one by one — the counterpart to
  *  the item-level checkbox above it. Content tab owns the text (adding/
@@ -22,6 +23,7 @@ function ActivityChecklist({ itemId, lang }: { itemId: string; lang: Lang }) {
   const reorderActivity = useActiveStore((s) => s.reorderActivity);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const hoverTarget = useHoverTarget();
 
   if (!item || !item.activities.length) return null;
 
@@ -32,7 +34,8 @@ function ActivityChecklist({ itemId, lang }: { itemId: string; lang: Lang }) {
           className={
             "activity-checklist-row" +
             (draggedIndex === i ? " dragging" : "") +
-            (dragOverIndex === i && draggedIndex !== i ? " drag-over" : "")
+            (dragOverIndex === i && draggedIndex !== i ? " drag-over" : "") +
+            (isExactHover(hoverTarget, "activity", { itemId, activityIndex: i }) ? " hover-exact" : "")
           }
           key={i}
           draggable
@@ -82,6 +85,7 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
   const reorderItem = useActiveStore((s) => s.reorderItem);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const hoverTarget = useHoverTarget();
 
   if (!itemOrder.length) return null;
 
@@ -109,7 +113,8 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
             className={
               "item-checklist-item" +
               (draggedId === id ? " dragging" : "") +
-              (dragOverId === id && draggedId !== id ? " drag-over" : "")
+              (dragOverId === id && draggedId !== id ? " drag-over" : "") +
+              (isItemAncestorHover(hoverTarget, id) ? " hover-ancestor" : "")
             }
             draggable
             onDragStart={(e) => {
@@ -133,7 +138,12 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
             }}
           >
             <div className="item-checklist-row">
-              <label className="item-checklist-label">
+              <label
+                className={
+                  "item-checklist-label" +
+                  (isExactHover(hoverTarget, ["entryHeading", "chip"], { itemId: id }) ? " hover-exact" : "")
+                }
+              >
                 <span className="drag-handle drag-handle--small" aria-hidden="true">
                   ⠿
                 </span>
@@ -151,7 +161,9 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
                 </button>
               )}
               {item.logo && (
-                <label className="in-cv item-logo-toggle">
+                <label
+                  className={"in-cv item-logo-toggle" + (isExactHover(hoverTarget, "logo", { itemId: id }) ? " hover-exact" : "")}
+                >
                   <input
                     type="checkbox"
                     checked={item.logoVisible}
@@ -183,6 +195,7 @@ function ItemChecklist({ categoryId, lang }: { categoryId: string; lang: Lang })
                   value={item.logoSize}
                   onChange={(v) => setItemLogoSize(id, v)}
                   followLabel={T.followGlobalLogoSize}
+                  highlight={isExactHover(hoverTarget, "logo", { itemId: id })}
                 />
               </div>
             )}
@@ -211,6 +224,7 @@ export function TailorTab({ lang }: { lang: Lang }) {
   const setAppliedTitle = useActiveStore((s) => s.setAppliedTitle);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const hoverTarget = useHoverTarget();
 
   const visible = order.filter((id) => categories[id] && !categories[id].isHidden);
 
@@ -219,7 +233,7 @@ export function TailorTab({ lang }: { lang: Lang }) {
       <div className="tailor-field">
         <label>{T.appliedTitle}</label>
         <input
-          className="field"
+          className={"field" + (isExactHover(hoverTarget, "appliedTitle") ? " hover-exact" : "")}
           value={appliedTitle[lang]}
           onChange={(e) => setAppliedTitle(lang, e.target.value)}
         />
@@ -230,13 +244,21 @@ export function TailorTab({ lang }: { lang: Lang }) {
           const cat = categories[id];
           const options = variantsFor();
           const currentVariant = variant[id] ?? defaultVariant();
+          // The category's on/off toggle doubles as "sectionHeading"'s own
+          // exact control (it's literally what shows/hides "PROFIL" etc.)
+          // — anything else belonging to this category only lights the
+          // row at the lighter ancestor weight.
+          const rowIsExact = isExactHover(hoverTarget, "sectionHeading", { categoryId: id });
+          const rowIsAncestor = !rowIsExact && isCategoryAncestorHover(hoverTarget, id);
           return (
             <div className="tailor-item" key={id}>
               <div
                 className={
                   "tailor-row" +
                   (draggedId === id ? " dragging" : "") +
-                  (dragOverId === id && draggedId !== id ? " drag-over" : "")
+                  (dragOverId === id && draggedId !== id ? " drag-over" : "") +
+                  (rowIsExact ? " hover-exact" : "") +
+                  (rowIsAncestor ? " hover-ancestor" : "")
                 }
                 draggable
                 onDragStart={(e) => {

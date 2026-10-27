@@ -18,6 +18,7 @@ import {
   resolveBgSwatch,
 } from "../data/designTokens";
 import { resizeImage } from "../utils/resizeImage";
+import { useHoverTarget, isDensityFieldHovered, isThemeFieldHovered } from "../state/hoverTarget";
 
 /** A plain 0-9 slider, unnamed — every size step (density, and the four
  *  individual controls it defaults to) is a position on this same range,
@@ -46,17 +47,21 @@ export function SizeSlider({
   value,
   onChange,
   followLabel,
+  highlight,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   followLabel: string;
+  /** Lit up (see .hover-exact in App.css) while the preview element this
+   *  slider sizes is under the mouse — see state/hoverTarget.ts. */
+  highlight?: boolean;
 }) {
   const following = value === "auto";
   const step = following ? undefined : clampStep(Number(value));
 
   return (
-    <div className="design-group">
+    <div className={"design-group" + (highlight ? " hover-exact" : "")}>
       <div className="design-group-label">{label}</div>
       <label className="in-cv">
         <input
@@ -122,6 +127,8 @@ function DensityGroup({
   T: ReturnType<typeof t>;
 }) {
   const [advanced, setAdvanced] = useState(false);
+  const hoverTarget = useHoverTarget();
+  const lit = (field: string) => isDensityFieldHovered(hoverTarget, field);
 
   return (
     <div className="design-group">
@@ -140,6 +147,7 @@ function DensityGroup({
             value={design.chipSize}
             onChange={(v) => setDesign("chipSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("chipSize")}
           />
 
           <SizeSlider
@@ -147,6 +155,7 @@ function DensityGroup({
             value={design.headSize}
             onChange={(v) => setDesign("headSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("headSize")}
           />
 
           <SizeSlider
@@ -154,6 +163,7 @@ function DensityGroup({
             value={design.headingSize}
             onChange={(v) => setDesign("headingSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("headingSize")}
           />
 
           <SizeSlider
@@ -161,6 +171,7 @@ function DensityGroup({
             value={design.heading3Size}
             onChange={(v) => setDesign("heading3Size", v)}
             followLabel={T.followDensity}
+            highlight={lit("heading3Size")}
           />
 
           <SizeSlider
@@ -168,6 +179,7 @@ function DensityGroup({
             value={design.underheadingSize}
             onChange={(v) => setDesign("underheadingSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("underheadingSize")}
           />
 
           <SizeSlider
@@ -175,6 +187,7 @@ function DensityGroup({
             value={design.elementTextSize}
             onChange={(v) => setDesign("elementTextSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("elementTextSize")}
           />
 
           <SizeSlider
@@ -182,6 +195,7 @@ function DensityGroup({
             value={design.activitySize}
             onChange={(v) => setDesign("activitySize", v)}
             followLabel={T.followDensity}
+            highlight={lit("activitySize")}
           />
 
           <SizeSlider
@@ -189,6 +203,7 @@ function DensityGroup({
             value={design.contactSize}
             onChange={(v) => setDesign("contactSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("contactSize")}
           />
 
           <SizeSlider
@@ -196,6 +211,7 @@ function DensityGroup({
             value={design.bodyTextSize}
             onChange={(v) => setDesign("bodyTextSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("bodyTextSize")}
           />
 
           <SizeSlider
@@ -210,6 +226,7 @@ function DensityGroup({
             value={design.logoSize}
             onChange={(v) => setDesign("logoSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("logoSize")}
           />
 
           <SizeSlider
@@ -254,6 +271,7 @@ function ColorControl({
   followLabel,
   customLabel,
   swatches,
+  highlight,
 }: {
   label: string;
   value: string;
@@ -261,6 +279,9 @@ function ColorControl({
   followLabel: string;
   customLabel: string;
   swatches: ColorSwatchOption[];
+  /** Lit up (see .hover-exact in App.css) while the preview element this
+   *  control colors is under the mouse — see state/hoverTarget.ts. */
+  highlight?: boolean;
 }) {
   const following = value === "auto";
   const colorInputRef = useRef<HTMLInputElement>(null);
@@ -268,7 +289,7 @@ function ColorControl({
   const isCustomActive = !following && !isPreset;
 
   return (
-    <div className="design-group">
+    <div className={"design-group" + (highlight ? " hover-exact" : "")}>
       <div className="design-group-label">{label}</div>
       <label className="in-cv">
         <input
@@ -356,6 +377,8 @@ function ThemeGroup({
   T: ReturnType<typeof t>;
 }) {
   const [advanced, setAdvanced] = useState(false);
+  const hoverTarget = useHoverTarget();
+  const lit = (field: string) => isThemeFieldHovered(hoverTarget, field);
   const activeScheme = SCHEMES.find((s) => s.id === design.scheme);
   const pageBg = design.bgColor === "auto" ? (activeScheme?.textOverride?.pageBg ?? DEFAULT_PAGE_BG) : design.bgColor;
 
@@ -428,6 +451,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={chipSwatches}
+            highlight={lit("chipColor")}
           />
           <ColorControl
             label={T.bgColor}
@@ -444,6 +468,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={accentSwatches}
+            highlight={lit("heading1Color")}
           />
           <ColorControl
             label={T.heading2Color}
@@ -452,6 +477,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={accentSwatches}
+            highlight={lit("heading2Color")}
           />
           <ColorControl
             label={T.heading3Color}
@@ -460,6 +486,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={accentSwatches}
+            highlight={lit("heading3Color")}
           />
           <ColorControl
             label={T.underheadingColor}
@@ -468,6 +495,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={softSwatches}
+            highlight={lit("underheadingColor")}
           />
           <ColorControl
             label={T.elementTextColor}
@@ -476,6 +504,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={softSwatches}
+            highlight={lit("elementTextColor")}
           />
           <ColorControl
             label={T.activityColor}
@@ -484,6 +513,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={softSwatches}
+            highlight={lit("activityColor")}
           />
           <ColorControl
             label={T.contactColor}
@@ -492,6 +522,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={softSwatches}
+            highlight={lit("contactColor")}
           />
           <ColorControl
             label={T.bodyTextColor}
@@ -500,6 +531,7 @@ function ThemeGroup({
             followLabel={T.followTheme}
             customLabel={T.customColor}
             swatches={softSwatches}
+            highlight={lit("bodyTextColor")}
           />
         </div>
       )}

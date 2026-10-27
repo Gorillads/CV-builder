@@ -5,6 +5,7 @@ import type { Category, Lang, LibraryItem } from "../model/types";
 import { t } from "../i18n";
 import { activityMatchesQuery, itemMatchesQuery } from "../search/contentSearch";
 import { resizeImage } from "../utils/resizeImage";
+import { useHoverTarget, isExactHover, isCategoryAncestorHover, isItemAncestorHover } from "../state/hoverTarget";
 
 /** Category-level drag handling is owned by ContentTab (it sees every
  *  card, not just one), so CategoryCard only renders the handle and
@@ -54,18 +55,24 @@ function ActivityEditor({
   const removeActivity = useActiveStore((s) => s.removeActivity);
   const setActivity = useActiveStore((s) => s.setActivity);
   const toggleActivityCollapsed = useActiveStore((s) => s.toggleActivityCollapsed);
+  const hoverTarget = useHoverTarget();
   const T = t(lang);
 
   if (!activity) return null;
 
   const matchesSearch = !!searchQuery && activityMatchesQuery(activity, lang, searchQuery);
   const showCollapsed = activity.isCollapsed && !matchesSearch;
+  // Lit even while collapsed (see .collapsed-label below) — so this exact
+  // activity is findable in the editor without first having to guess
+  // which row to expand.
+  const isHovered = isExactHover(hoverTarget, "activity", { itemId, activityIndex: index });
 
   const rowClass =
     "activity-row" +
     (showCollapsed ? " activity-row--collapsed" : "") +
     (dragProps.isDragging ? " dragging" : "") +
-    (dragProps.isDragOver ? " drag-over" : "");
+    (dragProps.isDragOver ? " drag-over" : "") +
+    (isHovered ? " hover-exact" : "");
 
   if (showCollapsed) {
     return (
@@ -164,6 +171,7 @@ function ItemEditor({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const logoFileInput = useRef<HTMLInputElement>(null);
+  const hoverTarget = useHoverTarget();
   const T = t(lang);
 
   if (!item) return null;
@@ -181,12 +189,18 @@ function ItemEditor({
   };
 
   const showCollapsed = item.isCollapsed && !searchQuery;
+  // A lighter "it's in here" ring — lit even while collapsed, regardless
+  // of which of this item's own fields (heading, meta, an activity, ...)
+  // is the actual hover target, so the card is findable without already
+  // knowing which one to look inside.
+  const isAncestorHovered = isItemAncestorHover(hoverTarget, itemId);
 
   const cardClass =
     "item-card" +
     (showCollapsed ? " item-card--collapsed" : "") +
     (dragProps.isDragging ? " dragging" : "") +
-    (dragProps.isDragOver ? " drag-over" : "");
+    (dragProps.isDragOver ? " drag-over" : "") +
+    (isAncestorHovered ? " hover-ancestor" : "");
 
   if (showCollapsed) {
     return (
@@ -252,19 +266,19 @@ function ItemEditor({
 
       <div className="item-card-grid">
         <input
-          className="field"
+          className={"field" + (isExactHover(hoverTarget, ["entryHeading", "chip"], { itemId }) ? " hover-exact" : "")}
           placeholder={T.heading}
           value={text.head}
           onChange={(e) => setItemField(itemId, lang, "head", e.target.value)}
         />
         <input
-          className="field"
+          className={"field" + (isExactHover(hoverTarget, "entryMeta", { itemId }) ? " hover-exact" : "")}
           placeholder={T.yearSource}
           value={text.meta}
           onChange={(e) => setItemField(itemId, lang, "meta", e.target.value)}
         />
       </div>
-      <div className="photo-upload-row">
+      <div className={"photo-upload-row" + (isExactHover(hoverTarget, "logo", { itemId }) ? " hover-exact" : "")}>
         {item.logo && <img src={item.logo} alt="" className="logo-thumb" />}
         <button type="button" className="btn" onClick={() => logoFileInput.current?.click()}>
           {item.logo ? T.changeLogo : T.chooseLogo}
@@ -277,14 +291,14 @@ function ItemEditor({
       </div>
       <input ref={logoFileInput} type="file" accept="image/*" hidden onChange={handleLogoFile} />
       <input
-        className="field item-comment"
+        className={"field item-comment" + (isExactHover(hoverTarget, "entryComment", { itemId }) ? " hover-exact" : "")}
         placeholder={T.commentPlaceholder}
         title={T.comment}
         value={text.comment}
         onChange={(e) => setItemField(itemId, lang, "comment", e.target.value)}
       />
       <textarea
-        className="field"
+        className={"field" + (isExactHover(hoverTarget, "entryDesc", { itemId }) ? " hover-exact" : "")}
         placeholder={T.description}
         rows={2}
         value={text.desc}
@@ -353,6 +367,7 @@ export function CategoryCard({
   const reorderItem = useActiveStore((s) => s.reorderItem);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
+  const hoverTarget = useHoverTarget();
 
   const handleDelete = () => {
     if (window.confirm(T.confirmDeleteCategory(category.title[lang]))) deleteCategory(category.id);
@@ -366,12 +381,16 @@ export function CategoryCard({
     : itemOrder;
 
   const showCollapsed = category.isCollapsed && !searchQuery;
+  // Lit even while collapsed, same reasoning as item-card's own ancestor
+  // ring above — see isItemAncestorHover.
+  const isAncestorHovered = isCategoryAncestorHover(hoverTarget, category.id);
 
   const cardClass =
     "category-card" +
     (showCollapsed ? " category-card--collapsed" : "") +
     (dragProps?.isDragging ? " dragging" : "") +
-    (dragProps?.isDragOver ? " drag-over" : "");
+    (dragProps?.isDragOver ? " drag-over" : "") +
+    (isAncestorHovered ? " hover-ancestor" : "");
 
   if (showCollapsed) {
     return (
@@ -437,7 +456,10 @@ export function CategoryCard({
           ▾
         </button>
         <input
-          className="field category-title"
+          className={
+            "field category-title" +
+            (isExactHover(hoverTarget, "sectionHeading", { categoryId: category.id }) ? " hover-exact" : "")
+          }
           value={category.title[lang]}
           onChange={(e) => setCategoryTitle(category.id, lang, e.target.value)}
         />
@@ -450,7 +472,7 @@ export function CategoryCard({
         </button>
       </div>
       <textarea
-        className="field"
+        className={"field" + (isExactHover(hoverTarget, "blurb", { categoryId: category.id }) ? " hover-exact" : "")}
         placeholder={T.blurb}
         rows={2}
         value={category.blurb[lang]}
