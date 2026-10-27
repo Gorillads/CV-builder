@@ -1321,14 +1321,28 @@ textarea.field {
   font-size: var(--cv-chip-size, 11.5px);
   /* A chip is normally one short, un-wrapped label — but a longer one
      (e.g. a full sentence used as a competency) would otherwise just
-     overflow past its column instead of stopping at it, so it wraps
-     internally as a fallback rather than bleeding off the page. No extra
-     cap here beyond the column's own width: in the main column (or any
-     other wide context) a chip should stay on one line whenever there's
-     room for it, same as any other text — see .cv-aside .cv-tag below for
-     the narrower sidebar, where that's not true. */
+     overflow past its column instead of stopping at it, so it wraps onto
+     more than one line as a fallback rather than bleeding off the page.
+     No extra cap here beyond the column's own width: in the main column
+     (or any other wide context) a chip should stay on one line whenever
+     there's room for it, same as any other text — see .cv-aside .cv-tag
+     below for the narrower sidebar, where that's not true. */
   max-width: 100%;
-  overflow-wrap: break-word;
+  /* Deliberately NOT overflow-wrap: break-word — that lets a line break
+     fall in the middle of a word whenever the word alone doesn't fit the
+     current width, e.g. "Kravspecificering" → "Kravspecificerin"/"g".
+     Worse, it also lets tightenWrappedTag's own shrink-to-fit search (see
+     CvPreview.tsx) find an even narrower box than intended: that search's
+     lower bound comes from the browser's own min-content measurement,
+     which under break-word shrinks to roughly a single character wide
+     instead of the widest whole *word* — so the search would happily
+     narrow the box right up to the point a word has to split to still
+     fit. overflow-wrap: normal (the default, named here for clarity) only
+     ever breaks at a space: a single word too wide for the column just
+     overflows it on its own line instead, the same as plain body text
+     does — awkward only in the rare case of one truly very long unbroken
+     word, but never an illegible split mid-word. */
+  overflow-wrap: normal;
 }
 
 /* The sidebar column is narrow enough that an un-capped wrapped chip
