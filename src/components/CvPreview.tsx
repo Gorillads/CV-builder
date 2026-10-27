@@ -34,6 +34,7 @@ import {
   deriveChipTrio,
 } from "../data/designTokens";
 import { usePageOverflow, pxToMm, type PageOverflow } from "../hooks/usePageOverflow";
+import { hoverTargetProps } from "../state/hoverTarget";
 
 /** A4 content box (1123px tall, 40px vertical padding) — the fixed
  *  geometry both the pagination hook and the overflow-detecting Page
@@ -61,13 +62,20 @@ const APPENDIX_TITLE_HEIGHT = 46;
  *  below) nothing makes the header's own bottom margin configurable. */
 const HEADER_GAP = 24;
 
+/** index here is the activity's position in item.activities (its stable
+ *  identity, see ActivityChecklist in TailorTab.tsx) — not its position in
+ *  this filtered/selected list, which an entry's own hover target needs to
+ *  match the right checkbox/row back in the editor. */
 function selectedActivityTexts(
   selectedActivities: Record<string, number[]>,
   item: LibraryItem,
   lang: Lang,
-): string[] {
+): { index: number; text: string }[] {
   const indices = selectedActivities[item.id] ?? item.activities.map((_, i) => i);
-  return indices.map((i) => item.activities[i]).filter(Boolean).map((a) => a[lang] || a.da);
+  return indices
+    .map((i) => ({ index: i, activity: item.activities[i] }))
+    .filter((a): a is { index: number; activity: NonNullable<typeof a.activity> } => !!a.activity)
+    .map(({ index, activity }) => ({ index, text: activity[lang] || activity.da }));
 }
 
 /** Shrinks a wrapped "chips" pill (see .cv-aside .cv-tag in App.css) down
@@ -123,7 +131,17 @@ function tightenWrappedTag(el: HTMLSpanElement) {
   el.style.width = `${best}px`;
 }
 
-function TagsBlock({ items, lang, variant }: { items: LibraryItem[]; lang: Lang; variant: string }) {
+function TagsBlock({
+  items,
+  lang,
+  variant,
+  categoryId,
+}: {
+  items: LibraryItem[];
+  lang: Lang;
+  variant: string;
+  categoryId: string;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const tagRefs = useRef<Map<string, HTMLSpanElement>>(new Map());
   const lastWidthRef = useRef<number | null>(null);
@@ -163,6 +181,7 @@ function TagsBlock({ items, lang, variant }: { items: LibraryItem[]; lang: Lang;
             if (el) tagRefs.current.set(it.id, el);
             else tagRefs.current.delete(it.id);
           }}
+          {...hoverTargetProps({ kind: "chip", categoryId, itemId: it.id })}
         >
           {it[lang].head}
         </span>
@@ -177,12 +196,14 @@ function EntryBlock({
   variant,
   activityStyles,
   selectedActivities,
+  categoryId,
 }: {
   item: LibraryItem;
   lang: Lang;
   variant: string;
   activityStyles: Record<string, string>;
   selectedActivities: Record<string, number[]>;
+  categoryId: string;
 }) {
   const text = item[lang];
   const showLogo = !!item.logo && item.logoVisible;
@@ -203,7 +224,11 @@ function EntryBlock({
   // the on-screen preview, once a logo was both large and taller than
   // the approximation assumed.
   const logoEl = showLogo && (
-    <span className="cv-entry-logo-frame" style={logoOverridePx ? { width: logoOverridePx } : undefined}>
+    <span
+      className="cv-entry-logo-frame"
+      style={logoOverridePx ? { width: logoOverridePx } : undefined}
+      {...hoverTargetProps({ kind: "logo", categoryId, itemId: item.id })}
+    >
       <img
         className="cv-entry-logo"
         src={item.logo}
@@ -216,11 +241,15 @@ function EntryBlock({
   if (variant === "line") {
     return (
       <div className="cv-entry cv-entry--line">
-        <span className="cv-entry-line-head">
+        <span className="cv-entry-line-head" {...hoverTargetProps({ kind: "entryHeading", categoryId, itemId: item.id })}>
           {text.head}
           {logoEl}
         </span>
-        {text.meta && <span className="cv-entry-line-meta">{text.meta}</span>}
+        {text.meta && (
+          <span className="cv-entry-line-meta" {...hoverTargetProps({ kind: "entryMeta", categoryId, itemId: item.id })}>
+            {text.meta}
+          </span>
+        )}
       </div>
     );
   }
@@ -231,26 +260,53 @@ function EntryBlock({
 
   return (
     <div className={"cv-entry" + (variant === "rows" ? " cv-entry--rows" : "")}>
-      {variant === "rows" && <div className="cv-entry-meta-col">{text.meta}</div>}
+      {variant === "rows" && (
+        <div className="cv-entry-meta-col" {...hoverTargetProps({ kind: "entryMeta", categoryId, itemId: item.id })}>
+          {text.meta}
+        </div>
+      )}
       <div className="cv-entry-body">
         {showHead && (
           <div className="cv-entry-head">
             <span className="cv-entry-head-title">
-              <strong>{text.head}</strong>
+              <strong {...hoverTargetProps({ kind: "entryHeading", categoryId, itemId: item.id })}>{text.head}</strong>
               {logoEl}
             </span>
-            {variant !== "rows" && text.meta && <span className="cv-entry-meta">{text.meta}</span>}
+            {variant !== "rows" && text.meta && (
+              <span className="cv-entry-meta" {...hoverTargetProps({ kind: "entryMeta", categoryId, itemId: item.id })}>
+                {text.meta}
+              </span>
+            )}
           </div>
         )}
-        {text.comment && <p className="cv-entry-comment">{text.comment}</p>}
-        {text.desc && <p className="cv-entry-desc">{text.desc}</p>}
+        {text.comment && (
+          <p className="cv-entry-comment" {...hoverTargetProps({ kind: "entryComment", categoryId, itemId: item.id })}>
+            {text.comment}
+          </p>
+        )}
+        {text.desc && (
+          <p className="cv-entry-desc" {...hoverTargetProps({ kind: "entryDesc", categoryId, itemId: item.id })}>
+            {text.desc}
+          </p>
+        )}
         {acts.length > 0 &&
           (activityStyle === "inline" ? (
-            <p className="cv-entry-acts-inline">{acts.join(" · ")}</p>
+            <p className="cv-entry-acts-inline">
+              {acts.map(({ index, text: actText }, i) => (
+                <span key={index}>
+                  {i > 0 && " · "}
+                  <span {...hoverTargetProps({ kind: "activity", categoryId, itemId: item.id, activityIndex: index })}>
+                    {actText}
+                  </span>
+                </span>
+              ))}
+            </p>
           ) : (
             <ul className="cv-entry-acts">
-              {acts.map((a, i) => (
-                <li key={i}>{a}</li>
+              {acts.map(({ index, text: actText }) => (
+                <li key={index} {...hoverTargetProps({ kind: "activity", categoryId, itemId: item.id, activityIndex: index })}>
+                  {actText}
+                </li>
               ))}
             </ul>
           ))}
@@ -265,12 +321,14 @@ function EntryList({
   variant,
   activityStyles,
   selectedActivities,
+  categoryId,
 }: {
   items: LibraryItem[];
   lang: Lang;
   variant: string;
   activityStyles: Record<string, string>;
   selectedActivities: Record<string, number[]>;
+  categoryId: string;
 }) {
   return (
     <>
@@ -282,6 +340,7 @@ function EntryList({
           variant={variant}
           activityStyles={activityStyles}
           selectedActivities={selectedActivities}
+          categoryId={categoryId}
         />
       ))}
     </>
@@ -319,10 +378,14 @@ function SectionBlock({
 
   return (
     <section className="cv-section">
-      <h3>{category.title[lang]}</h3>
-      {category.blurb[lang] && <p className="cv-blurb">{category.blurb[lang]}</p>}
+      <h3 {...hoverTargetProps({ kind: "sectionHeading", categoryId: category.id })}>{category.title[lang]}</h3>
+      {category.blurb[lang] && (
+        <p className="cv-blurb" {...hoverTargetProps({ kind: "blurb", categoryId: category.id })}>
+          {category.blurb[lang]}
+        </p>
+      )}
       {usePillRendering ? (
-        <TagsBlock items={items} lang={lang} variant={variant} />
+        <TagsBlock items={items} lang={lang} variant={variant} categoryId={category.id} />
       ) : variant === "two-col" ? (
         <div className="cv-entries-grid">
           <EntryList
@@ -331,6 +394,7 @@ function SectionBlock({
             variant="standard"
             activityStyles={activityStyles}
             selectedActivities={selectedActivities}
+            categoryId={category.id}
           />
         </div>
       ) : (
@@ -340,6 +404,7 @@ function SectionBlock({
           variant={variant}
           activityStyles={activityStyles}
           selectedActivities={selectedActivities}
+          categoryId={category.id}
         />
       )}
     </section>
@@ -407,9 +472,19 @@ function HeaderBlock({
   photoPosition: string;
   photoShape: string;
 }) {
-  const nameEl = <h1>{name || "—"}</h1>;
-  const titleEl = appliedTitle ? <p className="cv-applied-title">{appliedTitle}</p> : null;
-  const contactEl = <p className="cv-contact">{[address, phone, mail, location].filter(Boolean).join(" · ")}</p>;
+  const nameEl = (
+    <h1 {...hoverTargetProps({ kind: "name" })}>{name || "—"}</h1>
+  );
+  const titleEl = appliedTitle ? (
+    <p className="cv-applied-title" {...hoverTargetProps({ kind: "appliedTitle" })}>
+      {appliedTitle}
+    </p>
+  ) : null;
+  const contactEl = (
+    <p className="cv-contact" {...hoverTargetProps({ kind: "contact" })}>
+      {[address, phone, mail, location].filter(Boolean).join(" · ")}
+    </p>
+  );
 
   if (!photoUrl) {
     return (
