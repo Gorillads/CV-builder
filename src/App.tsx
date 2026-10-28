@@ -61,7 +61,9 @@ function App() {
   const setLang = useActiveStore((s) => s.setLang);
   const header = useActiveStore((s) => s.header);
   const setHeaderField = useActiveStore((s) => s.setHeaderField);
-  const setHeaderLocation = useActiveStore((s) => s.setHeaderLocation);
+  const setHeaderFieldValue = useActiveStore((s) => s.setHeaderFieldValue);
+  const addHeaderField = useActiveStore((s) => s.addHeaderField);
+  const removeHeaderField = useActiveStore((s) => s.removeHeaderField);
   const resetAll = useActiveStore((s) => s.resetAll);
   const [tab, setTab] = useState<Tab>("content");
   const [mainPageStatus, setMainPageStatus] = useState<PageOverflow | null>(null);
@@ -153,30 +155,27 @@ function App() {
               value={header.name}
               onChange={(e) => setHeaderField("name", e.target.value)}
             />
-            <input
-              className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
-              placeholder={T.address}
-              value={header.address}
-              onChange={(e) => setHeaderField("address", e.target.value)}
-            />
-            <input
-              className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
-              placeholder={T.phone}
-              value={header.phone}
-              onChange={(e) => setHeaderField("phone", e.target.value)}
-            />
-            <input
-              className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
-              placeholder={T.mail}
-              value={header.mail}
-              onChange={(e) => setHeaderField("mail", e.target.value)}
-            />
-            <input
-              className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
-              placeholder={T.location}
-              value={header.location[lang]}
-              onChange={(e) => setHeaderLocation(lang, e.target.value)}
-            />
+            {header.fields.map((f, i) => (
+              <div className="header-field-row" key={f.id}>
+                <input
+                  className={"field" + (isExactHover(hoverTarget, "contact") ? " hover-exact" : "")}
+                  placeholder={T.field(i + 1)}
+                  value={f.value[lang]}
+                  onChange={(e) => setHeaderFieldValue(f.id, lang, e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="header-field-remove"
+                  onClick={() => removeHeaderField(f.id)}
+                  title={T.removeField}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <button type="button" className="header-field-add" onClick={addHeaderField} title={T.addField}>
+              +
+            </button>
           </div>
 
           <div className="tabs">

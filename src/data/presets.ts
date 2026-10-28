@@ -1,6 +1,6 @@
 import type { AppState, ByLang } from "../model/types";
 import type { CategorySeed, StateConfig } from "./defaultCategories";
-import { buildStateFromConfig, MODERN_DESIGN } from "./defaultCategories";
+import { buildStateFromConfig, MODERN_DESIGN, nextId } from "./defaultCategories";
 
 export interface Preset {
   id: string;
@@ -878,10 +878,12 @@ export const PRESETS: Preset[] = [
       design: CLASSIC_DESIGN,
       header: {
         name: "Anders Jensen",
-        address: "Vesterbrogade 12, 1620 København V",
-        phone: "+45 20 12 34 56",
-        mail: "anders.jensen@email.dk",
-        location: { da: "København", en: "Copenhagen" },
+        fields: [
+          { id: nextId("field"), value: { da: "Vesterbrogade 12, 1620 København V", en: "Vesterbrogade 12, 1620 København V" } },
+          { id: nextId("field"), value: { da: "+45 20 12 34 56", en: "+45 20 12 34 56" } },
+          { id: nextId("field"), value: { da: "anders.jensen@email.dk", en: "anders.jensen@email.dk" } },
+          { id: nextId("field"), value: { da: "København", en: "Copenhagen" } },
+        ],
         photo: "",
       },
       appliedTitle: { da: "Økonomichef", en: "Finance Manager" },
@@ -899,10 +901,12 @@ export const PRESETS: Preset[] = [
       design: MODERN_DESIGN,
       header: {
         name: "Sofie Nielsen",
-        address: "Nørrebrogade 45, 8000 Aarhus C",
-        phone: "+45 30 98 76 54",
-        mail: "sofie.nielsen@email.dk",
-        location: { da: "Aarhus", en: "Aarhus" },
+        fields: [
+          { id: nextId("field"), value: { da: "Nørrebrogade 45, 8000 Aarhus C", en: "Nørrebrogade 45, 8000 Aarhus C" } },
+          { id: nextId("field"), value: { da: "+45 30 98 76 54", en: "+45 30 98 76 54" } },
+          { id: nextId("field"), value: { da: "sofie.nielsen@email.dk", en: "sofie.nielsen@email.dk" } },
+          { id: nextId("field"), value: { da: "Aarhus", en: "Aarhus" } },
+        ],
         photo: "",
       },
       appliedTitle: { da: "Senior Product Manager", en: "Senior Product Manager" },
@@ -921,10 +925,12 @@ export const PRESETS: Preset[] = [
       design: ARTISTIC_DESIGN,
       header: {
         name: "Mikkel Lund",
-        address: "Vestergade 8, 5000 Odense C",
-        phone: "+45 40 11 22 33",
-        mail: "mikkel.lund@email.dk",
-        location: { da: "Odense", en: "Odense" },
+        fields: [
+          { id: nextId("field"), value: { da: "Vestergade 8, 5000 Odense C", en: "Vestergade 8, 5000 Odense C" } },
+          { id: nextId("field"), value: { da: "+45 40 11 22 33", en: "+45 40 11 22 33" } },
+          { id: nextId("field"), value: { da: "mikkel.lund@email.dk", en: "mikkel.lund@email.dk" } },
+          { id: nextId("field"), value: { da: "Odense", en: "Odense" } },
+        ],
         photo: "",
       },
       appliedTitle: { da: "Grafisk designer", en: "Graphic Designer" },

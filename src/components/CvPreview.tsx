@@ -450,10 +450,7 @@ function SectionFlow({
 function HeaderBlock({
   name,
   appliedTitle,
-  address,
-  phone,
-  mail,
-  location,
+  contactParts,
   headKind,
   photoUrl,
   photoSizePx,
@@ -462,10 +459,9 @@ function HeaderBlock({
 }: {
   name: string;
   appliedTitle: string;
-  address: string;
-  phone: string;
-  mail: string;
-  location: string;
+  /** Each of header.fields, already resolved to the active language —
+   *  see AppState.header.fields. */
+  contactParts: string[];
   headKind: string;
   photoUrl: string;
   photoSizePx: number;
@@ -482,7 +478,7 @@ function HeaderBlock({
   ) : null;
   const contactEl = (
     <p className="cv-contact" {...hoverTargetProps({ kind: "contact" })}>
-      {[address, phone, mail, location].filter(Boolean).join(" · ")}
+      {contactParts.filter(Boolean).join(" · ")}
     </p>
   );
 
@@ -929,6 +925,7 @@ export function CvPreview({
   const sectionGap = resolveSizePx(SECTION_GAPS, design.sectionGap, densityStep);
   const entryGap = resolveSizePx(ENTRY_GAPS, design.entryGap, densityStep);
   const photoSizePx = PHOTO_SIZES[clampStep(Number(design.photoSize))];
+  const contactParts = header.fields.map((f) => f.value[lang]);
   // byId falls back to PHOTO_SHAPES[0] ("circle") for a missing/unknown id
   // — needed here since a JSON backup imported from before this field
   // existed (see commitJsonImport in state/store.ts) skips the persist
@@ -1092,10 +1089,7 @@ export function CvPreview({
           <HeaderBlock
             name={header.name}
             appliedTitle={appliedTitle[lang]}
-            address={header.address}
-            phone={header.phone}
-            mail={header.mail}
-            location={header.location[lang]}
+            contactParts={contactParts}
             headKind={design.headKind}
             photoUrl={header.photo}
             photoSizePx={photoSizePx}
@@ -1135,10 +1129,7 @@ export function CvPreview({
           <HeaderBlock
             name={header.name}
             appliedTitle={appliedTitle[lang]}
-            address={header.address}
-            phone={header.phone}
-            mail={header.mail}
-            location={header.location[lang]}
+            contactParts={contactParts}
             headKind={design.headKind}
             photoUrl={header.photo}
             photoSizePx={photoSizePx}

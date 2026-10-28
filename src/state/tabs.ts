@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import type { AppState } from "../model/types";
-import { createDocumentStore, LEGACY_DOC_KEY, type Store } from "./store";
+import { createDocumentStore, LEGACY_DOC_KEY, migrateHeaderFieldsList, type Store } from "./store";
 import { createDefaultState } from "../data/defaultCategories";
 import { snapshotAppState } from "../json/backupJson";
 
@@ -119,7 +119,16 @@ export const useTabsStore = create<TabsState>()(
       addTabFromData: (data) => {
         if (get().tabs.length >= MAX_TABS) return;
         const id = newTabId();
-        getDocStore(id).setState({ ...createDefaultState(), ...data });
+        // A JSON backup from before AppState.header.fields existed still
+        // has the old address/phone/mail/location shape — this opens a
+        // brand-new document store directly from imported data rather
+        // than rehydrating an existing one, so it never goes through the
+        // persist middleware's own migrate pipeline at all. Without this,
+        // an old backup would land header.fields as undefined and crash
+        // the first render that maps over it (see also commitJsonImport
+        // in store.ts, which has the same gap for the same reason).
+        const migrated = migrateHeaderFieldsList(data) as Partial<AppState>;
+        getDocStore(id).setState({ ...createDefaultState(), ...migrated });
         set((s) => ({ tabs: [...s.tabs, id], activeId: id }));
       },
 
