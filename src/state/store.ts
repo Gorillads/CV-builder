@@ -417,6 +417,48 @@ function migrateMoreSizeSliders(state: unknown): unknown {
   };
 }
 
+/** The header's four fixed contact fields (address/phone/mail/location)
+ *  became a freeform, user-managed list (see AppState.header.fields) —
+ *  this folds an existing document's values into that list, in the same
+ *  order they always rendered in ("address · phone · mail · location"),
+ *  each as a per-language value (address/phone/mail reusing their one
+ *  existing value for both "da" and "en", since neither was ever
+ *  translated; location carrying over its own existing da/en pair
+ *  unchanged). A document with nothing in all four still gets the same
+ *  four blank fields back, so the editor looks exactly as it did before
+ *  this existed rather than suddenly showing no fields at all. Safe to
+ *  re-run: an already-migrated document (header.fields already an array)
+ *  passes through unchanged. */
+export function migrateHeaderFieldsList(state: unknown): unknown {
+  if (!state || typeof state !== "object") return state;
+  const s = state as Record<string, unknown>;
+  const header = s.header as Record<string, unknown> | undefined;
+  if (!header || typeof header !== "object" || Array.isArray(header.fields)) return state;
+
+  const { address, phone, mail, location, ...rest } = header;
+  const asByLang = (value: unknown): { da: string; en: string } => {
+    if (value && typeof value === "object") {
+      const v = value as Record<string, unknown>;
+      return { da: typeof v.da === "string" ? v.da : "", en: typeof v.en === "string" ? v.en : "" };
+    }
+    const str = typeof value === "string" ? value : "";
+    return { da: str, en: str };
+  };
+
+  return {
+    ...s,
+    header: {
+      ...rest,
+      fields: [
+        { id: newId("field"), value: asByLang(address) },
+        { id: newId("field"), value: asByLang(phone) },
+        { id: newId("field"), value: asByLang(mail) },
+        { id: newId("field"), value: asByLang(location) },
+      ],
+    },
+  };
+}
+
 /** Falls back to an in-memory map when localStorage isn't reachable (a
  *  sandboxed iframe with storage access blocked can throw just reading
  *  the `localStorage` property) — otherwise that throw happens during
@@ -519,8 +561,17 @@ export interface Store extends AppState {
   reorderActivity(itemId: string, from: number, to: number): void;
 
   setAppliedTitle(lang: Lang, value: string): void;
-  setHeaderField(field: "name" | "address" | "phone" | "mail", value: string): void;
-  setHeaderLocation(lang: Lang, value: string): void;
+  setHeaderField(field: "name", value: string): void;
+  /** Edits one contact-line field's value for one language — see
+   *  AppState.header.fields. A no-op if fieldId no longer exists (e.g. a
+   *  stale edit racing a removeHeaderField). */
+  setHeaderFieldValue(fieldId: string, lang: Lang, value: string): void;
+  /** Appends a new, blank contact-line field — it renders at whatever
+   *  position it lands in (see AppState.header.fields), with no cap. */
+  addHeaderField(): void;
+  /** Removes one contact-line field. The name field itself isn't part of
+   *  this list and so can't be removed this way — see AppState.header. */
+  removeHeaderField(fieldId: string): void;
   /** Sets or clears (empty string) the optional profile picture — see
    *  AppState.header.photo. */
   setHeaderPhoto(photo: string): void;
@@ -964,8 +1015,19 @@ export function createDocumentStore(storageKey: string) {
 
       setAppliedTitle: (lang, value) => set((s) => ({ appliedTitle: { ...s.appliedTitle, [lang]: value } })),
       setHeaderField: (field, value) => set((s) => ({ header: { ...s.header, [field]: value } })),
-      setHeaderLocation: (lang, value) =>
-        set((s) => ({ header: { ...s.header, location: { ...s.header.location, [lang]: value } } })),
+      setHeaderFieldValue: (fieldId, lang, value) =>
+        set((s) => ({
+          header: {
+            ...s.header,
+            fields: s.header.fields.map((f) => (f.id === fieldId ? { ...f, value: { ...f.value, [lang]: value } } : f)),
+          },
+        })),
+      addHeaderField: () =>
+        set((s) => ({
+          header: { ...s.header, fields: [...s.header.fields, { id: newId("field"), value: { da: "", en: "" } }] },
+        })),
+      removeHeaderField: (fieldId) =>
+        set((s) => ({ header: { ...s.header, fields: s.header.fields.filter((f) => f.id !== fieldId) } })),
       setHeaderPhoto: (photo) => set((s) => ({ header: { ...s.header, photo } })),
 
       setDesign: (field, value) => set((s) => ({ design: { ...s.design, [field]: value } })),
@@ -979,7 +1041,16 @@ export function createDocumentStore(storageKey: string) {
       exportCsvText: () => exportCsv(get()),
 
       parseJsonImport: (text) => parseJsonBackup(text),
-      commitJsonImport: (data) => set({ ...createDefaultState(), ...data }),
+      // A JSON backup from before header.fields existed still has the old
+      // address/phone/mail/location shape — commitJsonImport bypasses the
+      // persist middleware's migrate pipeline entirely (this is a direct
+      // state replacement, not a rehydration), so without this the import
+      // would land header.fields as undefined and crash the first render
+      // that maps over it. migrateHeaderFieldsList is safe to call
+      // standalone here: it only reads/writes `header`, so passing the
+      // whole broader `data` object through it is a no-op for every other
+      // field.
+      commitJsonImport: (data) => set({ ...createDefaultState(), ...(migrateHeaderFieldsList(data) as Partial<AppState>) }),
       exportJsonText: () => exportJson(get()),
 
       applyPreset: (id) => {
@@ -992,19 +1063,21 @@ export function createDocumentStore(storageKey: string) {
     {
       name: storageKey,
       storage: createJSONStorage(() => safeStorage),
-      version: 22,
+      version: 23,
       migrate: (persisted) =>
-        migrateMoreSizeSliders(
-          migrateActivityAndContactColor(
-            migrateTextColorSplit(
-              migrateThemeColors(
-                migratePhotoControls(
-                  migrateSidebarWidth(
-                    migrateItemLogo(
-                      migrateSizeSliders(
-                        migrateDensityScale(
-                          migrateHeaderAddress(
-                            migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+        migrateHeaderFieldsList(
+          migrateMoreSizeSliders(
+            migrateActivityAndContactColor(
+              migrateTextColorSplit(
+                migrateThemeColors(
+                  migratePhotoControls(
+                    migrateSidebarWidth(
+                      migrateItemLogo(
+                        migrateSizeSliders(
+                          migrateDensityScale(
+                            migrateHeaderAddress(
+                              migrateHiddenCategoriesToCollapsed(migrateToUnifiedCategoryModel(persisted)),
+                            ),
                           ),
                         ),
                       ),

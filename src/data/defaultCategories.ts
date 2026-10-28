@@ -266,7 +266,7 @@ export const MODERN_DESIGN: AppState["design"] = {
 };
 
 let seq = 0;
-function nextId(prefix: string): string {
+export function nextId(prefix: string): string {
   seq += 1;
   return `${prefix}${seq}`;
 }
@@ -352,7 +352,16 @@ export function createDefaultState(): AppState {
   return buildStateFromConfig({
     seeds: SEEDS,
     design: MODERN_DESIGN,
-    header: { name: "", address: "", phone: "", mail: "", location: { da: "", en: "" }, photo: "" },
+    header: {
+      name: "",
+      fields: [
+        { id: nextId("field"), value: { da: "", en: "" } },
+        { id: nextId("field"), value: { da: "", en: "" } },
+        { id: nextId("field"), value: { da: "", en: "" } },
+        { id: nextId("field"), value: { da: "", en: "" } },
+      ],
+      photo: "",
+    },
     appliedTitle: { da: "", en: "" },
     variant: { kompetencer: "chips" },
   });

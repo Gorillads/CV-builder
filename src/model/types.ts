@@ -131,14 +131,18 @@ export interface AppState {
   appliedTitle: ByLang<string>;
   header: {
     name: string;
-    /** Street address (or however granular the user wants) — shown on the
-     *  contact line before phone, same as phone/mail not translated per
-     *  language (unlike location, which is a city name that often does
-     *  need its own translation). */
-    address: string;
-    phone: string;
-    mail: string;
-    location: ByLang<string>;
+    /** The contact line shown under the name/applied title — a freeform,
+     *  user-managed list (add/remove, see addHeaderField/removeHeaderField
+     *  in state/store.ts) rather than a fixed address/phone/mail/location
+     *  shape, so nothing about a field's own label implies what has to go
+     *  in it; each one just renders at its position ("Felt 1", "Felt 2",
+     *  ...) joined by " · " in the preview, in array order. Each value is
+     *  per-language like any other free text in the app (an item's own
+     *  head/desc, a category's blurb, ...), even though in practice most
+     *  of these (an address, a phone number) won't actually differ
+     *  between languages — only one (what used to be the dedicated
+     *  "location" field) typically did. */
+    fields: { id: string; value: ByLang<string> }[];
     /** Optional profile picture, as a data URL — empty string means none.
      *  Resized/re-encoded client-side on upload (see DesignTab.tsx) to keep
      *  it reasonably small in localStorage and JSON backups. */
