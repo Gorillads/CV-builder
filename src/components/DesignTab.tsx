@@ -219,6 +219,7 @@ function DensityGroup({
             value={design.textSize}
             onChange={(v) => setDesign("textSize", v)}
             followLabel={T.followDensity}
+            highlight={lit("textSize")}
           />
 
           <SizeSlider
