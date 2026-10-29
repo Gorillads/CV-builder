@@ -169,7 +169,11 @@ function TagsBlock({
   }, [items, lang, variant]);
 
   if (variant === "inline") {
-    return <p className="cv-tags-inline">{items.map((it) => it[lang].head).filter(Boolean).join(" · ")}</p>;
+    return (
+      <p className="cv-tags-inline" {...hoverTargetProps({ kind: "tagsInline", categoryId })}>
+        {items.map((it) => it[lang].head).filter(Boolean).join(" · ")}
+      </p>
+    );
   }
   return (
     <div className="cv-tags" ref={containerRef}>

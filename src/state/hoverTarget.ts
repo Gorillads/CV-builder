@@ -19,7 +19,8 @@ export type HoverKind =
   | "entryDesc"
   | "activity"
   | "chip"
-  | "logo";
+  | "logo"
+  | "tagsInline";
 
 export interface HoverTarget {
   kind: HoverKind;
@@ -44,6 +45,10 @@ export const DENSITY_FIELDS: Partial<Record<HoverKind, string[]>> = {
   activity: ["activitySize"],
   chip: ["chipSize"],
   logo: ["logoSize"],
+  // The "Én linje" (inline) variant (see .cv-tags-inline in App.css) has
+  // no font-size rule of its own — it just inherits .cv-page's base size,
+  // which is exactly what the general "Tekststørrelse" control sets.
+  tagsInline: ["textSize"],
 };
 
 /** The Theme tab's color field for a given kind — logo has none (it isn't
@@ -60,6 +65,9 @@ export const THEME_FIELDS: Partial<Record<HoverKind, string[]>> = {
   entryDesc: ["elementTextColor"],
   activity: ["activityColor"],
   chip: ["chipColor"],
+  // Same reasoning as DENSITY_FIELDS.tagsInline above — no color rule of
+  // its own, so it inherits .cv-page's body-text fallback.
+  tagsInline: ["bodyTextColor"],
 };
 
 interface HoverTargetStore {
